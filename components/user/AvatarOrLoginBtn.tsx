@@ -1,19 +1,10 @@
-import { biliFetch, loadAndSetCookies } from "@/utils/bili/biliFetch";
-import { useEffect, useState } from "react";
-import { Linking, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Avatar,
-  Button,
-  Sheet,
-  Text,
-  View,
-  XStack,
-  YStack,
-  ZStack,
-} from "tamagui";
-import { getUserInfo } from "@/utils/bili/userInfo";
+import { biliFetch } from "@/utils/bili/biliFetch";
+import { useState } from "react";
+import { Linking } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Text } from "@/components/ui/text";
 
 const loginStateToText = {
   pending: "等待扫码",
@@ -25,8 +16,10 @@ const loginStateToText = {
 
 export default function AvatarOrLoginBtn({
   userInfo,
+  onSuccess,
 }: {
   userInfo: BiliUserInfo | null;
+  onSuccess: () => void;
 }) {
   const [loginState, setLoginState] = useState<
     "pending" | "success" | "scanned" | "timeout" | "unknown"
@@ -67,6 +60,7 @@ export default function AvatarOrLoginBtn({
           const refreshToken = pollData.data.refresh_token;
           await AsyncStorage.setItem("auth-refreshToken", refreshToken);
           await AsyncStorage.setItem("auth-cookies", cookies as string);
+          onSuccess();
         }
       }, 2000);
 
@@ -81,22 +75,18 @@ export default function AvatarOrLoginBtn({
   return (
     <>
       {userInfo ? (
-        <Avatar
-          onPress={onLogin}
-          circular
-          size="$4"
-          borderWidth={1.5}
-          borderColor={"white"}
-        >
-          <Avatar.Image accessibilityLabel="Cam" src={userInfo.avatarURL} />
-          <Avatar.Fallback backgroundColor="$color12" />
+        <Avatar alt="头像">
+          <AvatarImage source={{ uri: userInfo.avatarURL }} />
+          <AvatarFallback>
+            <view></view>
+          </AvatarFallback>
         </Avatar>
       ) : (
-        <Button circular themeInverse onPress={onLogin}>
-          登录
+        <Button onPress={onLogin} className=" rounded-full">
+          <Text>登录</Text>
         </Button>
       )}
-
+      {/* 
       <Sheet
         modal
         open={showLoginSheet}
@@ -109,7 +99,9 @@ export default function AvatarOrLoginBtn({
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
         />
-        <Sheet.Handle />
+        <Sheet.Handle
+          collapsable={loginState === "success" || loginState === "unknown"}
+        />
         <Sheet.Frame padding="$4" justifyContent="center" alignItems="center">
           <Text>
             {loginStateToText[loginState as keyof typeof loginStateToText]}
@@ -118,7 +110,7 @@ export default function AvatarOrLoginBtn({
             <Button onPress={onLogin}>重新发起登录</Button>
           ) : null}
         </Sheet.Frame>
-      </Sheet>
+      </Sheet> */}
     </>
   );
 }
