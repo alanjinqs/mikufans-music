@@ -4,7 +4,7 @@ import CookieManager from "@react-native-cookies/cookies";
 const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
-export const biliFetch = async (url: string, options: RequestInit = {}) => {
+export const biliFetch = async (url: RequestInfo, options: RequestInit = {}) => {
   const headers = new Headers(options.headers);
   headers.set("User-Agent", UA);
   headers.set("Referer", "https://www.bilibili.com/");
