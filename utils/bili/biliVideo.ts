@@ -17,7 +17,7 @@ export const getBiliVideoMp4PlaybackInfo = async (
   bvid: string
 ) => {
   const res = await biliFetch(
-    `https://api.bilibili.com/x/player/wbi/playurl?fnval=1&qn=80&bvid=${bvid}&cid=${cid}`
+    `https://api.bilibili.com/x/player/wbi/playurl?fnval=1&qn=6&fnval=16&bvid=${bvid}&cid=${cid}`
   );
   return res.json();
 };
@@ -49,7 +49,7 @@ export const bvCid2Track = async (cid: number, bvid: string) => {
       url: bestPlaybackAudio.baseUrl,
       title: meta.data.title,
       artist: meta.data.owner.name,
-      artwork: meta.data.pic,
+      artwork: meta.data.pic.replace("http://", "https://"),
       duration: videoPlaybackInfo.data.dash.duration,
     };
     return track;
@@ -61,7 +61,7 @@ export const bvCid2Track = async (cid: number, bvid: string) => {
       url: videoPlaybackInfo.data.durl[0].url,
       title: meta.data.title,
       artist: meta.data.owner.name,
-      artwork: meta.data.pic,
+      artwork: meta.data.pic.replace("http://", "https://"),
       duration: videoPlaybackInfo.data.durl[0].length / 1000,
     };
     return track;

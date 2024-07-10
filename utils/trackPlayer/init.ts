@@ -1,6 +1,7 @@
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
+  State,
 } from "react-native-track-player";
 
 const capabilities = [
@@ -16,8 +17,11 @@ const capabilities = [
 
 export const initTrackPlayer = async () => {
   try {
-    await TrackPlayer.getQueue();
+    const state = await TrackPlayer.getPlaybackState();
+    console.log("state", state.state);
   } catch {
+    console.log("TrackPlayer not initialized, initializing now.");
+
     TrackPlayer.registerPlaybackService(() => require("./trackPlayerService"));
 
     await TrackPlayer.setupPlayer();

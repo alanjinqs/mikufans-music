@@ -5,10 +5,17 @@ import { Theme, ThemeProvider } from "@react-navigation/native";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
-import { Platform } from "react-native";
+import { Platform, View } from "react-native";
 import { NAV_THEME } from "~/lib/constants";
 import { useColorScheme } from "~/lib/useColorScheme";
 import { initTrackPlayer } from "@/utils/trackPlayer/init";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { openDatabaseSync } from "expo-sqlite/next";
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import migrations from "@/drizzle/migrations";
+import { Text } from "@/components/ui/text";
+import { PortalHost } from "@rn-primitives/portal";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -27,9 +34,32 @@ export {
 // Prevent the splash screen from auto-hiding before getting the color scheme.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+const expoDb = openDatabaseSync("db.playlists");
+const db = drizzle(expoDb);
+
+export default function DrizzleLoad() {
+  const { success, error } = useMigrations(db, migrations);
+  if (error) {
+    return (
+      <View>
+        <Text>Migration error: {error.message}</Text>
+      </View>
+    );
+  }
+  if (!success) {
+    return (
+      <View>
+        <Text>Migration is in progress...</Text>
+      </View>
+    );
+  }
+  return <RootLayout />;
+}
+
+function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
+  const { success, error } = useMigrations(db, migrations);
 
   React.useEffect(() => {
     (async () => {
@@ -65,16 +95,18 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-      <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-      <Stack>
-        <Stack.Screen
-          name="index"
-          options={{
-            headerShown: false,
-          }}
-        />
-      </Stack>
-    </ThemeProvider>
+    <>
+      <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+        <GestureHandlerRootView>
+          <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          />
+        </GestureHandlerRootView>
+      </ThemeProvider>
+      <PortalHost />
+    </>
   );
 }
