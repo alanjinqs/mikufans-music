@@ -16,6 +16,8 @@ import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import migrations from "@/drizzle/migrations";
 import { Text } from "@/components/ui/text";
 import { PortalHost } from "@rn-primitives/portal";
+import "react-native-reanimated";
+import "react-native-gesture-handler";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -99,11 +101,14 @@ function RootLayout() {
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
         <GestureHandlerRootView>
           <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-            }}
-          />
+          <Stack>
+            <Stack.Screen
+              name="home"
+              options={{
+                headerShown: false,
+              }}
+            />
+          </Stack>
         </GestureHandlerRootView>
       </ThemeProvider>
       <PortalHost />

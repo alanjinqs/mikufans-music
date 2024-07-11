@@ -34,6 +34,7 @@ export const songToPlaylist = sqliteTable(
     playlistId: integer("playlistId")
       .references(() => playlist.id)
       .notNull(),
+    order: integer("order").notNull().default(0),
     createdAt: integer("createdAt", { mode: "timestamp" }),
     updatedAt: integer("updatedAt", { mode: "timestamp" }),
   },
@@ -68,4 +69,23 @@ export const artist = sqliteTable("artist", {
   mid: integer("id").primaryKey(),
   name: text("name"),
   avatar: text("avatar"),
+});
+
+export const currentQueue = sqliteTable("currentQueue", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  songId: integer("songId")
+    .references(() => song.id)
+    .notNull(),
+});
+
+export const currentQueueRelations = relations(currentQueue, ({ one }) => ({
+  song: one(song, {
+    fields: [currentQueue.songId],
+    references: [song.id],
+  }),
+}));
+
+export const currentQueueMeta = sqliteTable("currentQueueMeta", {
+  key: text("key").primaryKey(),
+  value: text("value"),
 });

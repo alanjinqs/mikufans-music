@@ -11,6 +11,8 @@ import {
 import { addPlaylistToQueue } from "@/utils/trackPlayer/addToQueue";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import CookieManager from "@react-native-cookies/cookies";
 
 export default function TestView() {
   const [favId, setFavId] = useState("");
@@ -48,32 +50,47 @@ export default function TestView() {
         <Button onPress={deleteAllPlaylist}>
           <Text>Delete All</Text>
         </Button>
-        <Button onPress={() => addPlaylistToQueue(4)}>
-          <Text>Load playlist</Text>
-        </Button>
-        <Button onPress={getQueue}>
-          <Text>getCurrentQueue</Text>
-        </Button>
-        <Button
-          onPress={() => {
-            TrackPlayer.skipToNext();
-          }}
-        >
-          <Text>skipToNext</Text>
-        </Button>
-        <Button
-          onPress={() => {
-            TrackPlayer.skipToPrevious();
-          }}
-        >
-          <Text>skipToPrevious</Text>
-        </Button>
+
         <Button
           onPress={() => {
             TrackPlayer.setQueue([]);
           }}
         >
-          <Text>emptyQueue</Text>
+          <Text>emptyTPQueue</Text>
+        </Button>
+        <Button
+          onPress={async () => {
+            await db.delete(schema.currentQueue);
+            await db.delete(schema.currentQueueMeta);
+            console.log(await db.select().from(schema.currentQueue));
+          }}
+        >
+          <Text>emptyDBQueue</Text>
+        </Button>
+
+        <Button
+          onPress={async () => {
+            console.log(await TrackPlayer.getQueue());
+          }}
+        >
+          <Text>showTPQueue</Text>
+        </Button>
+        <Button
+          onPress={async () => {
+            console.log(await db.select().from(schema.currentQueue));
+            console.log(await db.select().from(schema.currentQueueMeta));
+          }}
+        >
+          <Text>showDBQueue</Text>
+        </Button>
+        <Button
+          onPress={() => {
+            TrackPlayer.stop();
+            AsyncStorage.clear();
+            CookieManager.clearAll();
+          }}
+        >
+          <Text>logout and destroy all storage</Text>
         </Button>
       </View>
       <Text className="w-full text-xl font-bold">playlists</Text>

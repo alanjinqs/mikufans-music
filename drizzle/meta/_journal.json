@@ -22,6 +22,20 @@
       "when": 1720598079673,
       "tag": "0002_abandoned_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1720673613170,
+      "tag": "0003_worthless_redwing",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1720673870888,
+      "tag": "0004_broken_supernaut",
+      "breakpoints": true
     }
   ]
 }

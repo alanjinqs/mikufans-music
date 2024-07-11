@@ -33,6 +33,7 @@ export const initTrackPlayer = async () => {
       notificationCapabilities: capabilities,
       compactCapabilities: capabilities,
       capabilities,
+      progressUpdateEventInterval: 1,
     });
   }
 };

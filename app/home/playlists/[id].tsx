@@ -1,17 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { db, schema } from "@/utils/db/db";
-import { addPlaylistToQueue } from "@/utils/trackPlayer/addToQueue";
+import {
+  addPlaylistToQueue,
+  replaceCurrentPlaying,
+} from "@/utils/trackPlayer/addToQueue";
 import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image } from "react-native";
 
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Play } from "@/lib/icons/Play";
+import TrackPlayer from "react-native-track-player";
+import { MotiView } from "moti";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
-export default function Page() {
+export default function PlaylistView() {
   const { id } = useLocalSearchParams();
   const [playlist, setPlaylist] = useState<
     typeof schema.playlist.$inferSelect | undefined
@@ -35,14 +41,16 @@ export default function Page() {
       .then(setPlaylist);
   }, [id]);
 
-  const playSong = async (song: typeof schema.songToPlaylist.$inferSelect) => {
+  const playSong = async (song: typeof schema.song.$inferSelect) => {
     console.log(song);
+    await replaceCurrentPlaying(song);
+    TrackPlayer.play();
   };
   return (
     <View className="w-full flex">
       <View className="w-full">
         <Text className="text-foreground text-3xl font-bold">
-          {playlist?.name || "Loading..."}
+          {playlist?.name || ""}
         </Text>
       </View>
       <View className="flex flex-row items-center justify-end">
@@ -53,6 +61,7 @@ export default function Page() {
           onPress={() => {
             if (!playlist?.id) return;
             addPlaylistToQueue(playlist?.id);
+            TrackPlayer.play();
           }}
         >
           <View className="flex flex-row items-center gap-2">
@@ -63,8 +72,12 @@ export default function Page() {
       </View>
       <View className="flex flex-col gap-2">
         {songs?.map((song) => (
-          <Pressable onPress={() => playSong(song)} key={song.id}>
-            <View className="flex flex-row p-2 bg-secondary rounded-m items-center text-secondary-foreground">
+          <TouchableOpacity
+            onPress={() => playSong(song.song)}
+            key={song.id}
+            className=""
+          >
+            <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
               {song.song.artwork && (
                 <Image
                   src={song.song.artwork + "@256w"}
@@ -91,7 +104,7 @@ export default function Page() {
                 </View>
               </View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         ))}
       </View>
     </View>

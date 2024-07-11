@@ -57,7 +57,7 @@ export const bvCid2Track = async (cid: number, bvid: string) => {
     console.error("NOT TESTED");
     const videoPlaybackInfo = await getBiliVideoMp4PlaybackInfo(cid, bvid);
     const track: Track = {
-      id: cid.toString(),
+      id: cid.toString() +"$" + bvid,
       url: videoPlaybackInfo.data.durl[0].url,
       title: meta.data.title,
       artist: meta.data.owner.name,

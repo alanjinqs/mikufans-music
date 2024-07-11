@@ -1,62 +1,110 @@
 import { useEffect, useRef, useState } from "react";
-import { Pressable, View } from "react-native";
-import { getColors } from "react-native-image-colors";
-import TrackPlayer, {
-  Event,
-  isPlaying,
-  State,
-  Track,
-} from "react-native-track-player";
-import { Text } from "../ui/text";
+import { View } from "react-native";
+import TrackPlayer, { Event, State, Track } from "react-native-track-player";
+import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
-import { Button } from "../ui/button";
 import { Play } from "@/lib/icons/Play";
 import { Pause } from "@/lib/icons/Pause";
 import { Marquee } from "@animatereactnative/marquee";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { schema } from "@/utils/db/db";
 import { cidToSong } from "@/utils/db/song";
+import _ from "lodash";
+import Animated, {
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
+import {
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+} from "react-native-gesture-handler";
+import dayjs from "dayjs";
+import { sendHeartbeat } from "@/utils/bili/heartbeat";
 
 type Song = typeof schema.song.$inferSelect;
 
-export default function MiniPlayer() {
+const secToStrTime = (sec: number) => {
+  sec = Math.floor(sec);
+  const min = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${min}:${s.toString().padStart(2, "0")}`;
+};
+
+export default function MiniPlayer({
+  onShowFullScreenPlayer,
+}: {
+  onShowFullScreenPlayer: () => void;
+}) {
   const [currentTrack, setCurrentTrack] = useState<undefined | Track>();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
 
   const [isPlaying, setIsPlaying] = useState(true);
+
+  // only needed for testing, but no harm in keeping it
+  const [eventsRegistered, setEventsRegistered] = useState(false);
 
   const updateIsPlaying = async () => {
     const state = (await TrackPlayer.getPlaybackState()).state;
     setIsPlaying(state === State.Playing || state === State.Buffering);
   };
 
-  TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, async (e) => {
-    if (e.track && e.track.id === currentTrack?.id) return;
-    setCurrentTrack(e.track);
-  });
-
-  TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
-    updateIsPlaying();
-  });
-
   useEffect(() => {
-    TrackPlayer.getActiveTrack().then((track) => {
-      if (track && track.id === currentTrack?.id) return;
-      setCurrentTrack(track);
-    });
-    updateIsPlaying();
+    if (!eventsRegistered) {
+      TrackPlayer.getActiveTrack().then((track) => {
+        if (track && track.id === currentTrack?.id) return;
+        setCurrentTrack(track);
+      });
+
+      updateIsPlaying();
+      TrackPlayer.addEventListener(
+        Event.PlaybackActiveTrackChanged,
+        async (e) => {
+          if (e.track && e.track.id === currentTrack?.id) return;
+          setCurrentTrack(e.track);
+        }
+      );
+
+      TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
+        _.debounce(updateIsPlaying, 100)();
+      });
+
+      TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
+        setCurrentProgress(e.position);
+        setDuration(e.duration);
+        if (lastHeartbeat.diff(dayjs(), "s") > 15 && currentSong) {
+          _.debounce(() => {
+            heartbeat(currentSong);
+          }, 100)();
+        }
+      });
+
+      setEventsRegistered(true);
+    }
   }, []);
 
   const [nextTrack, setNextTrack] = useState<undefined | Track>();
   const [prevTrack, setPrevTrack] = useState<undefined | Track>();
 
-  useEffect(() => {
-    console.log("currentTrack", currentTrack);
-    cidToSong(currentTrack?.id).then((song) => {
-      console.log("song", song);
-      setCurrentSong(song);
-    });
-    TrackPlayer.getActiveTrackIndex().then((index) => {
+  const [lastHeartbeat, setLastHeartbeat] = useState(dayjs().subtract(15, "s"));
+
+  const heartbeat = async (song: Song) => {
+    console.log(
+      "heartbeat",
+      song.bvid,
+      song.cid,
+      Math.floor(currentProgress),
+      isPlaying
+    );
+    if (!song?.bvid || !song?.cid) return;
+    sendHeartbeat(song.bvid, song.cid, Math.floor(currentProgress), isPlaying);
+    setLastHeartbeat(dayjs());
+    if (!nextTrack || !prevTrack) {
+      updateNextPrev();
+    }
+  };
+
+  const updateNextPrev = async () => {
+    TrackPlayer.getActiveTrackIndex().then(async (index) => {
       if (!index) return; //不在播放
       TrackPlayer.getTrack(index + 1).then((track) => {
         if (!track) {
@@ -82,13 +130,35 @@ export default function MiniPlayer() {
         });
       }
     });
+  };
+
+  useEffect(() => {
+    cidToSong(currentTrack?.id.split("$")).then((song) => {
+      setCurrentSong(song);
+      if (!song) return;
+      _.debounce(() => {
+        heartbeat(song);
+      }, 100)();
+    });
+    updateNextPrev();
   }, [currentTrack]);
 
   const swipeableRef = useRef<Swipeable>(null);
 
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [duration, setDuration] = useState(100000);
+
+  const progressBarStyle = useAnimatedStyle(() => {
+    return {
+      width: withTiming(`${(currentProgress / duration) * 100}%`, {
+        duration: 1000,
+      }),
+    };
+  });
+
   return (
     <View
-      className="p-4 rounded-lg"
+      className="rounded-lg"
       style={{
         backgroundColor: currentSong?.color || "#333",
       }}
@@ -101,20 +171,35 @@ export default function MiniPlayer() {
         renderRightActions={() => (
           <LeftRight track={nextTrack} isPlaying={isPlaying} />
         )}
-        leftThreshold={0}
-        rightThreshold={0}
+        leftThreshold={50}
+        rightThreshold={50}
         onSwipeableOpen={(direction) => {
           console.log("swipe open", direction);
 
           if (direction === "right") {
+            // if (!nextTrack) {
+            //   TrackPlayer.reset();
+            //   setCurrentProgress(0);
+            //   setDuration(100000);
+            //   swipeableRef.current?.reset();
+            //   setCurrentTrack(undefined);
+            //   return;
+            // }
             setCurrentTrack(nextTrack);
-            TrackPlayer.skipToNext().then(() => {
+            TrackPlayer.skipToNext().then((e) => {
               swipeableRef.current?.reset();
-
               TrackPlayer.play();
             });
           }
           if (direction === "left") {
+            // if (!prevTrack) {
+            //   TrackPlayer.reset();
+            //   setCurrentProgress(0);
+            //   setDuration(100000);
+            //   swipeableRef.current?.reset();
+            //   setCurrentTrack(undefined);
+            //   return;
+            // }
             setCurrentTrack(prevTrack);
             TrackPlayer.skipToPrevious().then(() => {
               swipeableRef.current?.reset();
@@ -123,57 +208,74 @@ export default function MiniPlayer() {
           }
         }}
       >
-        <View
-          className="flex flex-row items-center"
-          style={{
-            backgroundColor: currentSong?.color || "#333",
-          }}
-        >
-          {currentTrack?.artwork && (
-            <Image
-              src={currentTrack?.artwork + "@256w"}
-              alt="cover"
-              className="w-16 h-10 rounded-md"
-            />
-          )}
-          <View className="text-white pl-3 pr-2 flex-1 flex flex-col justify-center">
-            {currentTrack?.title && currentTrack?.title.length > 20 ? (
-              <Marquee spacing={40} speed={0.5}>
-                <Text className="text-white text-md">
-                  {currentTrack?.title || " - 播放列表为空 - "}
+        <TouchableWithoutFeedback onPress={onShowFullScreenPlayer}>
+          <View
+            className="flex flex-row items-center mx-4 mt-4"
+            style={{
+              backgroundColor: currentSong?.color || "#333",
+            }}
+          >
+            {currentTrack?.artwork && (
+              <Image
+                src={currentTrack?.artwork + "@500w"}
+                alt="cover"
+                className="w-16 h-10 rounded-md"
+              />
+            )}
+            <View className="text-white pl-3 pr-2 flex-1 flex flex-col justify-center">
+              {currentTrack?.title && currentTrack?.title.length > 20 ? (
+                <Marquee spacing={40} speed={0.5}>
+                  <Text className="text-white text-md">
+                    {currentTrack?.title || " - 播放列表为空 - "}
+                  </Text>
+                </Marquee>
+              ) : (
+                <Text numberOfLines={1} className="text-white text-md">
+                  {currentTrack?.title || "- 播放列表为空 -"}
                 </Text>
-              </Marquee>
-            ) : (
-              <Text numberOfLines={1} className="text-white text-md">
-                {currentTrack?.title || "- 播放列表为空 -"}
-              </Text>
-            )}
+              )}
 
-            <Text className="text-white/50 text-sm">
-              {currentTrack?.artist || "暂无歌手信息"}
-            </Text>
+              <View className="flex flex-row justify-between">
+                <Text className="text-white/50 text-sm">
+                  {currentTrack?.artist || "暂无歌手信息"}
+                </Text>
+                {duration != 100000 && (
+                  <Text className="text-white/50 text-sm">
+                    {secToStrTime(currentProgress)} / {secToStrTime(duration)}
+                  </Text>
+                )}
+              </View>
+            </View>
+            <View className="flex justify-center align-middle w-6 mx-2">
+              {isPlaying ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsPlaying(false);
+                    TrackPlayer.pause();
+                  }}
+                >
+                  <Pause className="!color-white" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsPlaying(true);
+                    TrackPlayer.play();
+                  }}
+                >
+                  <Play className="!color-white" />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-          <View className="flex justify-center align-middle w-6">
-            {isPlaying ? (
-              <Pressable
-                onPress={() => {
-                  TrackPlayer.pause();
-                }}
-              >
-                <Pause className="!color-white" />
-              </Pressable>
-            ) : (
-              <Pressable
-                onPress={() => {
-                  TrackPlayer.play();
-                }}
-              >
-                <Play className="!color-white" />
-              </Pressable>
-            )}
-          </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Swipeable>
+      <View className="w-full  h-1 mt-2">
+        <Animated.View
+          className="h-full bg-white/70 rounded-r-full"
+          style={progressBarStyle}
+        ></Animated.View>
+      </View>
     </View>
   );
 }
@@ -186,10 +288,10 @@ export const LeftRight = ({
   isPlaying: boolean;
 }) => {
   return (
-    <View className="flex flex-row w-full items-center">
+    <View className="flex flex-row w-full items-center mt-4 px-4">
       {track?.artwork && (
         <Image
-          src={track?.artwork + "@256w"}
+          src={track?.artwork + "@500w"}
           alt="cover"
           className="w-16 h-10 rounded-md"
         />
@@ -200,7 +302,7 @@ export const LeftRight = ({
         </Text>
 
         <Text className="text-white/50 text-sm">
-          {track?.artistName || "暂无歌手信息"}
+          {track?.artist || "暂无歌手信息"}
         </Text>
       </View>
       <View className="flex justify-center align-middle w-6"></View>

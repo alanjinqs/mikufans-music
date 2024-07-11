@@ -1,5 +1,5 @@
 import { Text } from "@/components/ui/text";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import { Link, useRouter } from "expo-router";
@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Image } from "react-native";
 import dayjs from "dayjs";
 import { playlist } from "@/db/schema";
+import { TouchableHighlight, TouchableOpacity } from "react-native-gesture-handler";
 
-export default function PlaylistView() {
+export default function PlaylistsView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
 
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function PlaylistView() {
       </Button>
       <View className="flex flex-col gap-2">
         {playlists?.map((playlist) => (
-          <Pressable
+          <TouchableOpacity
             key={playlist.id}
             onPress={() => router.push(`/home/playlists/${playlist.id}`)}
           >
@@ -45,7 +46,7 @@ export default function PlaylistView() {
                 </Text>
               </View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         ))}
       </View>
     </View>
