@@ -53,7 +53,8 @@ export const sendHeartbeat = async (
         play_type: isPlaying ? "0" : "2",
         csrf,
       }).toString(),
-    }
+    },
+    false
   );
   res.json().then((data) => {
     console.log("heartbeat", data);
