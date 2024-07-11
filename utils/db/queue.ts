@@ -1,5 +1,8 @@
 import { currentQueueMeta } from "@/db/schema";
-import { db } from "./db";
+import { db, schema } from "./db";
+import { arrayContained, arrayContains, eq } from "drizzle-orm";
+import TrackPlayer from "react-native-track-player";
+import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 
 export const getCurrentQueueMeta = async () => {
   const metaArr = await db.select().from(currentQueueMeta);
@@ -19,4 +22,19 @@ export const updateMeta = async (key: string, value: string) => {
       target: currentQueueMeta.key,
       set: { value },
     });
+};
+
+export const currentQueueIdsToSongs = async (queue: number[]) => {
+  const res = [];
+  for (const id of queue) {
+    const s = await db.query.currentQueue.findFirst({
+      with: {
+        song: true,
+      },
+      where: eq(schema.currentQueue.id, id),
+    });
+    console.log(s);
+    res.push(s);
+  }
+  return res;
 };

@@ -6,7 +6,13 @@ import AvatarOrLoginBtn from "@/components/user/AvatarOrLoginBtn";
 import MiniPlayer from "@/components/player/MiniPlayer";
 import { Dimensions, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Slot, Stack, usePathname, useRouter } from "expo-router";
+import {
+  Slot,
+  Stack,
+  useLocalSearchParams,
+  usePathname,
+  useRouter,
+} from "expo-router";
 import { useRoute } from "@react-navigation/native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";

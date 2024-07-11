@@ -6,7 +6,7 @@ import {
 } from "@/utils/trackPlayer/addToQueue";
 import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image } from "react-native";
 
@@ -19,6 +19,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const [playlist, setPlaylist] = useState<
     typeof schema.playlist.$inferSelect | undefined
   >();
@@ -33,7 +34,6 @@ export default function PlaylistView() {
   );
 
   useEffect(() => {
-    console.log(id);
     db.query.playlist
       .findFirst({
         where: eq(schema.playlist.id, parseInt(id as string)),
@@ -42,7 +42,6 @@ export default function PlaylistView() {
   }, [id]);
 
   const playSong = async (song: typeof schema.song.$inferSelect) => {
-    console.log(song);
     await replaceCurrentPlaying(song);
     TrackPlayer.play();
   };
@@ -61,7 +60,7 @@ export default function PlaylistView() {
           onPress={() => {
             if (!playlist?.id) return;
             addPlaylistToQueue(playlist?.id);
-            TrackPlayer.play();
+            TrackPlayer.setPlayWhenReady(true);
           }}
         >
           <View className="flex flex-row items-center gap-2">

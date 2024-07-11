@@ -10,31 +10,23 @@ import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
 import { Play } from "@/lib/icons/Play";
 import { Pause } from "@/lib/icons/Pause";
-import { Marquee } from "@animatereactnative/marquee";
-import Swipeable from "react-native-gesture-handler/Swipeable";
 import { schema } from "@/utils/db/db";
 import { cidToSong } from "@/utils/db/song";
 import _ from "lodash";
-import Animated, {
-  interpolate,
-  Easing,
-  ReduceMotion,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
 
-import { StepBack } from "@/lib/icons/StepBack";
-import { StepForward } from "@/lib/icons/StepForward";
-import { RotateCcw } from "@/lib/icons/RotateCcw";
-import { RotateCw } from "@/lib/icons/RotateCw";
+// import { StepBack } from "@/lib/icons/StepBack";
+// import { StepForward } from "@/lib/icons/StepForward";
+// import { RotateCcw } from "@/lib/icons/RotateCcw";
+// import { RotateCw } from "@/lib/icons/RotateCw";
 import { SkipForward } from "@/lib/icons/SkipForward";
 import { SkipBack } from "@/lib/icons/SkipBack";
 import { ChevronDown } from "@/lib/icons/ChevronDown";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { List } from "@/lib/icons/List";
 import { useSharedValue } from "react-native-reanimated";
 import { Slider } from "react-native-awesome-slider";
+import { useRouter } from "expo-router";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -51,7 +43,7 @@ export default function FullScreenPlayer({
   onCloseTab: () => void;
 }) {
   const screenHeight = Dimensions.get("screen").height;
-
+  const router = useRouter();
   const [currentTrack, setCurrentTrack] = useState<undefined | Track>();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
 
@@ -190,6 +182,15 @@ export default function FullScreenPlayer({
           >
             <ChevronDown size={30} className="text-white" />
           </TouchableOpacity>
+          <TouchableOpacity
+            className="absolute top-0 right-0 rounded-full"
+            onPress={() => {
+              router.push("/home/currentQueue");
+              onCloseTab();
+            }}
+          >
+            <List size={30} className="text-white" />
+          </TouchableOpacity>
           {currentTrack?.artwork && (
             <Image
               src={currentTrack?.artwork + "@500w"}
@@ -221,7 +222,6 @@ export default function FullScreenPlayer({
               </View>
             </View>
           </View>
-
           <View className="flex flex-col w-full items-center gap-2">
             <Slider
               style={{

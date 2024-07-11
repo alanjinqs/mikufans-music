@@ -20,6 +20,7 @@ import {
 } from "react-native-gesture-handler";
 import dayjs from "dayjs";
 import { sendHeartbeat } from "@/utils/bili/heartbeat";
+import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -28,6 +29,14 @@ const secToStrTime = (sec: number) => {
   const min = Math.floor(sec / 60);
   const s = Math.floor(sec % 60);
   return `${min}:${s.toString().padStart(2, "0")}`;
+};
+
+const tpLog = () => {
+  TrackPlayer.getQueue().then((queue) => {
+    TrackPlayer.getActiveTrackIndex().then((index) => {
+      console.log("TP CURRENT STATUS: ", index, queue);
+    });
+  });
 };
 
 export default function MiniPlayer({
@@ -46,6 +55,7 @@ export default function MiniPlayer({
   const updateIsPlaying = async () => {
     const state = (await TrackPlayer.getPlaybackState()).state;
     setIsPlaying(state === State.Playing || state === State.Buffering);
+    setTimeout(updateNextPrev, 1000);
   };
 
   useEffect(() => {
@@ -56,13 +66,14 @@ export default function MiniPlayer({
       });
 
       updateIsPlaying();
-      TrackPlayer.addEventListener(
-        Event.PlaybackActiveTrackChanged,
-        async (e) => {
-          if (e.track && e.track.id === currentTrack?.id) return;
-          setCurrentTrack(e.track);
-        }
-      );
+      TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, (e) => {
+        setCurrentTrack(e.track);
+        console.log("active track changed", e.track);
+        addQueueToTrackPlayer().then(() => {
+          tpLog();
+          updateNextPrev();
+        });
+      });
 
       TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
         _.debounce(updateIsPlaying, 100)();
@@ -72,6 +83,7 @@ export default function MiniPlayer({
         setCurrentProgress(e.position);
         setDuration(e.duration);
         if (lastHeartbeat.diff(dayjs(), "s") > 15 && currentSong) {
+          tpLog();
           _.debounce(() => {
             heartbeat(currentSong);
           }, 100)();
@@ -98,14 +110,15 @@ export default function MiniPlayer({
     if (!song?.bvid || !song?.cid) return;
     sendHeartbeat(song.bvid, song.cid, Math.floor(currentProgress), isPlaying);
     setLastHeartbeat(dayjs());
-    if (!nextTrack || !prevTrack) {
-      updateNextPrev();
-    }
   };
 
   const updateNextPrev = async () => {
     TrackPlayer.getActiveTrackIndex().then(async (index) => {
-      if (!index) return; //不在播放
+      if (!index) {
+        setNextTrack(undefined);
+        setPrevTrack(undefined);
+        return;
+      }
       TrackPlayer.getTrack(index + 1).then((track) => {
         if (!track) {
           setNextTrack(undefined);
@@ -247,24 +260,28 @@ export default function MiniPlayer({
               </View>
             </View>
             <View className="flex justify-center align-middle w-6 mx-2">
-              {isPlaying ? (
-                <TouchableOpacity
-                  onPress={() => {
-                    setIsPlaying(false);
-                    TrackPlayer.pause();
-                  }}
-                >
-                  <Pause className="!color-white" />
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity
-                  onPress={() => {
-                    setIsPlaying(true);
-                    TrackPlayer.play();
-                  }}
-                >
-                  <Play className="!color-white" />
-                </TouchableOpacity>
+              {currentTrack && (
+                <>
+                  {isPlaying ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsPlaying(false);
+                        TrackPlayer.pause();
+                      }}
+                    >
+                      <Pause className="!color-white" />
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsPlaying(true);
+                        TrackPlayer.play();
+                      }}
+                    >
+                      <Play className="!color-white" />
+                    </TouchableOpacity>
+                  )}
+                </>
               )}
             </View>
           </View>
@@ -298,12 +315,10 @@ export const LeftRight = ({
       )}
       <View className="text-white pl-3 pr-2 flex-1 flex flex-col justify-center">
         <Text numberOfLines={1} className="text-white text-md">
-          {track?.title || "- 播放列表为空 -"}
+          {track?.title || " "}
         </Text>
 
-        <Text className="text-white/50 text-sm">
-          {track?.artist || "暂无歌手信息"}
-        </Text>
+        <Text className="text-white/50 text-sm">{track?.artist || " "}</Text>
       </View>
       <View className="flex justify-center align-middle w-6"></View>
     </View>
