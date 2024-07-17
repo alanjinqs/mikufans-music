@@ -33,7 +33,9 @@ export default function LyricsView({
     const parsed = parse(lrcs);
 
     setLyrics(
-      parsed.filter((line) => line.type === LineType.LYRIC) as LyricLine[]
+      parsed.filter(
+        (line) => line.type === LineType.LYRIC && line.content.trim().length > 0
+      ) as LyricLine[]
     );
 
     if (song.translatedLyrics) {
@@ -61,6 +63,14 @@ export default function LyricsView({
   const [currentLine, setCurrentLine] = useState<number>(0);
   const [currentOffset, setCurrentOffset] = useState<number>(0);
 
+  const scrollTo = (row: number) => {
+    scrollViewRef.current?.scrollTo({
+      y:
+        row * (35 + (songHasTranslatedLyrics ? 25 : 0)) -
+        (songHasTranslatedLyrics ? 55 : 60),
+      animated: true,
+    });
+  };
   const updateCurrentLine = () => {
     const currentMillisecond = currentProgress.position * 1000 + currentOffset;
 
@@ -71,13 +81,17 @@ export default function LyricsView({
         const l = line as LyricLine;
         if (l.startMillisecond > currentMillisecond) {
           setCurrentLine(i - 1);
-          scrollViewRef.current?.scrollTo({
-            y: (i - 1) * (35 + (songHasTranslatedLyrics ? 25 : 0)) - 150,
-            animated: true,
-          });
+          scrollTo(i - 1);
           break;
         }
       }
+    }
+    if (
+      lyrics.length !== 0 &&
+      currentMillisecond > lyrics[lyrics.length - 1].startMillisecond
+    ) {
+      setCurrentLine(lyrics.length - 1);
+      scrollTo(lyrics.length - 1);
     }
   };
 
@@ -95,6 +109,8 @@ export default function LyricsView({
     }, 1000)();
   }, [currentOffset]);
 
+  const [isScrolling, setIsScrolling] = useState(false);
+
   return (
     <View className="w-full">
       <View
@@ -104,6 +120,13 @@ export default function LyricsView({
         }}
       >
         <ScrollView
+          onTouchStart={() => {
+            setIsScrolling(true);
+          }}
+          onTouchEnd={() => {
+            console.log("end");
+            setIsScrolling(false);
+          }}
           ref={scrollViewRef}
           style={{
             width: "100%",
@@ -124,7 +147,7 @@ export default function LyricsView({
                       className={clsx(
                         "",
                         currentLine == i
-                          ? "text-white text-lg font-bold"
+                          ? "text-white text-xl font-bold"
                           : "text-white/20"
                       )}
                     >

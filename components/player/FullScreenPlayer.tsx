@@ -17,7 +17,10 @@ import { cidToSong } from "@/utils/db/song";
 import _ from "lodash";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import {
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+} from "react-native-gesture-handler";
 
 // import { StepBack } from "@/lib/icons/StepBack";
 // import { StepForward } from "@/lib/icons/StepForward";
@@ -34,6 +37,7 @@ import SongSearchDialog from "../lyrics/SongSearch";
 import LyricsView from "../lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
 import { Tv } from "@/lib/icons/Tv";
+import { CaseSensitive } from "@/lib/icons/CaseSensitive";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -118,6 +122,9 @@ export default function FullScreenPlayer({
   const onSongUpdated = () => {
     cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
       setCurrentSong(song);
+      if (!song?.lyrics || song.lyrics.length === 0) {
+        setIsShowingLyrics(false);
+      }
     });
   };
 
@@ -162,12 +169,24 @@ export default function FullScreenPlayer({
     >
       <SafeAreaView>
         <View className="w-full flex flex-row justify-between px-10">
-          <TouchableOpacity onPress={onCloseTab}>
-            <ChevronDown size={30} className="text-white" />
-          </TouchableOpacity>
+          <View className="flex flex-row items-center justify-start gap-4">
+            <TouchableOpacity onPress={onCloseTab}>
+              <ChevronDown size={30} className="text-white" />
+            </TouchableOpacity>
+            {currentSong &&
+              currentSong.lyrics &&
+              currentSong.lyrics.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setIsShowingLyrics(!isShowingLyrics)}
+                >
+                  <CaseSensitive size={30} className="text-white" />
+                </TouchableOpacity>
+              )}
+          </View>
           <View className="flex flex-row items-center justify-end gap-4">
             <TouchableOpacity
               onPress={() => {
+                TrackPlayer.pause();
                 Linking.openURL(`bilibili://video/${currentSong?.bvid}`);
               }}
             >
@@ -175,7 +194,6 @@ export default function FullScreenPlayer({
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                TrackPlayer.pause();
                 router.push("/home/currentQueue");
                 onCloseTab();
               }}
@@ -185,58 +203,52 @@ export default function FullScreenPlayer({
           </View>
         </View>
         <View className="flex flex-col items-center justify-center h-full gap-8 px-10 pb-10 w-full">
-          <TouchableOpacity
-            onPress={() => {
-              setIsShowingLyrics(!isShowingLyrics);
-            }}
-          >
-            {isShowingLyrics &&
-            currentSong &&
-            currentSong.lyrics &&
-            currentSong.lyrics.length > 0 ? (
-              <View
-                style={{
-                  width: "100%",
-                }}
-              >
-                <LyricsView song={currentSong} onSongUpdated={onSongUpdated} />
-              </View>
-            ) : (
-              <View className="flex flex-col gap-8">
-                {currentTrack?.artwork && (
-                  <Image
-                    src={currentTrack?.artwork + "@500w"}
-                    alt="cover"
-                    className="rounded-md"
-                    style={{
-                      width: "100%",
-                      aspectRatio: 1.77777778,
-                    }}
-                  />
-                )}
-                <View className="w-full text-white flex flex-col justify-center gap-4">
-                  <Text className="text-white text-xl">
-                    {currentTrack?.title || "- 播放列表为空 -"}
-                  </Text>
+          {isShowingLyrics &&
+          currentSong &&
+          currentSong.lyrics &&
+          currentSong.lyrics.length > 0 ? (
+            <View
+              style={{
+                width: "100%",
+              }}
+            >
+              <LyricsView song={currentSong} onSongUpdated={onSongUpdated} />
+            </View>
+          ) : (
+            <View className="flex flex-col gap-8">
+              {currentTrack?.artwork && (
+                <Image
+                  src={currentTrack?.artwork + "@500w"}
+                  alt="cover"
+                  className="rounded-md"
+                  style={{
+                    width: "100%",
+                    aspectRatio: 1.77777778,
+                  }}
+                />
+              )}
+              <View className="w-full text-white flex flex-col justify-center gap-4">
+                <Text className="text-white text-xl">
+                  {currentTrack?.title || "- 播放列表为空 -"}
+                </Text>
 
-                  <View className="flex flex-row justify-between items-end">
-                    <View className="flex flex-row items-center gap-4">
-                      {currentSong?.artistAvatar && (
-                        <Image
-                          src={currentSong?.artistAvatar + "@128w"}
-                          alt="cover"
-                          className="w-10 h-10 rounded-full"
-                        />
-                      )}
-                      <Text className="text-white/90 text-md">
-                        {currentTrack?.artist || "暂无歌手信息"}
-                      </Text>
-                    </View>
+                <View className="flex flex-row justify-between items-end">
+                  <View className="flex flex-row items-center gap-4">
+                    {currentSong?.artistAvatar && (
+                      <Image
+                        src={currentSong?.artistAvatar + "@128w"}
+                        alt="cover"
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <Text className="text-white/90 text-md">
+                      {currentTrack?.artist || "暂无歌手信息"}
+                    </Text>
                   </View>
                 </View>
               </View>
-            )}
-          </TouchableOpacity>
+            </View>
+          )}
           <View className="flex flex-col w-full items-center gap-2">
             <Slider
               style={{
