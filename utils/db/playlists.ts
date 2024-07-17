@@ -3,7 +3,7 @@ import { db } from "./db";
 import { fetchFavList, fetchFavMeta } from "../bili/favList";
 import dayjs from "dayjs";
 import { artworkToDarkColor } from "../artworkToColor";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { bv2av } from "../bili/avBvCid";
 import { getBiliVideoMeta } from "../bili/biliVideo";
 import { fetchVideoCollection } from "../bili/videoCollection";
@@ -170,7 +170,6 @@ export const addCollectionToPlaylist = async (
   }
 };
 
-
 export const createNewPlaylistByBiliFav = async (mediaId: number) => {
   const { favInfo, songList } = await fetchFavList(mediaId);
 
@@ -196,4 +195,20 @@ export const createNewPlaylistByBiliFav = async (mediaId: number) => {
       updatedAt: new Date(),
     });
   }
+};
+
+export const removeSongFromPlaylist = async (
+  songId: number,
+  playlistId: number
+) => {
+  console.log("remove", songId, playlistId);
+  const res = await db
+    .delete(songToPlaylist)
+    .where(
+      and(
+        eq(songToPlaylist.songId, songId),
+        eq(songToPlaylist.playlistId, playlistId)
+      )
+    );
+  console.log(res);
 };

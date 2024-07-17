@@ -12,7 +12,30 @@ import { bvCid2Track } from "../bili/biliVideo";
 import { getCurrentQueueMeta, updateMeta } from "../db/queue";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 
-export const addPlaylistToQueue = async (playlistId: number) => {
+export const addSongToQueue = async (songId: number) => {
+  const song = await db.query.song.findFirst({
+    where: eq(schema.song.id, songId),
+  });
+  if (!song) return;
+
+  const [id] = await db
+    .insert(currentQueue)
+    .values({ songId: song.id })
+    .returning({ queueId: currentQueue.id });
+
+  const metaObj = await getCurrentQueueMeta();
+
+  const queue = metaObj.queue ? JSON.parse(metaObj.queue) : [];
+  queue.push(id.queueId);
+  await updateMeta("queue", JSON.stringify(queue));
+
+  await addQueueToTrackPlayer();
+};
+
+export const replacePlaylistByQueue = async (
+  playlistId: number,
+  shuffled = false
+) => {
   const songs = await db.query.songToPlaylist.findMany({
     with: {
       song: true,
@@ -28,12 +51,16 @@ export const addPlaylistToQueue = async (playlistId: number) => {
 
   const metaObj = await getCurrentQueueMeta();
   // update queue
-  let queue = [];
-  if (metaObj.queue) {
-    queue = JSON.parse(metaObj.queue);
+  let queue = ids.map((i) => i.queueId);
+
+  if (shuffled) {
+    queue = queue.sort(() => Math.random() - 0.5);
   }
-  queue = queue.concat(ids.map((i) => i.queueId));
+
   await updateMeta("queue", JSON.stringify(queue));
+
+  await TrackPlayer.reset();
+  await TrackPlayer.setPlayWhenReady(true);
 
   // update playlists
   let playlists = [];

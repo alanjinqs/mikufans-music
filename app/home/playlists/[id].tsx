@@ -3,20 +3,26 @@ import { db, schema } from "@/utils/db/db";
 import {
   replacePlaylistByQueue,
   replaceCurrentPlaying,
+  addSongToQueue,
 } from "@/utils/trackPlayer/addToQueue";
 import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { router, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Image } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Image, Share } from "react-native";
 
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Play } from "@/lib/icons/Play";
+import { Shuffle } from "@/lib/icons/Shuffle";
 import TrackPlayer from "react-native-track-player";
 import { MotiView } from "moti";
 import { Swipeable, TouchableOpacity } from "react-native-gesture-handler";
 import AddNewSong from "@/components/playlist/addNewSong";
+import { removeSongFromPlaylist } from "@/utils/db/playlists";
+import { Plus } from "@/lib/icons/Plus";
+import { Trash2 } from "@/lib/icons/Trash2";
+import { SquareArrowOutUpRight } from "@/lib/icons/SquareArrowOutUpRight";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -34,18 +40,19 @@ export default function PlaylistView() {
     })
   );
 
+  const fetchPlaylist = async () => {
+    const pl = await db.query.playlist.findFirst({
+      where: eq(schema.playlist.id, parseInt(id as string)),
+    });
+    setPlaylist(pl);
+  };
+  const [playlistId, setPlaylistId] = useState<number>(-1);
+
   useEffect(() => {
-    db.query.playlist
-      .findFirst({
-        where: eq(schema.playlist.id, parseInt(id as string)),
-      })
-      .then(setPlaylist);
+    setPlaylistId(parseInt(id as string));
+    fetchPlaylist();
   }, [id]);
 
-  const playSong = async (song: typeof schema.song.$inferSelect) => {
-    await replaceCurrentPlaying(song);
-    TrackPlayer.play();
-  };
   return (
     <View className="w-full flex">
       <View className="w-full">
@@ -54,7 +61,19 @@ export default function PlaylistView() {
         </Text>
       </View>
       <View className="flex flex-row items-center justify-end gap-3">
-        <AddNewSong playlistId={parseInt(id as string)} />
+        <AddNewSong playlistId={playlistId} />
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={() => {
+            if (!playlist?.id) return;
+            replacePlaylistByQueue(playlist?.id, true);
+            TrackPlayer.setPlayWhenReady(true);
+          }}
+        >
+          <Shuffle className="text-primary" size={13} />
+        </Button>
         <Button
           className="mb-5 mt-2"
           variant={"outline"}
@@ -65,45 +84,143 @@ export default function PlaylistView() {
             TrackPlayer.setPlayWhenReady(true);
           }}
         >
-          <View className="flex flex-row items-center gap-2">
-            <Play className="text-primary" size={13} />
-            {/* <Text> </Text> */}
-          </View>
+          <Play className="text-primary" size={13} />
         </Button>
       </View>
       <View className="flex flex-col gap-2">
         {songs?.map((song) => (
-          <Swipeable onFailed={() => playSong(song.song)} key={song.id}>
-            <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
-              {song.song.artwork && (
-                <Image
-                  src={song.song.artwork + "@256w"}
-                  alt="cover"
-                  className="w-16 h-10 rounded-md "
-                />
-              )}
-              <View className="pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
-                <Text className="text-md" numberOfLines={1}>
-                  {song.song.title}
-                </Text>
-
-                <View className="flex flex-row items-center gap-1">
-                  {song.song.artistAvatar && (
-                    <Image
-                      src={song.song.artistAvatar + "@256w"}
-                      alt="cover"
-                      className="w-6 h-6 rounded-full"
-                    />
-                  )}
-                  <Text className="text-secondary-foreground/50 text-xs">
-                    {song.song.artistName}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </Swipeable>
+          <SongCard
+            key={song.id}
+            song={song.song}
+            playlistId={playlistId}
+            fetchPlaylist={fetchPlaylist}
+          />
         ))}
       </View>
     </View>
   );
 }
+
+const CardActionLeft = ({
+  onPressTrash,
+  onPressShare,
+}: {
+  onPressTrash: () => void;
+  onPressShare: () => void;
+}) => {
+  return (
+    <View className="flex flex-row items-center">
+      <TouchableOpacity onPress={onPressTrash}>
+        <View className="bg-red-500 h-full flex items-center justify-center px-4 rounded-l-md !m-0">
+          <Trash2 size={20} className="text-white" />
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onPressShare}>
+        <View className="bg-purple-300 h-full flex items-center justify-center px-4 !m-0">
+          <SquareArrowOutUpRight size={20} className="text-white" />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const CardActionRight = ({
+  onPressAddToQueue,
+  onPressReplaceCurrentPlaying,
+}: {
+  onPressAddToQueue: () => void;
+  onPressReplaceCurrentPlaying: () => void;
+}) => {
+  return (
+    <View className="flex flex-row items-center">
+      <TouchableOpacity onPress={onPressAddToQueue}>
+        <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
+          <Plus size={20} className="text-white" />
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={onPressReplaceCurrentPlaying}>
+        <View className="bg-green-300 h-full flex items-center justify-center px-4 rounded-r-md !m-0">
+          <Play size={20} className="text-white" />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const SongCard = ({
+  song,
+  playlistId,
+  fetchPlaylist,
+}: {
+  song: typeof schema.song.$inferSelect;
+  playlistId: number;
+  fetchPlaylist: () => void;
+}) => {
+  const swipeableRef = useRef<Swipeable>(null);
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      // onFailed={() => playSong(song.song)}
+      key={song.id}
+      renderLeftActions={() => (
+        <CardActionLeft
+          onPressTrash={() => {
+            swipeableRef.current?.close();
+            removeSongFromPlaylist(song.id, playlistId).then(() => {
+              fetchPlaylist();
+            });
+          }}
+          onPressShare={() => {
+            swipeableRef.current?.close();
+            Share.share({
+              message: `【${song.title}】 https://b23.tv/${song.bvid}`,
+              url: `https://b23.tv/${song.bvid}`,
+            });
+          }}
+        />
+      )}
+      renderRightActions={() => (
+        <CardActionRight
+          onPressReplaceCurrentPlaying={() => {
+            swipeableRef.current?.close();
+            TrackPlayer.setPlayWhenReady(true);
+            replaceCurrentPlaying(song);
+          }}
+          onPressAddToQueue={() => {
+            swipeableRef.current?.close();
+            addSongToQueue(song.id);
+          }}
+        />
+      )}
+    >
+      <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
+        {song.artwork && (
+          <Image
+            src={song.artwork + "@256w"}
+            alt="cover"
+            className="w-16 h-10 rounded-md "
+          />
+        )}
+        <View className="pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
+          <Text className="text-md" numberOfLines={1}>
+            {song.title}
+          </Text>
+
+          <View className="flex flex-row items-center gap-1">
+            {song.artistAvatar && (
+              <Image
+                src={song.artistAvatar + "@256w"}
+                alt="cover"
+                className="w-6 h-6 rounded-full"
+              />
+            )}
+            <Text className="text-secondary-foreground/50 text-xs">
+              {song.artistName}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Swipeable>
+  );
+};
