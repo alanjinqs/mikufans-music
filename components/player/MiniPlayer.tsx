@@ -1,10 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { View } from "react-native";
-import TrackPlayer, { Event, State, Track, usePlaybackState, useProgress } from "react-native-track-player";
+import { ActivityIndicator, View } from "react-native";
+import TrackPlayer, {
+  Event,
+  State,
+  Track,
+  usePlaybackState,
+  useProgress,
+} from "react-native-track-player";
 import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
 import { Play } from "@/lib/icons/Play";
 import { Pause } from "@/lib/icons/Pause";
+import { X } from "@/lib/icons/X";
 import { Marquee } from "@animatereactnative/marquee";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { schema } from "@/utils/db/db";
@@ -29,9 +36,7 @@ const secToStrTime = (sec: number) => {
   return `${min}:${s.toString().padStart(2, "0")}`;
 };
 
-const tpLog = () => {
-  
-};
+const tpLog = () => {};
 
 export default function MiniPlayer({
   onShowFullScreenPlayer,
@@ -45,6 +50,7 @@ export default function MiniPlayer({
 
   // only needed for testing, but no harm in keeping it
   const [eventsRegistered, setEventsRegistered] = useState(false);
+  const playbackState = usePlaybackState();
 
   const updateIsPlaying = async () => {
     const state = (await TrackPlayer.getPlaybackState()).state;
@@ -237,7 +243,16 @@ export default function MiniPlayer({
             <View className="flex justify-center align-middle w-6 mx-2">
               {currentTrack && (
                 <>
-                  {isPlaying ? (
+                  {playbackState.state &&
+                  playbackState.state === State.Buffering ? (
+                    <ActivityIndicator
+                      size={"small"}
+                      className="!color-white"
+                    />
+                  ) : playbackState.state &&
+                    playbackState.state === State.Error ? (
+                    <X className="!color-white" />
+                  ) : isPlaying ? (
                     <TouchableOpacity
                       onPress={() => {
                         setIsPlaying(false);

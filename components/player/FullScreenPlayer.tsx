@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import { Touchable, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Touchable,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import TrackPlayer, {
   Event,
   isPlaying,
   State,
   Track,
+  usePlaybackState,
 } from "react-native-track-player";
 import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
 import { Play } from "@/lib/icons/Play";
+import { X } from "@/lib/icons/X";
 import { Pause } from "@/lib/icons/Pause";
 import { schema } from "@/utils/db/db";
 import { cidToSong } from "@/utils/db/song";
@@ -51,6 +58,8 @@ export default function FullScreenPlayer({
 
   // only needed for testing, but no harm in keeping it
   const [eventsRegistered, setEventsRegistered] = useState(false);
+
+  const playbackState = usePlaybackState();
 
   const updateIsPlaying = async () => {
     const state = (await TrackPlayer.getPlaybackState()).state;
@@ -288,7 +297,15 @@ export default function FullScreenPlayer({
             >
               <RotateCcw size={30} className="!color-white" />
             </TouchableOpacity> */}
-            {isPlaying ? (
+            {playbackState.state && playbackState.state === State.Buffering ? (
+              <View className="bg-white/5 rounded-full p-3">
+                <ActivityIndicator size={"large"} className="!color-white" />
+              </View>
+            ) : playbackState.state && playbackState.state === State.Error ? (
+              <View className="bg-white/5 rounded-full p-3">
+                <X size={40} className="!color-white" />
+              </View>
+            ) : isPlaying ? (
               <TouchableOpacity
                 className="bg-white/5 rounded-full p-3"
                 onPress={() => {
