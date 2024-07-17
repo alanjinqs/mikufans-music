@@ -8,7 +8,7 @@ import {
   createNewPlaylistByBiliFav,
   deleteAllPlaylist,
 } from "@/utils/db/playlists";
-import { addPlaylistToQueue } from "@/utils/trackPlayer/addToQueue";
+import { replacePlaylistByQueue } from "@/utils/trackPlayer/addToQueue";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";

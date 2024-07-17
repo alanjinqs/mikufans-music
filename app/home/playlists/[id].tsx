@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { db, schema } from "@/utils/db/db";
 import {
-  addPlaylistToQueue,
+  replacePlaylistByQueue,
   replaceCurrentPlaying,
 } from "@/utils/trackPlayer/addToQueue";
 import { eq } from "drizzle-orm";
@@ -15,7 +15,7 @@ import { Text } from "@/components/ui/text";
 import { Play } from "@/lib/icons/Play";
 import TrackPlayer from "react-native-track-player";
 import { MotiView } from "moti";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { Swipeable, TouchableOpacity } from "react-native-gesture-handler";
 import AddNewSong from "@/components/playlist/addNewSong";
 
 export default function PlaylistView() {
@@ -61,7 +61,7 @@ export default function PlaylistView() {
           size={"sm"}
           onPress={() => {
             if (!playlist?.id) return;
-            addPlaylistToQueue(playlist?.id);
+            replacePlaylistByQueue(playlist?.id);
             TrackPlayer.setPlayWhenReady(true);
           }}
         >
@@ -73,11 +73,7 @@ export default function PlaylistView() {
       </View>
       <View className="flex flex-col gap-2">
         {songs?.map((song) => (
-          <TouchableOpacity
-            onPress={() => playSong(song.song)}
-            key={song.id}
-            className=""
-          >
+          <Swipeable onFailed={() => playSong(song.song)} key={song.id}>
             <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
               {song.song.artwork && (
                 <Image
@@ -105,7 +101,7 @@ export default function PlaylistView() {
                 </View>
               </View>
             </View>
-          </TouchableOpacity>
+          </Swipeable>
         ))}
       </View>
     </View>
