@@ -117,7 +117,7 @@ export default function PlaylistView() {
     router.replace("/home/playlists");
   };
   return (
-    <View className="w-full flex">
+    <View className="w-full h-full flex flex-col">
       <View className="w-full">
         <Text className="text-foreground text-3xl font-bold">播放列表</Text>
       </View>
@@ -144,58 +144,60 @@ export default function PlaylistView() {
           </View>
         </Button>
       </View>
-      <FlatList
-        data={songs}
-        keyExtractor={(item) => item.songId.toString()}
-        renderItem={({ item: song }) => {
-          return (
-            <View
-              style={{
-                paddingBottom: 8,
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => skipToSong(song)}
-                key={song.songId}
-                className=""
-                disabled={isSkipping}
+      <View className="flex-1">
+        <FlatList
+          data={songs}
+          keyExtractor={(item) => item.songId.toString()}
+          renderItem={({ item: song }) => {
+            return (
+              <View
+                style={{
+                  paddingBottom: 8,
+                }}
               >
-                <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
-                  {song.song.artwork && (
-                    <Image
-                      src={song.song.artwork + "@256w"}
-                      alt="cover"
-                      className="w-16 h-10 rounded-md "
-                    />
-                  )}
-                  <View className="pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
-                    <Text className="text-md" numberOfLines={1}>
-                      {song.song.title}
-                    </Text>
-
-                    <View className="flex flex-row items-center gap-1">
-                      {song.song.artistAvatar && (
-                        <Image
-                          src={song.song.artistAvatar + "@256w"}
-                          alt="cover"
-                          className="w-6 h-6 rounded-full"
-                        />
-                      )}
-                      <Text className="text-secondary-foreground/50 text-xs">
-                        {song.song.artistName}
+                <TouchableOpacity
+                  onPress={() => skipToSong(song)}
+                  key={song.songId}
+                  className=""
+                  disabled={isSkipping}
+                >
+                  <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
+                    {song.song.artwork && (
+                      <Image
+                        src={song.song.artwork + "@256w"}
+                        alt="cover"
+                        className="w-16 h-10 rounded-md "
+                      />
+                    )}
+                    <View className="pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
+                      <Text className="text-md" numberOfLines={1}>
+                        {song.song.title}
                       </Text>
 
-                      <Text className="text-secondary-foreground/10 text-xs ml-3">
-                        {song.type === "tp" ? "Stream fatched" : ""}
-                      </Text>
+                      <View className="flex flex-row items-center gap-1">
+                        {song.song.artistAvatar && (
+                          <Image
+                            src={song.song.artistAvatar + "@256w"}
+                            alt="cover"
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
+                        <Text className="text-secondary-foreground/50 text-xs">
+                          {song.song.artistName}
+                        </Text>
+
+                        <Text className="text-secondary-foreground/10 text-xs ml-3">
+                          {song.type === "tp" ? "Stream fatched" : ""}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-          );
-        }}
-      />
+                </TouchableOpacity>
+              </View>
+            );
+          }}
+        />
+      </View>
     </View>
   );
 }

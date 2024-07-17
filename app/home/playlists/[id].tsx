@@ -91,7 +91,7 @@ export default function PlaylistView() {
           <Play className="text-primary" size={13} />
         </Button>
       </View>
-      <View className="flex flex-col gap-2 flex-1">
+      <View className="flex-1">
         <FlatList
           data={songs}
           renderItem={({ item }) => {
