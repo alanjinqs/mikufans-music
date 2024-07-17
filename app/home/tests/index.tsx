@@ -1,7 +1,7 @@
 import TrackPlayer from "react-native-track-player";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { View } from "react-native";
+import { BackHandler, View } from "react-native";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import {
@@ -47,9 +47,6 @@ export default function TestView() {
         >
           <Text>Create New PL by BiliFav</Text>
         </Button>
-        <Button onPress={deleteAllPlaylist}>
-          <Text>Delete All</Text>
-        </Button>
 
         <Button
           onPress={() => {
@@ -67,30 +64,15 @@ export default function TestView() {
         >
           <Text>emptyDBQueue</Text>
         </Button>
-
-        <Button
-          onPress={async () => {
-            console.log(await TrackPlayer.getQueue());
-          }}
-        >
-          <Text>showTPQueue</Text>
-        </Button>
-        <Button
-          onPress={async () => {
-            console.log(await db.select().from(schema.currentQueue));
-            console.log(await db.select().from(schema.currentQueueMeta));
-          }}
-        >
-          <Text>showDBQueue</Text>
-        </Button>
         <Button
           onPress={() => {
             TrackPlayer.stop();
             AsyncStorage.clear();
             CookieManager.clearAll();
+            BackHandler.exitApp();
           }}
         >
-          <Text>logout and destroy all storage</Text>
+          <Text>Logout</Text>
         </Button>
       </View>
       <Text className="w-full text-xl font-bold">playlists</Text>

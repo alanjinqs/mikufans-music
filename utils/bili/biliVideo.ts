@@ -17,7 +17,7 @@ export const getBiliVideoMp4PlaybackInfo = async (
   bvid: string
 ) => {
   const res = await biliFetch(
-    `https://api.bilibili.com/x/player/wbi/playurl?fnval=1&qn=6&fnval=16&bvid=${bvid}&cid=${cid}`
+    `https://api.bilibili.com/x/player/wbi/playurl?fnval=1&qn=16&fnver=0&bvid=${bvid}&cid=${cid}`
   );
   return res.json();
 };
@@ -45,7 +45,7 @@ export const bvCid2Track = async (cid: number, bvid: string) => {
       videoPlaybackInfo.data
     );
     const track: Track = {
-      id: cid.toString(),
+      id: cid.toString() + "$" + bvid,
       url: bestPlaybackAudio.baseUrl,
       title: meta.data.title,
       artist: meta.data.owner.name,
@@ -54,10 +54,10 @@ export const bvCid2Track = async (cid: number, bvid: string) => {
     };
     return track;
   } else {
-    console.error("NOT TESTED");
+    // console.error("NOT TESTED");
     const videoPlaybackInfo = await getBiliVideoMp4PlaybackInfo(cid, bvid);
     const track: Track = {
-      id: cid.toString() +"$" + bvid,
+      id: cid.toString() + "$" + bvid,
       url: videoPlaybackInfo.data.durl[0].url,
       title: meta.data.title,
       artist: meta.data.owner.name,

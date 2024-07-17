@@ -2,7 +2,7 @@ import TrackPlayer from "react-native-track-player";
 import { getCurrentQueueMeta, updateMeta } from "../db/queue";
 import { db, schema } from "../db/db";
 import { currentQueue, currentQueueMeta } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { bv2Cid } from "../bili/avBvCid";
 import { bvCid2Track } from "../bili/biliVideo";
 
@@ -13,24 +13,27 @@ export const addQueueToTrackPlayer = async () => {
   if (
     !currentTPIndex ||
     currentTPQueue.length === 0 ||
-    currentTPQueue.length === currentTPIndex + 1
+    currentTPQueue.length <= currentTPIndex + 3
   ) {
+    console.log("currentTPQueue.length", currentTPQueue.length, currentTPIndex! + 3);
     const metaObj = await getCurrentQueueMeta();
 
     if (metaObj.queue) {
       const queue = JSON.parse(metaObj.queue);
       if (queue.length === 0) return false;
+      updateMeta("queue", JSON.stringify(queue.slice(3)));
+
       const songs = await db.query.currentQueue.findMany({
         with: {
           song: true,
         },
-        where: eq(currentQueue.id, queue[0]),
+        where: inArray(currentQueue.id, queue.slice(0, 3)),
       });
-      console.log("songs", songs);
 
       for (const s of songs) {
+        if (!s || !s.song || !s.song.bvid) return false;
+
         let cid = s.song.cid;
-        if (!s.song || !s.song.bvid) continue;
         if (!cid) {
           // TODO: 分p
           const [c] = await bv2Cid(s.song.bvid);
@@ -44,10 +47,6 @@ export const addQueueToTrackPlayer = async () => {
         const track = await bvCid2Track(cid, s.song.bvid);
         await TrackPlayer.add(track);
       }
-
-      await db
-        .update(currentQueueMeta)
-        .set({ value: JSON.stringify(queue.slice(1)) });
       return true;
     } else {
       return true;

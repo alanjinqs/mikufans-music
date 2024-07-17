@@ -60,7 +60,6 @@ export default function FullScreenPlayer({
   const updateProgress = () => {
     TrackPlayer.getProgress().then((progress) => {
       if (progress.position === currentProgress) return;
-      console.log("progress", progress);
       if (isNaN(progress.position) || isNaN(progress.duration)) return;
       if (
         progress.position > progress.duration ||
@@ -111,7 +110,6 @@ export default function FullScreenPlayer({
   useEffect(() => {
     updateProgress();
     cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
-      console.log("song", song);
       setCurrentSong(song);
     });
     TrackPlayer.getActiveTrackIndex().then(async (index) => {

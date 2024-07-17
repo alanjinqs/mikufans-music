@@ -41,7 +41,7 @@ export default function PlaylistsView() {
                 <Text className="text-secondary-foreground text-md">{playlist?.name}</Text>
 
                 <Text className="text-secondary-foreground/50 text-xs">
-                  0 首歌曲 | 最近更新：
+                  最近更新：
                   {dayjs(playlist.updatedAt).format("MM-DD HH:mm")}
                 </Text>
               </View>

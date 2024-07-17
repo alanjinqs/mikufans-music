@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
-import TrackPlayer, { Event, State, Track } from "react-native-track-player";
+import TrackPlayer, { Event, State, Track, usePlaybackState, useProgress } from "react-native-track-player";
 import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
 import { Play } from "@/lib/icons/Play";
@@ -19,8 +19,6 @@ import {
   TouchableOpacity,
 } from "react-native-gesture-handler";
 import dayjs from "dayjs";
-import { sendHeartbeat } from "@/utils/bili/heartbeat";
-import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -32,11 +30,7 @@ const secToStrTime = (sec: number) => {
 };
 
 const tpLog = () => {
-  TrackPlayer.getQueue().then((queue) => {
-    TrackPlayer.getActiveTrackIndex().then((index) => {
-      console.log("TP CURRENT STATUS: ", index, queue);
-    });
-  });
+  
 };
 
 export default function MiniPlayer({
@@ -58,6 +52,13 @@ export default function MiniPlayer({
     setTimeout(updateNextPrev, 1000);
   };
 
+  const updateCurrentTrack = () => {
+    // addQueueToTrackPlayer().then(() => {
+    tpLog();
+    updateNextPrev();
+    // });
+  };
+
   useEffect(() => {
     if (!eventsRegistered) {
       TrackPlayer.getActiveTrack().then((track) => {
@@ -68,11 +69,7 @@ export default function MiniPlayer({
       updateIsPlaying();
       TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, (e) => {
         setCurrentTrack(e.track);
-        console.log("active track changed", e.track);
-        addQueueToTrackPlayer().then(() => {
-          tpLog();
-          updateNextPrev();
-        });
+        _.debounce(updateCurrentTrack, 300)();
       });
 
       TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
@@ -82,12 +79,6 @@ export default function MiniPlayer({
       TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
         setCurrentProgress(e.position);
         setDuration(e.duration);
-        if (lastHeartbeat.diff(dayjs(), "s") > 15 && currentSong) {
-          tpLog();
-          _.debounce(() => {
-            heartbeat(currentSong);
-          }, 100)();
-        }
       });
 
       setEventsRegistered(true);
@@ -98,19 +89,6 @@ export default function MiniPlayer({
   const [prevTrack, setPrevTrack] = useState<undefined | Track>();
 
   const [lastHeartbeat, setLastHeartbeat] = useState(dayjs().subtract(15, "s"));
-
-  const heartbeat = async (song: Song) => {
-    console.log(
-      "heartbeat",
-      song.bvid,
-      song.cid,
-      Math.floor(currentProgress),
-      isPlaying
-    );
-    if (!song?.bvid || !song?.cid) return;
-    sendHeartbeat(song.bvid, song.cid, Math.floor(currentProgress), isPlaying);
-    setLastHeartbeat(dayjs());
-  };
 
   const updateNextPrev = async () => {
     TrackPlayer.getActiveTrackIndex().then(async (index) => {
@@ -146,12 +124,9 @@ export default function MiniPlayer({
   };
 
   useEffect(() => {
-    cidToSong(currentTrack?.id.split("$")).then((song) => {
+    cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
       setCurrentSong(song);
       if (!song) return;
-      _.debounce(() => {
-        heartbeat(song);
-      }, 100)();
     });
     updateNextPrev();
   }, [currentTrack]);

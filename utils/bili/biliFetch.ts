@@ -68,7 +68,6 @@ export const loadAndSetCookies = async () => {
       "https://passport.bilibili.com",
       cookiesStr
     );
-    console.log(res);
 
     // const { img_key, sub_key } = await getWbiKeys();
     // await AsyncStorage.setItem("img_key", img_key);

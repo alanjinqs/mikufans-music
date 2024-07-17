@@ -1,20 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { db, schema } from "@/utils/db/db";
-import {
-  addPlaylistToQueue,
-  replaceCurrentPlaying,
-} from "@/utils/trackPlayer/addToQueue";
 import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image } from "react-native";
 
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Shuffle } from "@/lib/icons/Shuffle";
+import { Trash2 } from "@/lib/icons/Trash2";
 import TrackPlayer, { useActiveTrack } from "react-native-track-player";
-import { MotiView } from "moti";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { currentQueueIdsToSongs } from "@/utils/db/queue";
 import { cidToSong } from "@/utils/db/song";
@@ -22,6 +17,9 @@ import {
   dpQueueSkipTo,
   shuffleQueue,
 } from "@/utils/trackPlayer/trackPlayerUpdating";
+import { useRouter } from "expo-router";
+import _ from "lodash";
+
 type Row = {
   song: typeof schema.song.$inferSelect;
   id: number;
@@ -40,53 +38,52 @@ export default function PlaylistView() {
 
   const currentTrack = useActiveTrack();
   useEffect(() => {
-    if (queueStr && queueStr.value) {
-      const queueIdList = JSON.parse(queueStr.value);
-      console.log("queueIdList", queueIdList);
-      currentQueueIdsToSongs(queueIdList).then(async (res) => {
-        let data: Row[] = res.map((song) => ({
-          id: song!.id,
-          song: song!.song,
-          songId: song!.id,
-          type: "db",
-        }));
-        const tpList: Row[] = [];
+    _.debounce(() => {
+      if (queueStr && queueStr.value) {
+        const queueIdList = JSON.parse(queueStr.value);
+        currentQueueIdsToSongs(queueIdList).then(async (res) => {
+          let data: Row[] = res.map((song) => ({
+            id: song!.id,
+            song: song!.song,
+            songId: song!.id,
+            type: "db",
+          }));
+          const tpList: Row[] = [];
 
-        if (currentTrack) {
-          const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
+          if (currentTrack) {
+            const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
 
-          const currentTrackSong = await cidToSong(
-            currentTrack.id.split("$")[0]
-          );
-          tpList.push({
-            id: currentTrackIndex!,
-            song: currentTrackSong!,
-            songId: currentTrackSong!.id,
-            type: "tp",
-          });
-          const trackQuue = await TrackPlayer.getQueue();
-
-          // console.log("TRACK QUEUE", trackQuue, currentTrackIndex!);
-
-          let i = 1;
-          for (const nextTrack of trackQuue.slice(currentTrackIndex! + 1)) {
-            const nextTrackSong = await cidToSong(nextTrack.id.split("$")[0]);
+            const currentTrackSong = await cidToSong(
+              currentTrack.id.split("$")[0]
+            );
             tpList.push({
-              id: currentTrackIndex! + i,
-              song: nextTrackSong!,
-              songId: nextTrackSong!.id,
+              id: currentTrackIndex!,
+              song: currentTrackSong!,
+              songId: currentTrackSong!.id,
               type: "tp",
             });
-            i += 1;
+            const trackQuue = await TrackPlayer.getQueue();
+            let i = 1;
+            for (const nextTrack of trackQuue.slice(currentTrackIndex! + 1)) {
+              const nextTrackSong = await cidToSong(nextTrack.id.split("$")[0]);
+              tpList.push({
+                id: currentTrackIndex! + i,
+                song: nextTrackSong!,
+                songId: nextTrackSong!.id,
+                type: "tp",
+              });
+              i += 1;
+            }
           }
-        }
 
-        data = tpList.concat(data);
+          data = tpList.concat(data);
 
-        setSongs(data);
-      });
-    }
+          setSongs(data);
+        });
+      }
+    }, 500)();
   }, [queueStr, currentTrack]);
+
   const [isSkipping, setIsSkipping] = useState(false);
 
   const skipToSong = async (row: Row) => {
@@ -110,12 +107,31 @@ export default function PlaylistView() {
       setIsShuffling(false);
     }, 1000);
   };
+
+  const router = useRouter();
+
+  const emptyList = async () => {
+    await db.delete(schema.currentQueue);
+    await db.delete(schema.currentQueueMeta);
+    await TrackPlayer.reset();
+    router.replace("/home/playlists");
+  };
   return (
     <View className="w-full flex">
       <View className="w-full">
         <Text className="text-foreground text-3xl font-bold">播放列表</Text>
       </View>
-      <View className="flex flex-row items-center justify-end">
+      <View className="flex flex-row items-center justify-end gap-3">
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={emptyList}
+        >
+          <View className="flex flex-row items-center gap-2">
+            <Trash2 className="text-primary" size={13} />
+          </View>
+        </Button>
         <Button
           className="mb-5 mt-2"
           variant={"outline"}
@@ -159,6 +175,10 @@ export default function PlaylistView() {
                   )}
                   <Text className="text-secondary-foreground/50 text-xs">
                     {song.song.artistName}
+                  </Text>
+
+                  <Text className="text-secondary-foreground/10 text-xs ml-3">
+                    {song.type === "tp" ? "Stream fatched" : ""}
                   </Text>
                 </View>
               </View>
