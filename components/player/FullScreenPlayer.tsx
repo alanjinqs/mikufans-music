@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Touchable, View } from "react-native";
+import { ActivityIndicator, Linking, Touchable, View } from "react-native";
 import TrackPlayer, {
   Event,
   isPlaying,
@@ -33,6 +33,7 @@ import { useRouter } from "expo-router";
 import SongSearchDialog from "../lyrics/SongSearch";
 import LyricsView from "../lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
+import { Tv } from "@/lib/icons/Tv";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -164,14 +165,24 @@ export default function FullScreenPlayer({
           <TouchableOpacity onPress={onCloseTab}>
             <ChevronDown size={30} className="text-white" />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              router.push("/home/currentQueue");
-              onCloseTab();
-            }}
-          >
-            <List size={30} className="text-white" />
-          </TouchableOpacity>
+          <View className="flex flex-row items-center justify-end gap-4">
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL(`bilibili://video/${currentSong?.bvid}`);
+              }}
+            >
+              <Tv size={28} className="text-white" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                TrackPlayer.pause();
+                router.push("/home/currentQueue");
+                onCloseTab();
+              }}
+            >
+              <List size={30} className="text-white" />
+            </TouchableOpacity>
+          </View>
         </View>
         <View className="flex flex-col items-center justify-center h-full gap-8 px-10 pb-10 w-full">
           <TouchableOpacity
@@ -325,10 +336,12 @@ export default function FullScreenPlayer({
             </TouchableOpacity>
           </View>
           {currentSong && !currentSong.lyrics && (
-            <SongSearchDialog
-              song={currentSong}
-              onSongUpdated={onSongUpdated}
-            />
+            <View className="flex flex-col gap-2 items-center">
+              <SongSearchDialog
+                song={currentSong}
+                onSongUpdated={onSongUpdated}
+              />
+            </View>
           )}
         </View>
       </SafeAreaView>
