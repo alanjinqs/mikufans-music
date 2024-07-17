@@ -3,8 +3,12 @@ import { db } from "./db";
 import { fetchFavList, fetchFavMeta } from "../bili/favList";
 import dayjs from "dayjs";
 import { artworkToDarkColor } from "../artworkToColor";
+import { eq } from "drizzle-orm";
+import { bv2av } from "../bili/avBvCid";
+import { getBiliVideoMeta } from "../bili/biliVideo";
+import { fetchVideoCollection } from "../bili/videoCollection";
 
-const createNewPlaylist = async ({
+export const createNewPlaylist = async ({
   name,
   cover,
 }: {
@@ -28,6 +32,144 @@ export const deleteAllPlaylist = async () => {
   await db.delete(song);
   await db.delete(songToPlaylist);
 };
+
+export const addSongToPlaylist = async (
+  bvId: string,
+  playlistId: number,
+  updatePlaylistCover = false
+) => {
+  const songId = bv2av(bvId as any);
+
+  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
+    where: eq(songToPlaylist.playlistId, playlistId),
+  });
+  if (playlistCurrentSongs.map((s) => s.songId).includes(songId)) return;
+
+  const meta = await getBiliVideoMeta(bvId);
+
+  const artwork = meta.data.pic.replace("http://", "https://");
+  const color = await artworkToDarkColor(artwork);
+  await db
+    .insert(song)
+    .values({
+      id: songId,
+      title: meta.data.title,
+      artwork,
+      bvid: bvId,
+      cid: null,
+      artistMid: meta.data.owner.mid,
+      artistName: meta.data.owner.name,
+      artistAvatar: meta.data.owner.face,
+      addedAt: new Date(),
+      color,
+    })
+    .onConflictDoNothing();
+  await db.insert(songToPlaylist).values({
+    playlistId,
+    songId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+
+  if (updatePlaylistCover) {
+    await db
+      .update(playlist)
+      .set({
+        cover: artwork,
+        updatedAt: new Date(),
+      })
+      .where(eq(playlist.id, playlistId));
+  }
+};
+
+export const addFavoriteToPlaylist = async (
+  mediaId: number,
+  playlistId: number,
+  updatePlaylistCover = false
+) => {
+  const { favInfo, songList } = await fetchFavList(mediaId);
+
+  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
+    where: eq(songToPlaylist.playlistId, playlistId),
+  });
+
+  const playlistCurrentSongIds = playlistCurrentSongs.map((s) => s.songId);
+
+  const favCover = favInfo.cover;
+  for (const s of songList) {
+    if (playlistCurrentSongIds.includes(s.id)) continue;
+
+    const color = await artworkToDarkColor(s.artwork || undefined);
+    await db
+      .insert(song)
+      .values({
+        ...s,
+        color,
+      })
+      .onConflictDoNothing();
+    await db.insert(songToPlaylist).values({
+      playlistId,
+      songId: s.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  if (updatePlaylistCover) {
+    await db
+      .update(playlist)
+      .set({
+        cover: favCover,
+        updatedAt: new Date(),
+      })
+      .where(eq(playlist.id, playlistId));
+  }
+};
+
+export const addCollectionToPlaylist = async (
+  mediaId: number,
+  playlistId: number,
+  updatePlaylistCover = false
+) => {
+  const { collectionInfo, songList } = await fetchVideoCollection(mediaId);
+
+  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
+    where: eq(songToPlaylist.playlistId, playlistId),
+  });
+
+  const playlistCurrentSongIds = playlistCurrentSongs.map((s) => s.songId);
+
+  const favCover = collectionInfo.cover;
+  for (const s of songList) {
+    if (playlistCurrentSongIds.includes(s.id)) continue;
+
+    const color = await artworkToDarkColor(s.artwork || undefined);
+    await db
+      .insert(song)
+      .values({
+        ...s,
+        color,
+      })
+      .onConflictDoNothing();
+    await db.insert(songToPlaylist).values({
+      playlistId,
+      songId: s.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  if (updatePlaylistCover) {
+    await db
+      .update(playlist)
+      .set({
+        cover: favCover,
+        updatedAt: new Date(),
+      })
+      .where(eq(playlist.id, playlistId));
+  }
+};
+
 
 export const createNewPlaylistByBiliFav = async (mediaId: number) => {
   const { favInfo, songList } = await fetchFavList(mediaId);

@@ -1,28 +1,58 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "eeea3874-d738-478f-aadb-74dd046153e1",
+  "id": "fca4ed03-9718-40d8-bc89-bef2d411b062",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "artist": {
-      "name": "artist",
+    "currentQueue": {
+      "name": "currentQueue",
       "columns": {
         "id": {
           "name": "id",
           "type": "integer",
           "primaryKey": true,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": true
         },
-        "name": {
-          "name": "name",
-          "type": "text",
+        "songId": {
+          "name": "songId",
+          "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "currentQueue_songId_song_id_fk": {
+          "name": "currentQueue_songId_song_id_fk",
+          "tableFrom": "currentQueue",
+          "tableTo": "song",
+          "columnsFrom": [
+            "songId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "currentQueueMeta": {
+      "name": "currentQueueMeta",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
           "autoincrement": false
         },
-        "avatar": {
-          "name": "avatar",
+        "value": {
+          "name": "value",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -58,13 +88,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "owner": {
-          "name": "owner",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "description": {
           "name": "description",
           "type": "text",
@@ -88,21 +111,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "playlist_owner_artist_id_fk": {
-          "name": "playlist_owner_artist_id_fk",
-          "tableFrom": "playlist",
-          "tableTo": "artist",
-          "columnsFrom": [
-            "owner"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -137,15 +146,36 @@
           "notNull": false,
           "autoincrement": false
         },
-        "artist": {
-          "name": "artist",
+        "artistMid": {
+          "name": "artistMid",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistName": {
+          "name": "artistName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "artistAvatar": {
+          "name": "artistAvatar",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "artwork": {
           "name": "artwork",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color": {
+          "name": "color",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -160,21 +190,7 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {
-        "song_artist_artist_id_fk": {
-          "name": "song_artist_artist_id_fk",
-          "tableFrom": "song",
-          "tableTo": "artist",
-          "columnsFrom": [
-            "artist"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
@@ -201,6 +217,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         },
         "createdAt": {
           "name": "createdAt",

@@ -6,23 +6,52 @@ import { Link, useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Image } from "react-native";
 import dayjs from "dayjs";
-import { playlist } from "@/db/schema";
-import { TouchableHighlight, TouchableOpacity } from "react-native-gesture-handler";
+import { TestTubeDiagonal } from "@/lib/icons/TestTubeDiagonal";
+import { Sun } from "@/lib/icons/Sun";
+import { MoonStar } from "@/lib/icons/MoonStar";
+import {
+  TouchableHighlight,
+  TouchableOpacity,
+} from "react-native-gesture-handler";
+import CreateNewPlaylist from "@/components/playlist/createNewPlaylist";
+import { useColorScheme } from "@/lib/useColorScheme";
 
 export default function PlaylistsView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
 
+  const { colorScheme, toggleColorScheme } = useColorScheme();
   const router = useRouter();
   return (
     <View className="w-full flex">
-      <Button
-        className="mb-5"
-        onPress={() => {
-          router.push("/home/tests");
-        }}
-      >
-        <Text>GO TO TEST PAGE</Text>
-      </Button>
+      <View className="flex flex-row items-center justify-end gap-3">
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={toggleColorScheme}
+        >
+          <View className="flex flex-row items-center gap-2">
+            {colorScheme === "dark" ? (
+              <Sun className="text-primary" size={13} />
+            ) : (
+              <MoonStar className="text-primary" size={13} />
+            )}
+          </View>
+        </Button>
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={() => {
+            router.push("/home/tests");
+          }}
+        >
+          <View className="flex flex-row items-center gap-2">
+            <TestTubeDiagonal className="text-primary" size={13} />
+          </View>
+        </Button>
+        <CreateNewPlaylist />
+      </View>
       <View className="flex flex-col gap-2">
         {playlists?.map((playlist) => (
           <TouchableOpacity
@@ -38,7 +67,9 @@ export default function PlaylistsView() {
                 />
               )}
               <View className="text-secondary-foreground pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
-                <Text className="text-secondary-foreground text-md">{playlist?.name}</Text>
+                <Text className="text-secondary-foreground text-md">
+                  {playlist?.name}
+                </Text>
 
                 <Text className="text-secondary-foreground/50 text-xs">
                   最近更新：

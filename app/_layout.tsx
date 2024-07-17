@@ -146,10 +146,10 @@ function RootLayout() {
       }
       setIsColorSchemeLoaded(true);
     })()
-      .then()
       .finally(() => {
         console.log("hideSplashScreen");
         SplashScreen.hideAsync();
+        addQueueToTrackPlayer();
       });
   }, []);
 

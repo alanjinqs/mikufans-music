@@ -50,6 +50,20 @@ export default function TestView() {
 
         <Button
           onPress={() => {
+            AsyncStorage.setItem("heartbeat", "off");
+          }}
+        >
+          <Text>heartbeat OFF</Text>
+        </Button>
+        <Button
+          onPress={() => {
+            AsyncStorage.setItem("heartbeat", "on");
+          }}
+        >
+          <Text>heartbeat ON</Text>
+        </Button>
+        <Button
+          onPress={() => {
             TrackPlayer.setQueue([]);
           }}
         >

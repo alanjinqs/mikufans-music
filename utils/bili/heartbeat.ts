@@ -23,12 +23,16 @@ export const sendHeartbeat = async (
   realTime: number,
   isPlaying: boolean
 ) => {
+  const heartBeatSetting = await AsyncStorage.getItem("heartbeat");
+  if (heartBeatSetting && heartBeatSetting === "off") return;
+
   const cookies = await AsyncStorage.getItem("auth-cookies");
   if (!cookies) return;
 
   const csrf = extractBiliJct(cookies);
 
   if (!csrf) return;
+
   const res = await biliFetch(
     "https://api.bilibili.com/x/click-interface/web/heartbeat",
     {
@@ -45,10 +49,7 @@ export const sendHeartbeat = async (
         played_time: playedTime.toString(),
         cid: cid.toString(),
         real_time: realTime.toString(),
-        start_ts: dayjs()
-          .subtract(playedTime + 1, "s")
-          .unix()
-          .toString(),
+        start_ts: dayjs().subtract(realTime, "s").unix().toString(),
         type: "3",
         dt: "2",
         play_type: isPlaying ? "0" : "2",

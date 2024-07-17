@@ -5,18 +5,17 @@ export const playlist = sqliteTable("playlist", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name"),
   cover: text("cover"),
-  owner: integer("owner").references(() => artist.mid),
   description: text("description"),
   createdAt: integer("createdAt", { mode: "timestamp" }),
   updatedAt: integer("updatedAt", { mode: "timestamp" }),
 });
 
 export const song = sqliteTable("song", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: integer("id").primaryKey({ autoIncrement: true }), //AVID!!!!
   cid: integer("cid"),
   bvid: text("bvid"),
   title: text("title"),
-  artistMid: integer("artist").references(() => artist.mid),
+  artistMid: integer("artistMid"),
   artistName: text("artistName"),
   artistAvatar: text("artistAvatar"),
   artwork: text("artwork"),
@@ -64,12 +63,6 @@ export const songPlaylistRelations = relations(songToPlaylist, ({ one }) => ({
     references: [playlist.id],
   }),
 }));
-
-export const artist = sqliteTable("artist", {
-  mid: integer("id").primaryKey(),
-  name: text("name"),
-  avatar: text("avatar"),
-});
 
 export const currentQueue = sqliteTable("currentQueue", {
   id: integer("id").primaryKey({ autoIncrement: true }),

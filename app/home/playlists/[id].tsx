@@ -16,6 +16,7 @@ import { Play } from "@/lib/icons/Play";
 import TrackPlayer from "react-native-track-player";
 import { MotiView } from "moti";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import AddNewSong from "@/components/playlist/addNewSong";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -52,7 +53,8 @@ export default function PlaylistView() {
           {playlist?.name || ""}
         </Text>
       </View>
-      <View className="flex flex-row items-center justify-end">
+      <View className="flex flex-row items-center justify-end gap-3">
+        <AddNewSong playlistId={parseInt(id as string)} />
         <Button
           className="mb-5 mt-2"
           variant={"outline"}

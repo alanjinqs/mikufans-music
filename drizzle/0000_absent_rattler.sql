@@ -1,18 +1,21 @@
-CREATE TABLE `artist` (
-	`id` integer PRIMARY KEY NOT NULL,
-	`name` text,
-	`avatar` text
+CREATE TABLE `currentQueue` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`songId` integer NOT NULL,
+	FOREIGN KEY (`songId`) REFERENCES `song`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `currentQueueMeta` (
+	`key` text PRIMARY KEY NOT NULL,
+	`value` text
 );
 --> statement-breakpoint
 CREATE TABLE `playlist` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text,
 	`cover` text,
-	`owner` integer,
 	`description` text,
 	`createdAt` integer,
-	`updatedAt` integer,
-	FOREIGN KEY (`owner`) REFERENCES `artist`(`id`) ON UPDATE no action ON DELETE no action
+	`updatedAt` integer
 );
 --> statement-breakpoint
 CREATE TABLE `song` (
@@ -20,16 +23,19 @@ CREATE TABLE `song` (
 	`cid` integer,
 	`bvid` text,
 	`title` text,
-	`artist` integer,
+	`artistMid` integer,
+	`artistName` text,
+	`artistAvatar` text,
 	`artwork` text,
-	`addedAt` integer,
-	FOREIGN KEY (`artist`) REFERENCES `artist`(`id`) ON UPDATE no action ON DELETE no action
+	`color` text,
+	`addedAt` integer
 );
 --> statement-breakpoint
 CREATE TABLE `songToPlaylist` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`songId` integer NOT NULL,
 	`playlistId` integer NOT NULL,
+	`order` integer DEFAULT 0 NOT NULL,
 	`createdAt` integer,
 	`updatedAt` integer,
 	FOREIGN KEY (`songId`) REFERENCES `song`(`id`) ON UPDATE no action ON DELETE no action,

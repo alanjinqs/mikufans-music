@@ -1,1 +1,0 @@
-ALTER TABLE `songToPlaylist` ADD `order` integer DEFAULT 0 NOT NULL;
