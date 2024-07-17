@@ -31,6 +31,7 @@ import { SongDB } from "@/utils/db/db";
 import dayjs from "dayjs";
 import { cidToSong } from "@/utils/db/song";
 import { debounce } from "lodash";
+import { replaceCurrentPlaying } from "@/utils/trackPlayer/addToQueue";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -85,11 +86,25 @@ function RootLayout() {
     if (dayjs().diff(lastHeartbeat, "second") > 15) {
       heartbeat();
     }
+
+    if (playbackState.state === State.Error) {
+      if (activeTrack) {
+        const currentSongCid: number = activeTrack.id.split("$")[0];
+        cidToSong(currentSongCid).then((song) => {
+          if (!song) return;
+          replaceCurrentPlaying(song);
+        });
+      }
+    }
   }, [currentProgress, playbackState]);
 
+  const [trackPlayerReady, setTrackPlayerReady] = React.useState(false);
+
   React.useEffect(() => {
-    addQueueToTrackPlayer();
-    setCurrentSongStarted(dayjs());
+    if (trackPlayerReady) {
+      addQueueToTrackPlayer();
+      setCurrentSongStarted(dayjs());
+    }
   }, [activeTrack]);
 
   const heartbeat = async () => {
@@ -101,7 +116,7 @@ function RootLayout() {
       bvid,
       cid,
       Math.floor(currentProgress),
-      Math.floor(currentSongStarted.diff(dayjs(), "second")),
+      Math.floor(dayjs().diff(currentSongStarted, "second")),
       playbackState.state === State.Playing
     );
   };
@@ -111,6 +126,7 @@ function RootLayout() {
   React.useEffect(() => {
     (async () => {
       await initTrackPlayer();
+      setTrackPlayerReady(true);
       const theme = await AsyncStorage.getItem("theme");
       if (Platform.OS === "web") {
         // Adds the background color to the html element to prevent white background on overscroll.

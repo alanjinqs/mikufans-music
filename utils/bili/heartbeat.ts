@@ -29,7 +29,6 @@ export const sendHeartbeat = async (
   const csrf = extractBiliJct(cookies);
 
   if (!csrf) return;
-  // console.log("heartbeat not enabled");
   const res = await biliFetch(
     "https://api.bilibili.com/x/click-interface/web/heartbeat",
     {
