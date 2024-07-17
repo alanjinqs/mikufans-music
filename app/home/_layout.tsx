@@ -102,9 +102,7 @@ export default function HomeIndex() {
             <AvatarOrLoginBtn userInfo={userInfo} onSuccess={updateUserInfo} />
           </View>
           <View className="flex-1">
-            <ScrollView>
-              <Slot />
-            </ScrollView>
+            <Slot />
           </View>
           <View>
             <MiniPlayer onShowFullScreenPlayer={onShowFullScreenPlayer} />

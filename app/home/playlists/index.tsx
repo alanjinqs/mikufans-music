@@ -15,6 +15,7 @@ import {
 } from "react-native-gesture-handler";
 import CreateNewPlaylist from "@/components/playlist/createNewPlaylist";
 import { useColorScheme } from "@/lib/useColorScheme";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function PlaylistsView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
@@ -52,34 +53,36 @@ export default function PlaylistsView() {
         </Button>
         <CreateNewPlaylist />
       </View>
-      <View className="flex flex-col gap-2">
-        {playlists?.map((playlist) => (
-          <TouchableOpacity
-            key={playlist.id}
-            onPress={() => router.push(`/home/playlists/${playlist.id}`)}
-          >
-            <View className="flex flex-row p-2 bg-secondary dark rounded-md">
-              {playlist?.cover && (
-                <Image
-                  src={playlist?.cover + "@256w"}
-                  alt="cover"
-                  className="w-16 h-10 rounded-md"
-                />
-              )}
-              <View className="text-secondary-foreground pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
-                <Text className="text-secondary-foreground text-md">
-                  {playlist?.name}
-                </Text>
+      <ScrollView>
+        <View className="flex flex-col gap-2">
+          {playlists?.map((playlist) => (
+            <TouchableOpacity
+              key={playlist.id}
+              onPress={() => router.push(`/home/playlists/${playlist.id}`)}
+            >
+              <View className="flex flex-row p-2 bg-secondary dark rounded-md">
+                {playlist?.cover && (
+                  <Image
+                    src={playlist?.cover + "@256w"}
+                    alt="cover"
+                    className="w-16 h-10 rounded-md"
+                  />
+                )}
+                <View className="text-secondary-foreground pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
+                  <Text className="text-secondary-foreground text-md">
+                    {playlist?.name}
+                  </Text>
 
-                <Text className="text-secondary-foreground/50 text-xs">
-                  最近更新：
-                  {dayjs(playlist.updatedAt).format("MM-DD HH:mm")}
-                </Text>
+                  <Text className="text-secondary-foreground/50 text-xs">
+                    最近更新：
+                    {dayjs(playlist.updatedAt).format("MM-DD HH:mm")}
+                  </Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }
