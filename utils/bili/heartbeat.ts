@@ -20,7 +20,7 @@ export const sendHeartbeat = async (
   bvid: string,
   cid: number,
   playedTime: number,
-  realTime: number,
+  // realTime: number,
   isPlaying: boolean
 ) => {
   const heartBeatSetting = await AsyncStorage.getItem("heartbeat");
@@ -32,6 +32,15 @@ export const sendHeartbeat = async (
   const csrf = extractBiliJct(cookies);
 
   if (!csrf) return;
+
+  console.log("sendHeartbeat", {
+    bvid,
+    played_time: playedTime.toString(),
+    cid: cid.toString(),
+    // real_time: realTime.toString(),
+    // start_ts: dayjs().subtract(realTime, "s").unix().toString(),
+    play_type: isPlaying ? "0" : "2",
+  });
 
   const res = await biliFetch(
     "https://api.bilibili.com/x/click-interface/web/heartbeat",
@@ -48,8 +57,8 @@ export const sendHeartbeat = async (
         bvid,
         played_time: playedTime.toString(),
         cid: cid.toString(),
-        real_time: realTime.toString(),
-        start_ts: dayjs().subtract(realTime, "s").unix().toString(),
+        // real_time: realTime.toString(),
+        // start_ts: dayjs().subtract(realTime, "s").unix().toString(),
         type: "3",
         dt: "2",
         play_type: isPlaying ? "0" : "2",
