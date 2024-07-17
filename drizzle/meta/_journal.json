@@ -8,6 +8,27 @@
       "when": 1721186881329,
       "tag": "0000_absent_rattler",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1721199626638,
+      "tag": "0001_flashy_menace",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1721202106103,
+      "tag": "0002_mushy_chameleon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1721206731587,
+      "tag": "0003_far_dragon_man",
+      "breakpoints": true
     }
   ]
 }

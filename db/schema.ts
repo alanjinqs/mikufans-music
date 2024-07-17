@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, numeric } from "drizzle-orm/sqlite-core";
 
 export const playlist = sqliteTable("playlist", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -21,6 +21,10 @@ export const song = sqliteTable("song", {
   artwork: text("artwork"),
   color: text("color"),
   addedAt: integer("addedAt", { mode: "timestamp" }),
+  qqMusicMid: text("mid"),
+  lyrics: text("lyrics"),
+  translatedLyrics: text("translatedLyrics"),
+  lyricsOffset: integer("lyricsOffset"),
 });
 
 export const songToPlaylist = sqliteTable(

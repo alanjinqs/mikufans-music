@@ -4,24 +4,11 @@ import { Text } from "@/components/ui/text";
 import { BackHandler, View } from "react-native";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
-import {
-  createNewPlaylistByBiliFav,
-  deleteAllPlaylist,
-} from "@/utils/db/playlists";
-import { replacePlaylistByQueue } from "@/utils/trackPlayer/addToQueue";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CookieManager from "@react-native-cookies/cookies";
+import { qqMusicMidToLrc, qqMusicSearchSong } from "@/utils/qqmusic/qqMusicSearch";
 
 export default function TestView() {
-  const [favId, setFavId] = useState("");
-
-  const getQueue = async () => {
-    const queue = await TrackPlayer.getQueue();
-    console.log(queue);
-  };
-
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
   const { data: songToPlaylists } = useLiveQuery(
     db.select().from(schema.songToPlaylist)
@@ -34,20 +21,6 @@ export default function TestView() {
         <Text className="text-foreground text-3xl font-bold">TEST AREA</Text>
       </View>
       <View className="flex flex-row gap-2 flex-wrap">
-        <Input
-          onChangeText={(e) => {
-            setFavId(e);
-          }}
-          value={favId}
-        ></Input>
-        <Button
-          onPress={() => {
-            createNewPlaylistByBiliFav(parseInt(favId));
-          }}
-        >
-          <Text>Create New PL by BiliFav</Text>
-        </Button>
-
         <Button
           onPress={() => {
             AsyncStorage.setItem("heartbeat", "off");
@@ -77,6 +50,20 @@ export default function TestView() {
           }}
         >
           <Text>emptyDBQueue</Text>
+        </Button>
+        <Button
+          onPress={async () => {
+            const currentTrack = await TrackPlayer.getActiveTrack();
+            if (!currentTrack) return;
+            qqMusicSearchSong(currentTrack.title as string).then((res) => {
+              // console.log(res);
+              qqMusicMidToLrc(res[0].mid).then((lrcs) => {
+                console.log(lrcs);
+              })
+            });
+          }}
+        >
+          <Text>Search Current track title</Text>
         </Button>
         <Button
           onPress={() => {

@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Touchable,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Touchable, View } from "react-native";
 import TrackPlayer, {
   Event,
   isPlaying,
@@ -22,6 +17,7 @@ import { cidToSong } from "@/utils/db/song";
 import _ from "lodash";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 // import { StepBack } from "@/lib/icons/StepBack";
 // import { StepForward } from "@/lib/icons/StepForward";
@@ -34,6 +30,9 @@ import { List } from "@/lib/icons/List";
 import { useSharedValue } from "react-native-reanimated";
 import { Slider } from "react-native-awesome-slider";
 import { useRouter } from "expo-router";
+import SongSearchDialog from "../lyrics/SongSearch";
+import LyricsView from "../lyrics/LyricsView";
+import { useKeepAwake } from "expo-keep-awake";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -49,6 +48,8 @@ export default function FullScreenPlayer({
 }: {
   onCloseTab: () => void;
 }) {
+  useKeepAwake();
+
   const screenHeight = Dimensions.get("screen").height;
   const router = useRouter();
   const [currentTrack, setCurrentTrack] = useState<undefined | Track>();
@@ -113,40 +114,15 @@ export default function FullScreenPlayer({
     }
   }, []);
 
-  const [nextTrack, setNextTrack] = useState<undefined | Track>();
-  const [prevTrack, setPrevTrack] = useState<undefined | Track>();
-
-  useEffect(() => {
-    updateProgress();
+  const onSongUpdated = () => {
     cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
       setCurrentSong(song);
     });
-    TrackPlayer.getActiveTrackIndex().then(async (index) => {
-      if (!index) return; //不在播放
-      TrackPlayer.getTrack(index + 1).then((track) => {
-        if (!track) {
-          setNextTrack(undefined);
-          //TODO: 重新构建队列
-          return;
-        } else {
-          setNextTrack(track);
-        }
-      });
+  };
 
-      if (index === 0) {
-        setPrevTrack(undefined);
-      } else {
-        TrackPlayer.getTrack(index - 1).then((track) => {
-          if (!track) {
-            //TODO: 重新构建队列
-            setPrevTrack(undefined);
-            return;
-          } else {
-            setPrevTrack(track);
-          }
-        });
-      }
-    });
+  useEffect(() => {
+    updateProgress();
+    onSongUpdated();
   }, [currentTrack]);
 
   const [currentProgress, setCurrentProgress] = useState(0);
@@ -173,6 +149,8 @@ export default function FullScreenPlayer({
     progress.value = currentProgress;
   }, [currentProgress, duration]);
 
+  const [isShowingLyrics, setIsShowingLyrics] = useState(false);
+
   return (
     <View
       className="w-screen"
@@ -181,54 +159,77 @@ export default function FullScreenPlayer({
         height: screenHeight,
       }}
     >
-      <SafeAreaView>
+      <SafeAreaView className="relative">
+        <TouchableOpacity
+          className="absolute top-14 left-10 rounded-full"
+          onPress={onCloseTab}
+        >
+          <ChevronDown size={30} className="text-white" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          className="absolute top-14 right-10 rounded-full"
+          onPress={() => {
+            router.push("/home/currentQueue");
+            onCloseTab();
+          }}
+        >
+          <List size={30} className="text-white" />
+        </TouchableOpacity>
+
         <View className="flex flex-col items-center justify-center h-full gap-8 mx-10">
           <TouchableOpacity
-            className="absolute top-0 left-0 rounded-full"
-            onPress={onCloseTab}
-          >
-            <ChevronDown size={30} className="text-white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="absolute top-0 right-0 rounded-full"
+            className="w-full"
             onPress={() => {
-              router.push("/home/currentQueue");
-              onCloseTab();
+              setIsShowingLyrics(!isShowingLyrics);
             }}
           >
-            <List size={30} className="text-white" />
-          </TouchableOpacity>
-          {currentTrack?.artwork && (
-            <Image
-              src={currentTrack?.artwork + "@500w"}
-              alt="cover"
-              className="rounded-md"
-              style={{
-                width: "100%",
-                aspectRatio: 1.77777778,
-              }}
-            />
-          )}
-          <View className="w-full text-white flex flex-col justify-center gap-4">
-            <Text className="text-white text-xl">
-              {currentTrack?.title || "- 播放列表为空 -"}
-            </Text>
-
-            <View className="flex flex-row justify-between items-end">
-              <View className="flex flex-row items-center gap-4">
-                {currentSong?.artistAvatar && (
+            {isShowingLyrics &&
+            currentSong &&
+            currentSong.lyrics &&
+            currentSong.lyrics.length > 0 ? (
+              <View className="w-full">
+                <LyricsView
+                  song={currentSong}
+                  onSongUpdated={onSongUpdated}
+                  currentProgress={currentProgress}
+                />
+              </View>
+            ) : (
+              <View className="flex flex-col gap-8">
+                {currentTrack?.artwork && (
                   <Image
-                    src={currentSong?.artistAvatar + "@128w"}
+                    src={currentTrack?.artwork + "@500w"}
                     alt="cover"
-                    className="w-10 h-10 rounded-full"
+                    className="rounded-md"
+                    style={{
+                      width: "100%",
+                      aspectRatio: 1.77777778,
+                    }}
                   />
                 )}
-                <Text className="text-white/90 text-md">
-                  {currentTrack?.artist || "暂无歌手信息"}
-                </Text>
+                <View className="w-full text-white flex flex-col justify-center gap-4">
+                  <Text className="text-white text-xl">
+                    {currentTrack?.title || "- 播放列表为空 -"}
+                  </Text>
+
+                  <View className="flex flex-row justify-between items-end">
+                    <View className="flex flex-row items-center gap-4">
+                      {currentSong?.artistAvatar && (
+                        <Image
+                          src={currentSong?.artistAvatar + "@128w"}
+                          alt="cover"
+                          className="w-10 h-10 rounded-full"
+                        />
+                      )}
+                      <Text className="text-white/90 text-md">
+                        {currentTrack?.artist || "暂无歌手信息"}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               </View>
-            </View>
-          </View>
+            )}
+          </TouchableOpacity>
           <View className="flex flex-col w-full items-center gap-2">
             <Slider
               style={{
@@ -257,14 +258,6 @@ export default function FullScreenPlayer({
                 heartbeatColor: "#999",
               }}
             />
-            {/* <View className="w-full h-1 mt-2 bg-white/10">
-              <GestureDetector gesture={gesturePan}>
-                <Animated.View
-                  className="h-full bg-white/70 rounded-r-full"
-                  style={progressBarStyle}
-                ></Animated.View>
-              </GestureDetector>
-            </View> */}
             <View>
               <Text className="text-white/50 text-sm">
                 {duration != -1
@@ -289,14 +282,6 @@ export default function FullScreenPlayer({
             >
               <SkipBack size={25} className="!color-white" />
             </TouchableOpacity>
-            {/* <TouchableOpacity
-              className="bg-white/5 rounded-full p-2 relative"
-              onPress={() => {
-                TrackPlayer.seekBy(5);
-              }}
-            >
-              <RotateCcw size={30} className="!color-white" />
-            </TouchableOpacity> */}
             {playbackState.state && playbackState.state === State.Buffering ? (
               <View className="bg-white/5 rounded-full p-3">
                 <ActivityIndicator size={"large"} className="!color-white" />
@@ -343,6 +328,12 @@ export default function FullScreenPlayer({
               <SkipForward size={25} className="!color-white" />
             </TouchableOpacity>
           </View>
+          {currentSong && !currentSong.lyrics && (
+            <SongSearchDialog
+              song={currentSong}
+              onSongUpdated={onSongUpdated}
+            />
+          )}
         </View>
       </SafeAreaView>
     </View>
