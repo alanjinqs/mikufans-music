@@ -146,7 +146,7 @@ export default function PlaylistView() {
       </View>
       <FlatList
         data={songs}
-        keyExtractor={(item) => item.type + item.id.toString()}
+        keyExtractor={(item) => item.songId.toString()}
         renderItem={({ item: song }) => {
           return (
             <View
@@ -156,7 +156,7 @@ export default function PlaylistView() {
             >
               <TouchableOpacity
                 onPress={() => skipToSong(song)}
-                key={song.type + song.id}
+                key={song.songId}
                 className=""
                 disabled={isSkipping}
               >

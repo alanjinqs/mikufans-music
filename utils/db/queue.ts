@@ -23,7 +23,6 @@ export const updateMeta = async (key: string, value: string) => {
 };
 
 export const currentQueueIdsToSongs = async (queue: number[]) => {
-  console.log("queue", queue);
   if (queue.length === 0) return [];
   const s = await db.query.currentQueue.findMany({
     with: {
@@ -31,11 +30,9 @@ export const currentQueueIdsToSongs = async (queue: number[]) => {
     },
     where: inArray(schema.currentQueue.id, queue),
   });
-  console.log("s", s);
 
   const res = s.sort((a, b) => {
     return queue.indexOf(a.id) - queue.indexOf(b.id);
   });
-  console.log("res", res);
   return res;
 };

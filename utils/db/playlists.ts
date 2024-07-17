@@ -176,9 +176,6 @@ export const createNewPlaylistByBiliFav = async (mediaId: number) => {
   const favName = favInfo.title;
   const favCover = favInfo.cover;
   const id = await createNewPlaylist({ name: favName, cover: favCover });
-  console.log("id", id);
-  console.log("list", songList);
-
   for (const s of songList) {
     const color = await artworkToDarkColor(s.artwork || undefined);
     await db
@@ -210,5 +207,4 @@ export const removeSongFromPlaylist = async (
         eq(songToPlaylist.playlistId, playlistId)
       )
     );
-  console.log(res);
 };

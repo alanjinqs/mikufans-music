@@ -42,20 +42,17 @@ export const qqMusicSearchSong = async (keyword: string) => {
       singer: song.singer.map((singer: any) => singer.name).join(", "),
     };
   });
-  console.log(songs);
   return songs;
 };
 
 export const qqMusicMidToLrc = async (mid: string) => {
   const url = `https://i.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?songmid=${mid}&g_tk=5381&format=json&inCharset=utf8&outCharset=utf-8&nobase64=1`;
-  console.log(url);
   const res = await fetch(url, {
     headers: {
       Referer: "https://y.qq.com/",
     },
   });
   const json = await res.json();
-  console.log(json);
 
   return {
     lyric: json.lyric,

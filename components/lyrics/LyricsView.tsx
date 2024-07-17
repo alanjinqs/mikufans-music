@@ -8,31 +8,36 @@ import { Line, LineType, LyricLine, MetadataLine, parse } from "clrc";
 import clsx from "clsx";
 import { debounce } from "lodash";
 import { updateSongOffset } from "@/utils/db/song";
+import { useWindowDimensions } from "react-native";
+import TrackPlayer, { useProgress } from "react-native-track-player";
+import { Event } from "react-native-track-player";
 
 export default function LyricsView({
   song,
-  currentProgress,
   onSongUpdated,
 }: {
   song: SongDB;
-  currentProgress: number;
   onSongUpdated: () => void;
 }) {
   const [lyrics, setLyrics] = useState<LyricLine[]>([]);
   const [translatedLyrics, setTranslatedLyrics] = useState<LyricLine[]>([]);
 
   const [songHasTranslatedLyrics, setSongHasTranslatedLyrics] = useState(false);
+  const { height, width } = useWindowDimensions();
 
-  useEffect(() => {
+  const currentProgress = useProgress(100);
+
+  const updateLyrics = () => {
     if (!song || !song.lyrics) return;
-    let lrcs = song.lyrics;
+    let lrcs = song.lyrics.replaceAll("\r\n", "\n");
     const parsed = parse(lrcs);
+
     setLyrics(
       parsed.filter((line) => line.type === LineType.LYRIC) as LyricLine[]
     );
 
     if (song.translatedLyrics) {
-      const transParsed = parse(song.translatedLyrics);
+      const transParsed = parse(song.translatedLyrics.replaceAll("\r\n", "\n"));
       setTranslatedLyrics(
         transParsed.filter(
           (line) => line.type === LineType.LYRIC
@@ -46,6 +51,10 @@ export default function LyricsView({
     } else {
       setCurrentOffset(0);
     }
+  };
+
+  useEffect(() => {
+    updateLyrics();
   }, [song]);
 
   const scrollViewRef = useRef<ScrollView>(null);
@@ -53,7 +62,7 @@ export default function LyricsView({
   const [currentOffset, setCurrentOffset] = useState<number>(0);
 
   const updateCurrentLine = () => {
-    const currentMillisecond = currentProgress * 1000 + currentOffset;
+    const currentMillisecond = currentProgress.position * 1000 + currentOffset;
 
     if (!lyrics) return;
     for (let i = 0; i < lyrics.length; i++) {
@@ -63,7 +72,7 @@ export default function LyricsView({
         if (l.startMillisecond > currentMillisecond) {
           setCurrentLine(i - 1);
           scrollViewRef.current?.scrollTo({
-            y: (i - 1) * (35 + (songHasTranslatedLyrics ? 20 : 0)) - 150,
+            y: (i - 1) * (35 + (songHasTranslatedLyrics ? 25 : 0)) - 150,
             animated: true,
           });
           break;
@@ -89,9 +98,9 @@ export default function LyricsView({
   return (
     <View className="w-full">
       <View
-        className="w-full"
         style={{
-          height: 300,
+          height: height - 400,
+          width: "100%",
         }}
       >
         <ScrollView
@@ -122,25 +131,35 @@ export default function LyricsView({
                       {l.content}
                     </Text>
                   </View>
-                  {translatedLyrics.length > 0 && translatedLyrics[i] && (
-                    <Text
-                      className={clsx(
-                        "",
-                        currentLine == i
-                          ? "text-white/80 text-lg font-bold"
-                          : "text-white/20"
-                      )}
-                      style={{
-                        height: 20,
-                      }}
-                    >
-                      {translatedLyrics[i].content}
-                    </Text>
-                  )}
+                  {translatedLyrics.length > 0 &&
+                    translatedLyrics.find(
+                      (l) => l.startMillisecond === line.startMillisecond
+                    ) && (
+                      <Text
+                        className={clsx(
+                          "",
+                          currentLine == i
+                            ? "text-white/80 text-lg font-bold"
+                            : "text-white/20"
+                        )}
+                        style={{
+                          height: 25,
+                        }}
+                      >
+                        {translatedLyrics.find(
+                          (l) => l.startMillisecond === line.startMillisecond
+                        )?.content || ""}
+                      </Text>
+                    )}
                 </View>
               );
             }
           })}
+          <View
+            style={{
+              width: width - 100,
+            }}
+          ></View>
         </ScrollView>
       </View>
       <View className="flex flex-row items-center justify-center text-xs my-4 text-white gap-5">

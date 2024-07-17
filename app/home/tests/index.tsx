@@ -6,7 +6,10 @@ import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CookieManager from "@react-native-cookies/cookies";
-import { qqMusicMidToLrc, qqMusicSearchSong } from "@/utils/qqmusic/qqMusicSearch";
+import {
+  qqMusicMidToLrc,
+  qqMusicSearchSong,
+} from "@/utils/qqmusic/qqMusicSearch";
 
 export default function TestView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
@@ -56,10 +59,7 @@ export default function TestView() {
             const currentTrack = await TrackPlayer.getActiveTrack();
             if (!currentTrack) return;
             qqMusicSearchSong(currentTrack.title as string).then((res) => {
-              // console.log(res);
-              qqMusicMidToLrc(res[0].mid).then((lrcs) => {
-                console.log(lrcs);
-              })
+              qqMusicMidToLrc(res[0].mid).then((lrcs) => {});
             });
           }}
         >

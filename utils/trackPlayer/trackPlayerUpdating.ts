@@ -15,7 +15,6 @@ export const addQueueToTrackPlayer = async () => {
     currentTPQueue.length === 0 ||
     currentTPQueue.length <= currentTPIndex + 3
   ) {
-    console.log("currentTPQueue.length", currentTPQueue.length, currentTPIndex! + 3);
     const metaObj = await getCurrentQueueMeta();
 
     if (metaObj.queue) {
@@ -62,7 +61,6 @@ export const dpQueueSkipTo = async (id: number) => {
   queue.splice(0, index);
   await updateMeta("queue", JSON.stringify(queue));
   await TrackPlayer.reset();
-  console.log(queue);
   // await addQueueToTrackPlayer();
   // await TrackPlayer.play();
   await TrackPlayer.setPlayWhenReady(true);
@@ -97,8 +95,6 @@ export const shuffleQueue = async () => {
   }
 
   await TrackPlayer.removeUpcomingTracks();
-
-  console.log("queue", queue);
 
   await updateMeta(
     "queue",

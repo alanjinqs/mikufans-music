@@ -18,7 +18,6 @@ export const fetchVideoCollection = async (seasonId: number) => {
       `https://api.bilibili.com/x/polymer/web-space/seasons_archives_list?mid=${mid}&season_id=${seasonId}&page_num=${page}&page_size=20`
     );
     const json = await res.json();
-    console.log(json);
     hasNext =
       json.data.meta.total > json.data.meta.page * json.data.meta.pagesize;
 
@@ -42,6 +41,10 @@ export const fetchVideoCollection = async (seasonId: number) => {
         artistAvatar,
         addedAt: new Date(),
         color: "#9897E1",
+        qqMusicMid: null,
+        lyrics: null,
+        translatedLyrics: null,
+        lyricsOffset: null,
       });
     }
     page += 1;

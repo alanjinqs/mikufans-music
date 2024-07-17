@@ -168,7 +168,6 @@ export default function MiniPlayer({
         leftThreshold={50}
         rightThreshold={50}
         onSwipeableOpen={(direction) => {
-          console.log("swipe open", direction);
 
           if (direction === "right") {
             // if (!nextTrack) {

@@ -1,5 +1,7 @@
-import { Redirect } from "expo-router";
+import { Redirect, router } from "expo-router";
+import { View } from "react-native";
 
 export default function HomeIndex() {
-  return <Redirect href={"/home/currentQueue"} />;
+  router.replace("/home");
+  return <View></View>;
 }

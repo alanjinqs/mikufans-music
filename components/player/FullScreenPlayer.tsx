@@ -159,26 +159,22 @@ export default function FullScreenPlayer({
         height: screenHeight,
       }}
     >
-      <SafeAreaView className="relative">
-        <TouchableOpacity
-          className="absolute top-14 left-10 rounded-full"
-          onPress={onCloseTab}
-        >
-          <ChevronDown size={30} className="text-white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          className="absolute top-14 right-10 rounded-full"
-          onPress={() => {
-            router.push("/home/currentQueue");
-            onCloseTab();
-          }}
-        >
-          <List size={30} className="text-white" />
-        </TouchableOpacity>
-
-        <View className="flex flex-col items-center justify-center h-full gap-8 mx-10">
+      <SafeAreaView>
+        <View className="w-full flex flex-row justify-between px-10">
+          <TouchableOpacity onPress={onCloseTab}>
+            <ChevronDown size={30} className="text-white" />
+          </TouchableOpacity>
           <TouchableOpacity
-            className="w-full"
+            onPress={() => {
+              router.push("/home/currentQueue");
+              onCloseTab();
+            }}
+          >
+            <List size={30} className="text-white" />
+          </TouchableOpacity>
+        </View>
+        <View className="flex flex-col items-center justify-center h-full gap-8 px-10 pb-10 w-full">
+          <TouchableOpacity
             onPress={() => {
               setIsShowingLyrics(!isShowingLyrics);
             }}
@@ -187,12 +183,12 @@ export default function FullScreenPlayer({
             currentSong &&
             currentSong.lyrics &&
             currentSong.lyrics.length > 0 ? (
-              <View className="w-full">
-                <LyricsView
-                  song={currentSong}
-                  onSongUpdated={onSongUpdated}
-                  currentProgress={currentProgress}
-                />
+              <View
+                style={{
+                  width: "100%",
+                }}
+              >
+                <LyricsView song={currentSong} onSongUpdated={onSongUpdated} />
               </View>
             ) : (
               <View className="flex flex-col gap-8">

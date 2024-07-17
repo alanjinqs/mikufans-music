@@ -15,21 +15,13 @@ import { Input } from "@/components/ui/input";
 import { View } from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native";
 import TrackPlayer from "react-native-track-player";
-import {
-  Option,
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { qqMusicSearchSong, QQMusicSong } from "@/utils/qqmusic/qqMusicSearch";
 import { PortalHost } from "@rn-primitives/portal";
 import clsx from "clsx";
 import { updateSongQQMid } from "@/utils/db/song";
 import { SongDB } from "@/utils/db/db";
+
+import { TouchableOpacity as RNGHTouchableOpacity } from "react-native-gesture-handler";
 
 export default function SongSearchDialog({
   song,
@@ -44,7 +36,9 @@ export default function SongSearchDialog({
   const [qqMusicSongs, setQqMusicSongs] = useState<QQMusicSong[]>([]);
 
   const midConfirm = () => {
-    updateSongQQMid(song.id, selectedMid);
+    updateSongQQMid(song.id, selectedMid).then(() => {
+      onSongUpdated();
+    });
   };
   return (
     <Dialog
@@ -58,9 +52,9 @@ export default function SongSearchDialog({
       }}
     >
       <DialogTrigger asChild>
-        <TouchableOpacity>
+        <RNGHTouchableOpacity>
           <Text className="text-white">搜索歌词</Text>
-        </TouchableOpacity>
+        </RNGHTouchableOpacity>
       </DialogTrigger>
       <DialogContent className="w-[300px] ">
         <DialogHeader>
