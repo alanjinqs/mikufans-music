@@ -14,7 +14,6 @@ import { debounce } from "lodash";
 import { updateSongOffset } from "@/utils/db/song";
 import { useWindowDimensions } from "react-native";
 import TrackPlayer, { useProgress } from "react-native-track-player";
-import { Event } from "react-native-track-player";
 
 type TranslatedLyricLine = {
   translatedContent?: string;
