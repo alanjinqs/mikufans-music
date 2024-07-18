@@ -19,6 +19,7 @@ import {
 } from "@/utils/trackPlayer/trackPlayerUpdating";
 import { useRouter } from "expo-router";
 import _ from "lodash";
+import Toast from "react-native-toast-message";
 
 type Row = {
   song: typeof schema.song.$inferSelect;
@@ -36,52 +37,53 @@ export default function PlaylistView() {
   );
   const [songs, setSongs] = useState<Row[]>([]);
 
+  const loadSongs = async () => {
+    let data: Row[] = [];
+    if (queueStr && queueStr.value) {
+      const queueIdList = JSON.parse(queueStr.value);
+      const res = await currentQueueIdsToSongs(queueIdList);
+
+      data = res.map((song) => ({
+        id: song!.id,
+        song: song!.song,
+        songId: song!.id,
+        type: "db",
+      }));
+    }
+    const tpList: Row[] = [];
+
+    if (currentTrack) {
+      const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
+
+      const currentTrackSong = await cidToSong(currentTrack.id.split("$")[0]);
+      tpList.push({
+        id: currentTrackIndex!,
+        song: currentTrackSong!,
+        songId: currentTrackSong!.id,
+        type: "tp",
+      });
+      const trackQuue = await TrackPlayer.getQueue();
+      let i = 1;
+      for (const nextTrack of trackQuue.slice(currentTrackIndex! + 1)) {
+        const nextTrackSong = await cidToSong(nextTrack.id.split("$")[0]);
+        tpList.push({
+          id: currentTrackIndex! + i,
+          song: nextTrackSong!,
+          songId: nextTrackSong!.id,
+          type: "tp",
+        });
+        i += 1;
+      }
+
+      data = tpList.concat(data);
+
+      console.log("songs", data);
+      setSongs(data);
+    }
+  };
   const currentTrack = useActiveTrack();
   useEffect(() => {
-    _.debounce(() => {
-      if (queueStr && queueStr.value) {
-        const queueIdList = JSON.parse(queueStr.value);
-        currentQueueIdsToSongs(queueIdList).then(async (res) => {
-          let data: Row[] = res.map((song) => ({
-            id: song!.id,
-            song: song!.song,
-            songId: song!.id,
-            type: "db",
-          }));
-          const tpList: Row[] = [];
-
-          if (currentTrack) {
-            const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
-
-            const currentTrackSong = await cidToSong(
-              currentTrack.id.split("$")[0]
-            );
-            tpList.push({
-              id: currentTrackIndex!,
-              song: currentTrackSong!,
-              songId: currentTrackSong!.id,
-              type: "tp",
-            });
-            const trackQuue = await TrackPlayer.getQueue();
-            let i = 1;
-            for (const nextTrack of trackQuue.slice(currentTrackIndex! + 1)) {
-              const nextTrackSong = await cidToSong(nextTrack.id.split("$")[0]);
-              tpList.push({
-                id: currentTrackIndex! + i,
-                song: nextTrackSong!,
-                songId: nextTrackSong!.id,
-                type: "tp",
-              });
-              i += 1;
-            }
-          }
-
-          data = tpList.concat(data);
-
-          setSongs(data);
-        });
-      }
-    }, 500)();
+    _.debounce(loadSongs, 500)();
   }, [queueStr, currentTrack]);
 
   const [isSkipping, setIsSkipping] = useState(false);
