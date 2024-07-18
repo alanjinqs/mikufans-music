@@ -18,20 +18,7 @@ import { Text } from "@/components/ui/text";
 import { PortalHost } from "@rn-primitives/portal";
 import "react-native-reanimated";
 import "react-native-gesture-handler";
-import TrackPlayer, {
-  Event,
-  State,
-  useActiveTrack,
-  usePlaybackState,
-  useProgress,
-} from "react-native-track-player";
 import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
-import { sendHeartbeat } from "@/utils/bili/heartbeat";
-import { SongDB } from "@/utils/db/db";
-import dayjs from "dayjs";
-import { cidToSong } from "@/utils/db/song";
-import { debounce } from "lodash";
-import { replaceCurrentPlaying } from "@/utils/trackPlayer/addToQueue";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -98,12 +85,11 @@ function RootLayout() {
         return;
       }
       setIsColorSchemeLoaded(true);
-    })()
-      .finally(() => {
-        console.log("hideSplashScreen");
-        SplashScreen.hideAsync();
-        addQueueToTrackPlayer();
-      });
+    })().finally(() => {
+      console.log("hideSplashScreen");
+      SplashScreen.hideAsync();
+      addQueueToTrackPlayer();
+    });
   }, []);
 
   if (!isColorSchemeLoaded) {
