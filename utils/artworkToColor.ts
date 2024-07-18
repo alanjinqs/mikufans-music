@@ -9,25 +9,23 @@ export const artworkToDarkColor = async (_artwork?: string) => {
     key: artwork || "",
   });
 
-  let color = "#9897E1";
+  let primary = "#9897E1";
   if (colors.platform === "android") {
-    color =
-      colors.darkMuted === "#9897E1" ? colors.darkVibrant : colors.darkMuted;
+    primary = colors.dominant === "#9897E1" ? colors.vibrant : colors.dominant;
   }
   if (colors.platform === "web") {
-    color =
-      colors.darkMuted === "#9897E1" ? colors.darkVibrant : colors.darkMuted;
+    primary = colors.dominant === "#9897E1" ? colors.vibrant : colors.dominant;
   }
   if (colors.platform === "ios") {
-    const { r, g, b } = hexToRgb(colors.primary);
-    let [h, s, v] = rgbToHsv(r, g, b);
-    if (v > 0.4) {
-      v = 0.4;
-    }
-    const [r1, g1, b1] = hsvToRgb(h, s, v);
-    color = rgbToHex(Math.floor(r1), Math.floor(g1), Math.floor(b1));
-    console.log("color", color);
+    primary = colors.background === "#9897E1" ? colors.primary : colors.background;
   }
+  const { r, g, b } = hexToRgb(primary);
+  let [h, s, v] = rgbToHsv(r, g, b);
+  if (v > 0.4) {
+    v = 0.4;
+  }
+  const [r1, g1, b1] = hsvToRgb(h, s, v);
+  const color = rgbToHex(Math.floor(r1), Math.floor(g1), Math.floor(b1));
   return color;
 };
 
