@@ -45,7 +45,6 @@ export default function CreateNewPlaylist() {
             onChangeText={(e) => {
               setPlaylistName(e);
             }}
-            value={playlistname}
           ></Input>
         </DialogHeader>
         <DialogFooter>

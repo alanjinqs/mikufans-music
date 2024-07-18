@@ -65,7 +65,7 @@ export default function SongSearchDialog({
           <View className="flex flex-row items-center mb-4 gap-2">
             <Input
               className="flex-1"
-              value={keyword}
+              defaultValue={keyword}
               onChangeText={setKeyword}
               placeholder="歌曲名"
               clearButtonMode="while-editing"

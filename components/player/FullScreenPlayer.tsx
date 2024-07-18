@@ -177,7 +177,7 @@ export default function FullScreenPlayer({
     >
       <SafeAreaView>
         <View className="w-full flex flex-row justify-between px-10">
-          <View className="flex flex-row items-center justify-start gap-4">
+          <View className="flex flex-row items-center justify-start gap-4 mt-2">
             <TouchableOpacity onPress={onCloseTab}>
               <ChevronDown size={30} className="text-white" />
             </TouchableOpacity>
