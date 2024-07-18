@@ -2,6 +2,7 @@ import TrackPlayer, {
   Event,
   PlaybackProgressUpdatedEvent,
   State,
+  Track,
 } from "react-native-track-player";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { sendHeartbeat } from "../bili/heartbeat";
@@ -19,8 +20,20 @@ const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
     cid,
     Math.floor(e.position),
     // Math.floor(dayjs().diff(currentSongStarted, "second")),
-    playbackState.state === State.Playing
+    playbackState.state === State.Playing,
   );
+};
+
+const playbackFinishedHeartbeat = async ({
+  activeTrack,
+}: {
+  activeTrack: Track;
+}) => {
+  console.log("playbackFinishedHeartbeat");
+  const [cid, bvid] = activeTrack.id.split("$");
+  if (!bvid || !cid || !activeTrack.duration) return;
+
+  sendHeartbeat(bvid, cid, -1, true);
 };
 
 module.exports = async function () {
@@ -43,6 +56,19 @@ module.exports = async function () {
     TrackPlayer.seekBy(-5)
   );
   TrackPlayer.addEventListener(Event.PlaybackActiveTrackChanged, async (e) => {
+    console.log("Event.PlaybackActiveTrackChanged");
+
+    if (
+      e.lastTrack?.duration &&
+      Math.abs(e.lastTrack?.duration - e.lastPosition) < 1
+    ) {
+      playbackFinishedHeartbeat({
+        activeTrack: e.lastTrack,
+      }).then(() => {
+        console.log("playbackFinishedHeartbeat done");
+      });
+    }
+
     await addQueueToTrackPlayer();
   });
   TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
@@ -50,7 +76,7 @@ module.exports = async function () {
       await heartbeat(e);
     }
   });
-  
+
   TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
     if (e.state === State.Error) {
       const activeTrack = await TrackPlayer.getActiveTrack();
@@ -62,5 +88,5 @@ module.exports = async function () {
         });
       }
     }
-  })
+  });
 };

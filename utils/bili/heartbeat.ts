@@ -33,15 +33,6 @@ export const sendHeartbeat = async (
 
   if (!csrf) return;
 
-  console.log("sendHeartbeat", {
-    bvid,
-    played_time: playedTime.toString(),
-    cid: cid.toString(),
-    // real_time: realTime.toString(),
-    // start_ts: dayjs().subtract(realTime, "s").unix().toString(),
-    play_type: isPlaying ? "0" : "2",
-  });
-
   const res = await biliFetch(
     "https://api.bilibili.com/x/click-interface/web/heartbeat",
     {
@@ -61,7 +52,7 @@ export const sendHeartbeat = async (
         // start_ts: dayjs().subtract(realTime, "s").unix().toString(),
         type: "3",
         dt: "2",
-        play_type: isPlaying ? "0" : "2",
+        play_type: playedTime === -1 ? "4" : isPlaying ? "0" : "2",
         csrf,
       }).toString(),
     },
