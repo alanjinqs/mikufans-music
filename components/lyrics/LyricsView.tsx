@@ -31,7 +31,7 @@ export default function LyricsView({
   const [songHasTranslatedLyrics, setSongHasTranslatedLyrics] = useState(false);
   const { height, width } = useWindowDimensions();
 
-  const currentProgress = useProgress(100);
+  const currentProgress = useProgress(200);
 
   const updateLyrics = () => {
     if (!song || !song.lyrics) return;
@@ -122,7 +122,6 @@ export default function LyricsView({
   }, [currentOffset]);
 
   const [isScrolling, setIsScrolling] = useState(false);
-  const [isSrollingStoped, setIsScrollingStoped] = useState(false);
 
   return (
     <View className="w-full">
@@ -135,15 +134,11 @@ export default function LyricsView({
         <ScrollView
           onScrollBeginDrag={() => {
             setIsScrolling(true);
-            setIsScrollingStoped(false);
           }}
           onScrollEndDrag={() => {
-            setIsScrollingStoped(true);
             setTimeout(() => {
-              if (isSrollingStoped) {
-                setIsScrolling(false);
-              }
-            }, 1500);
+              setIsScrolling(false);
+            }, 1000);
           }}
           ref={scrollViewRef}
           style={{
@@ -211,11 +206,13 @@ export default function LyricsView({
           <Text className="text-white/30 p-2">- 0.5s</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setCurrentOffset(currentOffset - 100)}>
-          <Text className="text-white/30 p-2">- 0.1s</Text>
+          <Text className="text-white/30 p-2">- 0.2s</Text>
         </TouchableOpacity>
-        <Text className="text-white/50 p-2">{(currentOffset/1000).toFixed(1)}s</Text>
+        <Text className="text-white/50 p-2">
+          {(currentOffset / 1000).toFixed(1)}s
+        </Text>
         <TouchableOpacity onPress={() => setCurrentOffset(currentOffset + 100)}>
-          <Text className="text-white/30 p-2">+0.1s</Text>
+          <Text className="text-white/30 p-2">+0.2s</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setCurrentOffset(currentOffset + 1000)}

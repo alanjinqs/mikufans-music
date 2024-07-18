@@ -40,7 +40,7 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
         if (!matchedBvID || matchedBvID.length === 0) {
           Toast.show({
             type: "error",
-            text1: "Bv 号解析错误",
+            text1: "BV 号解析错误",
           });
           return;
         }
@@ -97,7 +97,7 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
           >
             <TabsList className="flex-row w-full mb-4">
               <TabsTrigger value="bvid" className="flex-1">
-                <Text>Bv</Text>
+                <Text>BV</Text>
               </TabsTrigger>
               <TabsTrigger value="favorite" className="flex-1">
                 <Text>收藏</Text>

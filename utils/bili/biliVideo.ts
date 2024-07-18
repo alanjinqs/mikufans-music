@@ -69,16 +69,18 @@ export const bvCid2Track = async (
   } else {
     // console.error("NOT TESTED");
     const videoPlaybackInfo = await getBiliVideoMp4PlaybackInfo(cid, bvid);
+    console.log("main", videoPlaybackInfo.data.durl[0].url);
     const track: Track = {
       id: cid.toString() + "$" + bvid,
-      url:
-        backupStream && videoPlaybackInfo.data.backup_url
-          ? videoPlaybackInfo.data.backup_url[0].url
-          : videoPlaybackInfo.data.durl[0].url,
+      url: videoPlaybackInfo.data.durl[0].url,
       title: meta.data.title,
       artist: meta.data.owner.name,
       artwork: meta.data.pic.replace("http://", "https://"),
       duration: videoPlaybackInfo.data.durl[0].length / 1000,
+      userAgent: UA,
+      headers: {
+        Referer: `https://www.bilibili.com/video/${bvid}`,
+      },
     };
     return track;
   }

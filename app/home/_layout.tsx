@@ -82,7 +82,7 @@ export default function HomeIndex() {
         <View className="p-4 flex flex-col h-full">
           <View className="flex flex-row justify-between items-center mb-6">
             <View>
-              {pathname !== "/home/playlists" ? (
+              {pathname !== "/home" ? (
                 <TouchableOpacity
                   onPress={() => {
                     router.back();
@@ -94,9 +94,7 @@ export default function HomeIndex() {
                   </View>
                 </TouchableOpacity>
               ) : (
-                <Text className="text-foreground text-3xl font-bold">
-                  Playlists
-                </Text>
+                <Text className="text-foreground text-3xl font-bold">Home</Text>
               )}
             </View>
             <AvatarOrLoginBtn userInfo={userInfo} onSuccess={updateUserInfo} />

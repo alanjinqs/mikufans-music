@@ -1,6 +1,6 @@
 import { playlist, song, songToPlaylist } from "@/db/schema";
 import { db } from "./db";
-import { fetchFavList, fetchFavMeta } from "../bili/favList";
+import { fetchFavList, fetchFavMeta } from "../bili/biliFavList";
 import dayjs from "dayjs";
 import { artworkToDarkColor } from "../artworkToColor";
 import { and, eq } from "drizzle-orm";
@@ -72,7 +72,10 @@ export const addSongToPlaylist = async (
     updatedAt: new Date(),
   });
 
-  if (updatePlaylistCover) {
+  const thePlaylist = await db.query.playlist.findFirst({
+    where: eq(playlist.id, playlistId),
+  });
+  if (updatePlaylistCover || thePlaylist?.cover === null || thePlaylist?.cover === "") {
     await db
       .update(playlist)
       .set({

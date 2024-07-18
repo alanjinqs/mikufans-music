@@ -21,7 +21,7 @@ const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
     cid,
     Math.floor(e.position),
     // Math.floor(dayjs().diff(currentSongStarted, "second")),
-    playbackState.state === State.Playing,
+    playbackState.state === State.Playing
   );
 };
 
@@ -91,7 +91,6 @@ module.exports = async function () {
           await TrackPlayer.load(track);
           TrackPlayer.play();
         }
-        
       }
     }
   });

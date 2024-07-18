@@ -114,7 +114,7 @@ export default function PlaylistView() {
     await db.delete(schema.currentQueue);
     await db.delete(schema.currentQueueMeta);
     await TrackPlayer.reset();
-    router.replace("/home/playlists");
+    router.replace("/home");
   };
   return (
     <View className="w-full h-full flex flex-col">

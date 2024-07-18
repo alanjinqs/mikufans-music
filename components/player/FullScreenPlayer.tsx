@@ -38,6 +38,9 @@ import LyricsView from "../lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
 import { Tv } from "@/lib/icons/Tv";
 import { CaseSensitive } from "@/lib/icons/CaseSensitive";
+import { Plus } from "@/lib/icons/Plus";
+import AddToPlaylistsDialog from "../playlist/addToPlaylistsDialog";
+import { ListVideo } from "@/lib/icons/ListVideo";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -59,8 +62,11 @@ export default function FullScreenPlayer({
   const router = useRouter();
   const [currentTrack, setCurrentTrack] = useState<undefined | Track>();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
+  const [currentBvid, setCurrentBvid] = useState("");
 
   const [isPlaying, setIsPlaying] = useState(true);
+
+  const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
 
   // only needed for testing, but no harm in keeping it
   const [eventsRegistered, setEventsRegistered] = useState(false);
@@ -96,6 +102,7 @@ export default function FullScreenPlayer({
       TrackPlayer.getActiveTrack().then((track) => {
         if (track && track.id === currentTrack?.id) return;
         setCurrentTrack(track);
+        setCurrentBvid(track?.id.split("$")[1] || "");
       });
       updateIsPlaying();
       TrackPlayer.addEventListener(
@@ -103,6 +110,7 @@ export default function FullScreenPlayer({
         async (e) => {
           if (e.track && e.track.id === currentTrack?.id) return;
           setCurrentTrack(e.track);
+          setCurrentBvid(e.track?.id.split("$")[1] || "");
         }
       );
 
@@ -182,16 +190,37 @@ export default function FullScreenPlayer({
                   <CaseSensitive size={30} className="text-white" />
                 </TouchableOpacity>
               )}
+            {currentTrack && (
+              <TouchableOpacity
+                onPress={() => {
+                  router.push(`/home/video/recommend/${currentBvid}`);
+                  onCloseTab();
+                }}
+              >
+                <ListVideo size={28} className="text-white" />
+              </TouchableOpacity>
+            )}
           </View>
           <View className="flex flex-row items-center justify-end gap-4">
-            <TouchableOpacity
-              onPress={() => {
-                TrackPlayer.pause();
-                Linking.openURL(`bilibili://video/${currentSong?.bvid}`);
-              }}
-            >
-              <Tv size={28} className="text-white" />
-            </TouchableOpacity>
+            {currentTrack && (
+              <TouchableOpacity
+                onPress={() => {
+                  setIsPLSelectionDialogOpen(true);
+                }}
+              >
+                <Plus size={28} className="text-white" />
+              </TouchableOpacity>
+            )}
+            {currentTrack && (
+              <TouchableOpacity
+                onPress={() => {
+                  TrackPlayer.pause();
+                  Linking.openURL(`bilibili://video/${currentBvid}`);
+                }}
+              >
+                <Tv size={28} className="text-white" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               onPress={() => {
                 router.push("/home/currentQueue");
@@ -357,6 +386,13 @@ export default function FullScreenPlayer({
           )}
         </View>
       </SafeAreaView>
+      {currentTrack && (
+        <AddToPlaylistsDialog
+          isPLSelectionDialogOpen={isPLSelectionDialogOpen}
+          setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
+          currentSelectedSongBvid={currentBvid}
+        />
+      )}
     </View>
   );
 }
