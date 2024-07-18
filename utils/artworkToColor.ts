@@ -1,7 +1,7 @@
 import { getColors } from "react-native-image-colors";
 
 export const artworkToDarkColor = async (_artwork?: string) => {
-  const artwork = _artwork + "@128w"
+  const artwork = _artwork + "@200w"
   console.log("artwork", artwork);
   if (!artwork) return "#9897E1";
   const colors = await getColors(artwork || "", {

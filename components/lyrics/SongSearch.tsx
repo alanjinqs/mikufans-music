@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
-import { View } from "react-native";
+import { Touchable, View } from "react-native";
 import { ScrollView, TouchableOpacity } from "react-native";
 import TrackPlayer from "react-native-track-player";
 import { qqMusicSearchSong, QQMusicSong } from "@/utils/qqmusic/qqMusicSearch";
@@ -20,6 +20,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import clsx from "clsx";
 import { updateSongQQMid } from "@/utils/db/song";
 import { SongDB } from "@/utils/db/db";
+import { X } from "@/lib/icons/X";
 
 import { TouchableOpacity as RNGHTouchableOpacity } from "react-native-gesture-handler";
 
@@ -67,6 +68,7 @@ export default function SongSearchDialog({
               value={keyword}
               onChangeText={setKeyword}
               placeholder="歌曲名"
+              clearButtonMode="while-editing"
             />
             <Button
               disabled={keyword.length === 0}

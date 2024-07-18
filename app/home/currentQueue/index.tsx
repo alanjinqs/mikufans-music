@@ -164,7 +164,7 @@ export default function PlaylistView() {
                   <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
                     {song.song.artwork && (
                       <Image
-                        src={song.song.artwork + "@256w"}
+                        src={song.song.artwork + "@200w"}
                         alt="cover"
                         className="w-16 h-10 rounded-md "
                       />
@@ -177,7 +177,7 @@ export default function PlaylistView() {
                       <View className="flex flex-row items-center gap-1">
                         {song.song.artistAvatar && (
                           <Image
-                            src={song.song.artistAvatar + "@256w"}
+                            src={song.song.artistAvatar + "@128w"}
                             alt="cover"
                             className="w-6 h-6 rounded-full"
                           />

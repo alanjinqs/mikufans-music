@@ -372,7 +372,7 @@ export const LeftRight = ({
     <View className="flex flex-row w-full items-center">
       {track?.artwork && (
         <Image
-          src={track?.artwork + "@256w"}
+          src={track?.artwork + "@200w"}
           alt="cover"
           className="w-16 h-10 rounded-md"
         />

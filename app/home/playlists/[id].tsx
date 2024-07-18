@@ -212,7 +212,7 @@ const SongCard = ({
         <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
           {song.artwork && (
             <Image
-              src={song.artwork + "@256w"}
+              src={song.artwork + "@200w"}
               alt="cover"
               className="w-16 h-10 rounded-md "
             />
@@ -225,7 +225,7 @@ const SongCard = ({
             <View className="flex flex-row items-center gap-1">
               {song.artistAvatar && (
                 <Image
-                  src={song.artistAvatar + "@256w"}
+                  src={song.artistAvatar + "@128w"}
                   alt="cover"
                   className="w-6 h-6 rounded-full"
                 />

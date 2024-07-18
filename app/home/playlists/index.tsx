@@ -63,7 +63,7 @@ export default function PlaylistsView() {
               <View className="flex flex-row p-2 bg-secondary dark rounded-md">
                 {playlist?.cover && (
                   <Image
-                    src={playlist?.cover + "@256w"}
+                    src={playlist?.cover + "@200w"}
                     alt="cover"
                     className="w-16 h-10 rounded-md"
                   />
