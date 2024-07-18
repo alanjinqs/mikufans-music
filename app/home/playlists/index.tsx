@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { TestTubeDiagonal } from "@/lib/icons/TestTubeDiagonal";
 import { Sun } from "@/lib/icons/Sun";
 import { MoonStar } from "@/lib/icons/MoonStar";
+import { Search } from "@/lib/icons/Search";
 import {
   TouchableHighlight,
   TouchableOpacity,
@@ -25,6 +26,18 @@ export default function PlaylistsView() {
   return (
     <View className="w-full flex">
       <View className="flex flex-row items-center justify-end gap-3">
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={() => {
+            router.push("/home/search");
+          }}
+        >
+          <View className="flex flex-row items-center gap-2">
+            <Search className="text-primary" size={13} />
+          </View>
+        </Button>
         <Button
           className="mb-5 mt-2"
           variant={"outline"}

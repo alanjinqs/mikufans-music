@@ -8,6 +8,7 @@ import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { sendHeartbeat } from "../bili/heartbeat";
 import { cidToSong } from "../db/song";
 import { replaceCurrentPlaying } from "./addToQueue";
+import { bvCid2Track } from "../bili/biliVideo";
 
 const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
   const activeTrack = await TrackPlayer.getActiveTrack();
@@ -79,13 +80,18 @@ module.exports = async function () {
 
   TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
     if (e.state === State.Error) {
+      console.log("Error", e.error);
       const activeTrack = await TrackPlayer.getActiveTrack();
       if (activeTrack) {
-        const currentSongCid: number = activeTrack.id.split("$")[0];
-        cidToSong(currentSongCid).then((song) => {
-          if (!song) return;
-          replaceCurrentPlaying(song);
-        });
+        const [cid, bvid] = activeTrack.id.split("$");
+        if (!bvid || !cid) return;
+        const track = await bvCid2Track(cid, bvid, true);
+        console.log("track", track);
+        if (track) {
+          await TrackPlayer.load(track);
+          TrackPlayer.play();
+        }
+        
       }
     }
   });

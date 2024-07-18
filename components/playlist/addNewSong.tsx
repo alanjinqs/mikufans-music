@@ -17,7 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { addCollectionToPlaylist, addFavoriteToPlaylist, addSongToPlaylist } from "@/utils/db/playlists";
+import {
+  addCollectionToPlaylist,
+  addFavoriteToPlaylist,
+  addSongToPlaylist,
+} from "@/utils/db/playlists";
+import Toast from "react-native-toast-message";
 
 export default function AddNewSong({ playlistId }: { playlistId: number }) {
   const [bvid, setBvid] = React.useState("");
@@ -31,13 +36,42 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
   const addSong = () => {
     switch (currentTab) {
       case "bvid":
-        addSongToPlaylist(bvid, playlistId, updateCover);
+        const matchedBvID = bvid.match(/BV1\w+/g);
+        if (!matchedBvID || matchedBvID.length === 0) {
+          Toast.show({
+            type: "error",
+            text1: "Bv 号解析错误",
+          });
+          return;
+        }
+        addSongToPlaylist(matchedBvID[0], playlistId, updateCover)
+          .then((res) => {
+            setBvid("");
+            if (res && res[0]) {
+              Toast.show({
+                type: "success",
+                text1: "添加成功",
+                text2: `${res[0].title}`,
+              });
+            }
+          })
+          .catch((e) => {
+            Toast.show({
+              type: "error",
+              text1: "添加失败",
+              text2: e.message,
+            });
+          });
         break;
       case "favorite":
         addFavoriteToPlaylist(parseInt(favId), playlistId, updateCover);
         break;
       case "videoCollection":
-        addCollectionToPlaylist(parseInt(videoCollectionId), playlistId, updateCover);
+        addCollectionToPlaylist(
+          parseInt(videoCollectionId),
+          playlistId,
+          updateCover
+        );
         break;
     }
   };

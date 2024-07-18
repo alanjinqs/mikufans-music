@@ -1,5 +1,5 @@
 import { Track } from "react-native-track-player";
-import { biliFetch } from "./biliFetch";
+import { biliFetch, UA } from "./biliFetch";
 import { Platform } from "react-native";
 
 export const getBiliVideoDashPlaybackInfo = async (
@@ -22,8 +22,12 @@ export const getBiliVideoMp4PlaybackInfo = async (
   return res.json();
 };
 
-export const biliDashVideoInfoToBestAudio = (data: any) => {
+export const biliDashVideoInfoToBestAudio = (
+  data: any,
+  backupStream = false
+) => {
   const audio = data.dash.audio;
+  if (backupStream) return audio[0];
   const bestAudio = audio.sort(
     (a: any, b: any) => b.bandwidth - a.bandwidth
   )[0];
@@ -37,20 +41,29 @@ export const getBiliVideoMeta = async (bvid: string) => {
   return res.json();
 };
 
-export const bvCid2Track = async (cid: number, bvid: string) => {
+export const bvCid2Track = async (
+  cid: number,
+  bvid: string,
+  backupStream = false
+) => {
   const meta = await getBiliVideoMeta(bvid);
   if (Platform.OS !== "ios") {
     const videoPlaybackInfo = await getBiliVideoDashPlaybackInfo(cid, bvid);
     const bestPlaybackAudio = biliDashVideoInfoToBestAudio(
-      videoPlaybackInfo.data
+      videoPlaybackInfo.data,
+      backupStream
     );
     const track: Track = {
       id: cid.toString() + "$" + bvid,
-      url: bestPlaybackAudio.baseUrl,
+      url: bestPlaybackAudio.base_url,
       title: meta.data.title,
       artist: meta.data.owner.name,
       artwork: meta.data.pic.replace("http://", "https://"),
       duration: videoPlaybackInfo.data.dash.duration,
+      userAgent: UA,
+      headers: {
+        Referer: `https://www.bilibili.com/video/${bvid}`,
+      },
     };
     return track;
   } else {
@@ -58,7 +71,10 @@ export const bvCid2Track = async (cid: number, bvid: string) => {
     const videoPlaybackInfo = await getBiliVideoMp4PlaybackInfo(cid, bvid);
     const track: Track = {
       id: cid.toString() + "$" + bvid,
-      url: videoPlaybackInfo.data.durl[0].url,
+      url:
+        backupStream && videoPlaybackInfo.data.backup_url
+          ? videoPlaybackInfo.data.backup_url[0].url
+          : videoPlaybackInfo.data.durl[0].url,
       title: meta.data.title,
       artist: meta.data.owner.name,
       artwork: meta.data.pic.replace("http://", "https://"),

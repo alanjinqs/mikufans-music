@@ -49,7 +49,7 @@ export const addSongToPlaylist = async (
 
   const artwork = meta.data.pic.replace("http://", "https://");
   const color = await artworkToDarkColor(artwork);
-  await db
+  const resSong = await db
     .insert(song)
     .values({
       id: songId,
@@ -63,7 +63,8 @@ export const addSongToPlaylist = async (
       addedAt: new Date(),
       color,
     })
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning();
   await db.insert(songToPlaylist).values({
     playlistId,
     songId,
@@ -80,6 +81,7 @@ export const addSongToPlaylist = async (
       })
       .where(eq(playlist.id, playlistId));
   }
+  return resSong;
 };
 
 export const addFavoriteToPlaylist = async (

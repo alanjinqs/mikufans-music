@@ -19,6 +19,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import "react-native-reanimated";
 import "react-native-gesture-handler";
 import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
+import Toast from "react-native-toast-message";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -116,6 +117,7 @@ function RootLayout() {
         </GestureHandlerRootView>
       </ThemeProvider>
       <PortalHost />
+      <Toast />
     </>
   );
 }
