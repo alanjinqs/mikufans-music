@@ -54,16 +54,19 @@ export default function TestView() {
         >
           <Text>emptyDBQueue</Text>
         </Button>
+
         <Button
           onPress={async () => {
-            const currentTrack = await TrackPlayer.getActiveTrack();
-            if (!currentTrack) return;
-            qqMusicSearchSong(currentTrack.title as string).then((res) => {
-              qqMusicMidToLrc(res[0].mid).then((lrcs) => {});
-            });
+            await db.delete(schema.currentQueue);
+            await db.delete(schema.currentQueueMeta);
+            await db.delete(schema.songToPlaylist);
+            await db.delete(schema.playlist);
+            await db.delete(schema.song);
+            await TrackPlayer.reset();
+            BackHandler.exitApp();
           }}
         >
-          <Text>Search Current track title</Text>
+          <Text>Delete ALL songs and PLs</Text>
         </Button>
         <Button
           onPress={() => {
