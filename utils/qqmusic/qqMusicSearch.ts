@@ -55,7 +55,7 @@ export const qqMusicMidToLrc = async (mid: string) => {
   const json = await res.json();
 
   return {
-    lyric: json.lyric,
-    transLyric: json.trans,
+    lyric: json.lyric.replaceAll("\r\n", "\n").replaceAll("&apos;", "'"),
+    transLyric: json.trans.replaceAll("\r\n", "\n").replaceAll("&apos;", "'"),
   };
 };
