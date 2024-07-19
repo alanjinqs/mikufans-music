@@ -189,7 +189,7 @@ export default function PlaylistView() {
                         </Text>
 
                         <Text className="text-secondary-foreground/10 text-xs ml-3">
-                          {song.type === "tp" ? "Stream fatched" : ""}
+                          {song.type === "tp" ? "Stream fetched" : ""}
                         </Text>
                       </View>
                     </View>
