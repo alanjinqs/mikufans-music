@@ -13,18 +13,8 @@ import {
   usePathname,
   useRouter,
 } from "expo-router";
-import { useRoute } from "@react-navigation/native";
-import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { ChevronLeft } from "@/lib/icons/ChevronLeft";
-import { MotiView } from "moti";
-import FullScreenPlayer from "@/components/player/FullScreenPlayer";
-import Animated, {
-  ReduceMotion,
-  useAnimatedStyle,
-  Easing,
-  withTiming,
-} from "react-native-reanimated";
 
 export default function HomeIndex() {
   const pathname = usePathname();
@@ -32,21 +22,8 @@ export default function HomeIndex() {
 
   const [userInfo, setUserInfo] = useState<BiliUserInfo | null>(null);
 
-  const [willShowingFullScreenPlayer, setWillShowingFullScreenPlayer] =
-    useState(false);
-  const [isShowingFullScreenPlayer, setIsShowingFullScreenPlayer] =
-    useState(false);
-
-  const onCloseFullScreenPlayer = () => {
-    setWillShowingFullScreenPlayer(false);
-    setTimeout(() => {
-      setIsShowingFullScreenPlayer(false);
-    }, 400);
-  };
-
   const onShowFullScreenPlayer = () => {
-    setIsShowingFullScreenPlayer(true);
-    setWillShowingFullScreenPlayer(true);
+    router.push("fullScreenPlayer");
   };
 
   const updateUserInfo = () => {
@@ -64,17 +41,6 @@ export default function HomeIndex() {
       }
     });
   }, []);
-  const screenHeight = Dimensions.get("screen").height;
-
-  const fullscreenPlayerStyle = useAnimatedStyle(() => {
-    return {
-      top: withTiming(willShowingFullScreenPlayer ? 0 : screenHeight, {
-        duration: 400,
-        easing: Easing.inOut(Easing.cubic),
-        reduceMotion: ReduceMotion.System,
-      }),
-    };
-  });
 
   return (
     <>
@@ -106,12 +72,6 @@ export default function HomeIndex() {
             <MiniPlayer onShowFullScreenPlayer={onShowFullScreenPlayer} />
           </View>
         </View>
-        <Animated.View
-          className="absolute left-0"
-          style={fullscreenPlayerStyle}
-        >
-          <FullScreenPlayer onCloseTab={onCloseFullScreenPlayer} />
-        </Animated.View>
       </SafeAreaView>
     </>
   );
