@@ -25,6 +25,7 @@ import {
   SearchResultCardSq,
 } from "@/components/song/SearchResultCard";
 import { debounce } from "lodash";
+import { isMusicType } from "@/utils/bili/biliTypeIdFilters";
 
 export default function HomeView() {
   const { width, height } = useWindowDimensions();
@@ -41,17 +42,21 @@ export default function HomeView() {
     setIsGettingNewRecommend(true);
     console.log("get new recommend");
     const res = await indexRecommend();
-    const recommendVideos: SearchResult[] = res.item.map((item: any) => ({
-      aid: parseInt(item.id),
-      artistName: item.owner.name,
-      artistMid: item.owner.mid,
-      artistAvatar: item.owner.face.replace("http://", "https://"),
-      bvid: item.bvid,
-      title: item.title,
-      artwork: item.pic.replace("http://", "https://"),
-      publishedAt: item.pubdate,
-      duration: item.duration,
-    }));
+    const recommendVideos: SearchResult[] = res.item
+      .map((item: any) => ({
+        aid: parseInt(item.id),
+        artistName: item.owner.name,
+        artistMid: item.owner.mid,
+        artistAvatar: item.owner.face.replace("http://", "https://"),
+        bvid: item.bvid,
+        title: item.title,
+        artwork: item.pic.replace("http://", "https://"),
+        publishedAt: item.pubdate,
+        duration: item.duration,
+        danmu: item.stat.danmaku,
+        view: item.stat.view,
+        like: item.stat.like,
+      }));
     setRecommendVideos((current) => [...current, ...recommendVideos]);
     setIsGettingNewRecommend(false);
   };

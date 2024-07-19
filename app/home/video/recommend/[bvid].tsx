@@ -9,16 +9,30 @@ import { View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { Text } from "@/components/ui/text";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
+import { Button } from "@/components/ui/button";
+import { Music } from "@/lib/icons/Music";
+import { isMusicType } from "@/utils/bili/biliTypeIdFilters";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function RecommendVideosPage() {
   const { bvid } = useLocalSearchParams();
 
   const [recommendVideos, setRecommendVideos] = useState<SearchResult[]>([]);
+  const [isMusicFilterOn, setIsMusicFilterOn] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem("isMusicFilterOn").then((res) => {
+      if (res === "true") {
+        setIsMusicFilterOn(true);
+      } else {
+        setIsMusicFilterOn(false);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     console.log(bvid);
-
-    videoRecommend(bvid as string).then((res) => {
+    videoRecommend(bvid as string).then((res: any) => {
       const parsedResults: SearchResult[] = res.map((item: any) => ({
         aid: parseInt(item.id),
         artistName: item.owner.name,
@@ -29,6 +43,7 @@ export default function RecommendVideosPage() {
         artwork: item.pic.replace("http://", "https://"),
         publishedAt: item.pubdate,
         duration: item.duration,
+        typeId: item.tid,
       }));
       setRecommendVideos(parsedResults);
     });
@@ -36,6 +51,7 @@ export default function RecommendVideosPage() {
 
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] = useState("");
+
   return (
     <View className="w-full flex flex-col h-full">
       <View className="w-full">
@@ -44,9 +60,36 @@ export default function RecommendVideosPage() {
         </Text>
       </View>
 
+      <View className="flex flex-row items-center justify-end gap-3">
+        <Button
+          className="mb-5 mt-2"
+          variant={isMusicFilterOn ? "default" : "outline"}
+          size={"sm"}
+          onPress={() => {
+            AsyncStorage.setItem(
+              "isMusicFilterOn",
+              isMusicFilterOn ? "false" : "true"
+            );
+            setIsMusicFilterOn(!isMusicFilterOn);
+          }}
+        >
+          <Music
+            className={
+              isMusicFilterOn ? "text-primary-foreground" : "text-primary"
+            }
+            size={13}
+          />
+        </Button>
+      </View>
       <View className="flex-1">
         <FlatList
-          data={recommendVideos}
+          data={recommendVideos.filter((res) => {
+            if (isMusicFilterOn) {
+              return isMusicType(parseInt(res.typeId || "0"));
+            } else {
+              return true;
+            }
+          })}
           renderItem={({ item }) => {
             return (
               <SearchResultCard

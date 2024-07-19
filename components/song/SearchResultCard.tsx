@@ -21,7 +21,8 @@ export type SearchResult = {
   artwork: string;
   play?: number;
   danmu?: number;
-  favorite: number;
+  favorite?: number;
+  like?: number;
   tag?: string;
   publishedAt: string;
   duration: string;
