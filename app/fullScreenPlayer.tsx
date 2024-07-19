@@ -158,9 +158,11 @@ export default function FullScreenPlayer() {
       }}
     >
       <View
-        className="w-full flex flex-row justify-between px-6"
+        className="w-full flex flex-row justify-between"
         style={{
           paddingTop: Platform.OS !== "ios" ? insets.top : 24,
+          paddingLeft: insets.left + 24,
+          paddingRight: insets.right + 24,
         }}
       >
         <View className="flex flex-row items-center justify-start gap-4">
@@ -181,9 +183,7 @@ export default function FullScreenPlayer() {
           {currentTrack && (
             <TouchableOpacity
               onPress={() => {
-                if (Platform.OS === "ios") {
-                  router.dismiss();
-                }
+                router.dismiss();
                 router.push(`/home/video/recommend/${currentBvid}`);
               }}
             >
@@ -213,9 +213,7 @@ export default function FullScreenPlayer() {
           )}
           <TouchableOpacity
             onPress={() => {
-              if (Platform.OS === "ios") {
-                router.dismiss();
-              }
+              router.dismiss();
               router.push("/home/currentQueue");
             }}
           >
