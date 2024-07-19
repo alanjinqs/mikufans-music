@@ -26,6 +26,7 @@ type Row = {
   id: number;
   songId: number;
   type: "db" | "tp";
+  quality?: string;
 };
 export default function PlaylistView() {
   const {
@@ -55,22 +56,27 @@ export default function PlaylistView() {
     if (currentTrack) {
       const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
 
-      const currentTrackSong = await cidToSong(currentTrack.id.split("$")[0]);
+      const [cid, bvid, quality] = currentTrack.id.split("$");
+      const currentTrackSong = await cidToSong(cid);
       tpList.push({
         id: currentTrackIndex!,
         song: currentTrackSong!,
         songId: currentTrackSong!.id,
         type: "tp",
+        quality,
       });
       const trackQuue = await TrackPlayer.getQueue();
       let i = 1;
       for (const nextTrack of trackQuue.slice(currentTrackIndex! + 1)) {
-        const nextTrackSong = await cidToSong(nextTrack.id.split("$")[0]);
+        const [nextTrackCid, nextTrackBvid, nextTrackQuality] =
+          nextTrack.id.split("$");
+        const nextTrackSong = await cidToSong(nextTrackCid);
         tpList.push({
           id: currentTrackIndex! + i,
           song: nextTrackSong!,
           songId: nextTrackSong!.id,
           type: "tp",
+          quality: nextTrackQuality,
         });
         i += 1;
       }
@@ -188,9 +194,15 @@ export default function PlaylistView() {
                           {song.song.artistName}
                         </Text>
 
-                        <Text className="text-secondary-foreground/10 text-xs ml-3">
-                          {song.type === "tp" ? "Stream fetched" : ""}
-                        </Text>
+                        {song.quality ? (
+                          <Text className="text-secondary-foreground/30 text-xs ml-3">
+                            {song.quality}
+                          </Text>
+                        ) : (
+                          <Text className="text-secondary-foreground/10 text-xs ml-3">
+                            {song.type === "tp" ? "Stream fetched" : ""}
+                          </Text>
+                        )}
                       </View>
                     </View>
                   </View>

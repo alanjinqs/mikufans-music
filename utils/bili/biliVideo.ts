@@ -2,6 +2,14 @@ import { Track } from "react-native-track-player";
 import { biliFetch, UA } from "./biliFetch";
 import { Platform } from "react-native";
 
+export const audioQuality = {
+  30216: "64K",
+  30232: "132K",
+  30280: "192K",
+  30250: "杜比全景声",
+  30251: "Hi-Res无损",
+};
+
 export const getBiliVideoDashPlaybackInfo = async (
   cid: number,
   bvid: string
@@ -54,7 +62,13 @@ export const bvCid2Track = async (
       backupStream
     );
     const track: Track = {
-      id: cid.toString() + "$" + bvid,
+      id:
+        cid.toString() +
+          "$" +
+          bvid +
+          "$" +
+          audioQuality[bestPlaybackAudio.id as keyof typeof audioQuality] ||
+        "Unknown Quality",
       url: bestPlaybackAudio.base_url,
       title: meta.data.title,
       artist: meta.data.owner.name,
@@ -65,11 +79,11 @@ export const bvCid2Track = async (
         Referer: `https://www.bilibili.com/video/${bvid}`,
       },
     };
+    console.log("main", track.url);
     return track;
   } else {
     // console.error("NOT TESTED");
     const videoPlaybackInfo = await getBiliVideoMp4PlaybackInfo(cid, bvid);
-    console.log("main", videoPlaybackInfo.data.durl[0].url);
     const track: Track = {
       id: cid.toString() + "$" + bvid,
       url: videoPlaybackInfo.data.durl[0].url,
