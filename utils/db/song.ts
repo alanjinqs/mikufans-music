@@ -24,3 +24,24 @@ export const updateSongOffset = async (songId: number, offset: number) => {
     .where(eq(song.id, songId));
   return;
 };
+
+export const addSongDownloadedPath = async (
+  path: string,
+  songId: number,
+  duration: number
+) => {
+  await db
+    .update(song)
+    .set({ downloadedMp3Path: path, downloadedMp3Duration: duration })
+    .where(eq(song.id, songId));
+};
+
+export const addSongDownloadedCoverPath = async (
+  path: string,
+  songId: number
+) => {
+  await db
+    .update(song)
+    .set({ downloadedCoverPath: path })
+    .where(eq(song.id, songId));
+};

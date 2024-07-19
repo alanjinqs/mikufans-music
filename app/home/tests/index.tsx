@@ -6,10 +6,6 @@ import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CookieManager from "@react-native-cookies/cookies";
-import {
-  qqMusicMidToLrc,
-  qqMusicSearchSong,
-} from "@/utils/qqmusic/qqMusicSearch";
 
 export default function TestView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));

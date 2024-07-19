@@ -88,6 +88,10 @@ export const replaceCurrentPlaying = async (
       .where(eq(schema.song.id, song.id));
     cid = c.cid;
   }
-  const track = await bvCid2Track(cid, song.bvid);
+  const track = await bvCid2Track({
+    cid,
+    bvid: song.bvid,
+    song,
+  });
   await TrackPlayer.load(track);
 };

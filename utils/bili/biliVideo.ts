@@ -1,6 +1,7 @@
 import { Track } from "react-native-track-player";
 import { biliFetch, UA } from "./biliFetch";
 import { Platform } from "react-native";
+import { SongDB } from "../db/db";
 
 export const audioQuality = {
   30216: "64K",
@@ -49,12 +50,59 @@ export const getBiliVideoMeta = async (bvid: string) => {
   return res.json();
 };
 
-export const bvCid2Track = async (
+export const getBiliBsetAudioDash = async (
   cid: number,
   bvid: string,
   backupStream = false
 ) => {
+  const videoPlaybackInfo = await getBiliVideoDashPlaybackInfo(cid, bvid);
+  const bestPlaybackAudio = biliDashVideoInfoToBestAudio(
+    videoPlaybackInfo.data,
+    backupStream
+  );
+  return {
+    ...bestPlaybackAudio,
+    duration: videoPlaybackInfo.data.dash.duration,
+  };
+};
+
+export const bvCid2Track = async (
+  {
+    cid,
+    bvid,
+    song,
+  }: {
+    cid: number;
+    bvid: string;
+    song?: SongDB;
+  },
+  backupStream = false
+) => {
+  if (
+    song &&
+    song.title &&
+    song.artistName &&
+    song.downloadedMp3Path &&
+    song.downloadedMp3Duration &&
+    song.downloadedCoverPath
+  ) {
+    const track: Track = {
+      id: cid.toString() + "$" + bvid + "$" + "Local",
+      url: song.downloadedMp3Path,
+      title: song.title,
+      artist: song.artistName,
+      artwork: song.downloadedCoverPath,
+      duration: song.downloadedMp3Duration,
+    };
+    return track;
+  }
+
   const meta = await getBiliVideoMeta(bvid);
+
+  let artwork = meta.data.pic.replace("http://", "https://");
+  if (song && song.downloadedCoverPath) {
+    artwork = song.downloadedCoverPath;
+  }
   if (Platform.OS !== "ios") {
     const videoPlaybackInfo = await getBiliVideoDashPlaybackInfo(cid, bvid);
     const bestPlaybackAudio = biliDashVideoInfoToBestAudio(
@@ -72,14 +120,13 @@ export const bvCid2Track = async (
       url: bestPlaybackAudio.base_url,
       title: meta.data.title,
       artist: meta.data.owner.name,
-      artwork: meta.data.pic.replace("http://", "https://"),
+      artwork,
       duration: videoPlaybackInfo.data.dash.duration,
       userAgent: UA,
       headers: {
         Referer: `https://www.bilibili.com/video/${bvid}`,
       },
     };
-    console.log("main", track.url);
     return track;
   } else {
     // console.error("NOT TESTED");
@@ -89,7 +136,7 @@ export const bvCid2Track = async (
       url: videoPlaybackInfo.data.durl[0].url,
       title: meta.data.title,
       artist: meta.data.owner.name,
-      artwork: meta.data.pic.replace("http://", "https://"),
+      artwork,
       duration: videoPlaybackInfo.data.durl[0].length / 1000,
       userAgent: UA,
       headers: {

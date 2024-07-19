@@ -6,8 +6,6 @@ import TrackPlayer, {
 } from "react-native-track-player";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { sendHeartbeat } from "../bili/heartbeat";
-import { cidToSong } from "../db/song";
-import { replaceCurrentPlaying } from "./addToQueue";
 import { bvCid2Track } from "../bili/biliVideo";
 
 const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
@@ -85,7 +83,13 @@ module.exports = async function () {
       if (activeTrack) {
         const [cid, bvid] = activeTrack.id.split("$");
         if (!bvid || !cid) return;
-        const track = await bvCid2Track(cid, bvid, true);
+        const track = await bvCid2Track(
+          {
+            cid,
+            bvid,
+          },
+          true
+        );
         console.log("track", track);
         if (track) {
           await TrackPlayer.load(track);

@@ -103,7 +103,10 @@ export const SearchResultCard = ({
           <CardActionRight
             onPressReplaceCurrentPlaying={async () => {
               const [cid] = await bv2Cid(result.bvid);
-              const track = await bvCid2Track(cid.cid, result.bvid);
+              const track = await bvCid2Track({
+                cid: cid.cid,
+                bvid: result.bvid,
+              });
 
               await TrackPlayer.load(track);
               await TrackPlayer.play();
@@ -151,7 +154,10 @@ export const SearchResultCardSq = ({
       <TouchableOpacity
         onPress={async () => {
           const [cid] = await bv2Cid(result.bvid);
-          const track = await bvCid2Track(cid.cid, result.bvid);
+          const track = await bvCid2Track({
+            cid: cid.cid,
+            bvid: result.bvid,
+          });
 
           await TrackPlayer.load(track);
           await TrackPlayer.play();
@@ -191,7 +197,10 @@ export const SearchResultCardSq = ({
                 }}
               />
             )}
-            <Text className="text-secondary-foreground/80 text-xs" numberOfLines={1}>
+            <Text
+              className="text-secondary-foreground/80 text-xs"
+              numberOfLines={1}
+            >
               {result?.artistName}
             </Text>
           </View>

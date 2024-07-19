@@ -5,52 +5,64 @@ import { currentQueue, currentQueueMeta } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { bv2Cid } from "../bili/avBvCid";
 import { bvCid2Track } from "../bili/biliVideo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const addQueueToTrackPlayer = async () => {
+  const isUpdating = await AsyncStorage.getItem("isTPQueueUpdating");
+  if (isUpdating === "true") return true;
+  await AsyncStorage.setItem("isTPQueueUpdating", "true");
   // return: hasNext
   const currentTPQueue = await TrackPlayer.getQueue();
   const currentTPIndex = await TrackPlayer.getActiveTrackIndex();
-  if (
-    !currentTPIndex ||
-    currentTPQueue.length === 0 ||
-    currentTPQueue.length <= currentTPIndex + 3
-  ) {
-    const metaObj = await getCurrentQueueMeta();
+  const hasNext = await (async () => {
+    if (
+      !currentTPIndex ||
+      currentTPQueue.length === 0 ||
+      currentTPQueue.length <= currentTPIndex + 3
+    ) {
+      const metaObj = await getCurrentQueueMeta();
 
-    if (metaObj.queue) {
-      const queue = JSON.parse(metaObj.queue);
-      if (queue.length === 0) return false;
-      updateMeta("queue", JSON.stringify(queue.slice(3)));
+      if (metaObj.queue) {
+        const queue = JSON.parse(metaObj.queue);
+        if (queue.length === 0) return false;
+        updateMeta("queue", JSON.stringify(queue.slice(3)));
 
-      const songs = await db.query.currentQueue.findMany({
-        with: {
-          song: true,
-        },
-        where: inArray(currentQueue.id, queue.slice(0, 3)),
-      });
+        const songs = await db.query.currentQueue.findMany({
+          with: {
+            song: true,
+          },
+          where: inArray(currentQueue.id, queue.slice(0, 3)),
+        });
 
-      for (const s of songs) {
-        if (!s || !s.song || !s.song.bvid) return false;
+        for (const s of songs) {
+          if (!s || !s.song || !s.song.bvid) return false;
 
-        let cid = s.song.cid;
-        if (!cid) {
-          // TODO: 分p
-          const [c] = await bv2Cid(s.song.bvid);
-          await db
-            .update(schema.song)
-            .set({ cid: c.cid })
-            .where(eq(schema.song.id, s.song.id));
-          cid = c.cid;
+          let cid = s.song.cid;
+          if (!cid) {
+            // TODO: 分p
+            const [c] = await bv2Cid(s.song.bvid);
+            await db
+              .update(schema.song)
+              .set({ cid: c.cid })
+              .where(eq(schema.song.id, s.song.id));
+            cid = c.cid;
+          }
+
+          const track = await bvCid2Track({
+            cid,
+            bvid: s.song.bvid,
+            song: s.song,
+          });
+          await TrackPlayer.add(track);
         }
-
-        const track = await bvCid2Track(cid, s.song.bvid);
-        await TrackPlayer.add(track);
+        return true;
+      } else {
+        return true;
       }
-      return true;
-    } else {
-      return true;
     }
-  }
+  })();
+  await AsyncStorage.setItem("isTPQueueUpdating", "false");
+  return hasNext;
 };
 
 export const dpQueueSkipTo = async (id: number) => {

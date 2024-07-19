@@ -1,0 +1,1 @@
+ALTER TABLE `song` ADD `downloadedMp3Duration` integer;

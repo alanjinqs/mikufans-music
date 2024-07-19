@@ -82,8 +82,6 @@ export default function PlaylistView() {
       }
 
       data = tpList.concat(data);
-
-      console.log("songs", data);
       setSongs(data);
     }
   };
@@ -172,7 +170,10 @@ export default function PlaylistView() {
                   <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
                     {song.song.artwork && (
                       <Image
-                        src={song.song.artwork + "@200w"}
+                        src={
+                          song.song.downloadedCoverPath ||
+                          song.song.artwork + "@200w"
+                        }
                         alt="cover"
                         className="w-16 h-10 rounded-md "
                       />

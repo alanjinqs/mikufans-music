@@ -27,6 +27,16 @@ import { removeSongFromPlaylist } from "@/utils/db/playlists";
 import { Plus } from "@/lib/icons/Plus";
 import { Trash2 } from "@/lib/icons/Trash2";
 import { SquareArrowOutUpRight } from "@/lib/icons/SquareArrowOutUpRight";
+import { Download } from "@/lib/icons/Download";
+import { biliCoverImgDownload, biliVideoDownload } from "@/utils/file/download";
+import {
+  getBiliBsetAudioDash,
+  getBiliVideoDashPlaybackInfo,
+} from "@/utils/bili/biliVideo";
+import {
+  addSongDownloadedCoverPath,
+  addSongDownloadedPath,
+} from "@/utils/db/song";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -137,12 +147,19 @@ const CardActionLeft = ({
 const CardActionRight = ({
   onPressAddToQueue,
   onPressReplaceCurrentPlaying,
+  onPressDownload,
 }: {
   onPressAddToQueue: () => void;
   onPressReplaceCurrentPlaying: () => void;
+  onPressDownload: () => void;
 }) => {
   return (
     <View className="flex flex-row items-center">
+      <TouchableOpacity onPress={onPressDownload}>
+        <View className="bg-sky-300 h-full flex items-center justify-center px-4 !m-0">
+          <Download size={20} className="text-white" />
+        </View>
+      </TouchableOpacity>
       <TouchableOpacity onPress={onPressAddToQueue}>
         <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
           <Plus size={20} className="text-white" />
@@ -206,13 +223,34 @@ const SongCard = ({
               swipeableRef.current?.close();
               addSongToQueue(song.id);
             }}
+            onPressDownload={() => {
+              swipeableRef.current?.close();
+              if (!song.cid || !song.bvid) return;
+              biliCoverImgDownload({
+                url: song.artwork + "@500w",
+                fileName: `${song.bvid}_cover`,
+              }).then((path) => {
+                addSongDownloadedCoverPath(path, song.id);
+              });
+              getBiliBsetAudioDash(song.cid, song.bvid).then((dash) => {
+                biliVideoDownload({
+                  url: dash.base_url,
+                  fileName: `${song.bvid}_${song.cid}`,
+                  callback: (res) => {
+                    console.log(res);
+                  },
+                }).then((path) => {
+                  addSongDownloadedPath(path, song.id, dash.duration);
+                });
+              });
+            }}
           />
         )}
       >
         <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
           {song.artwork && (
             <Image
-              src={song.artwork + "@200w"}
+              src={song.downloadedCoverPath || song.artwork + "@200w"}
               alt="cover"
               className="w-16 h-10 rounded-md "
             />
@@ -222,17 +260,23 @@ const SongCard = ({
               {song.title}
             </Text>
 
-            <View className="flex flex-row items-center gap-1">
-              {song.artistAvatar && (
-                <Image
-                  src={song.artistAvatar + "@128w"}
-                  alt="cover"
-                  className="w-6 h-6 rounded-full"
-                />
+            <View className="flex flex-row w-full items-center justify-between">
+              <View className="flex flex-row items-center gap-1">
+                {song.artistAvatar && (
+                  <Image
+                    src={song.artistAvatar + "@128w"}
+                    alt="cover"
+                    className="w-6 h-6 rounded-full"
+                  />
+                )}
+                <Text className="text-secondary-foreground/50 text-xs">
+                  {song.artistName}
+                </Text>
+              </View>
+
+              {song.downloadedMp3Path && (
+                <Download size={10} className="text-green-800/40" />
               )}
-              <Text className="text-secondary-foreground/50 text-xs">
-                {song.artistName}
-              </Text>
             </View>
           </View>
         </View>

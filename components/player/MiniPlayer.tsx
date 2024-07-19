@@ -168,7 +168,6 @@ export default function MiniPlayer({
         leftThreshold={50}
         rightThreshold={50}
         onSwipeableOpen={(direction) => {
-
           if (direction === "right") {
             // if (!nextTrack) {
             //   TrackPlayer.reset();
@@ -210,7 +209,10 @@ export default function MiniPlayer({
           >
             {currentTrack?.artwork && (
               <Image
-                src={currentTrack?.artwork + "@500w"}
+                src={
+                  currentTrack.artwork +
+                  (currentTrack.artwork.includes("file://") ? "" : "@500w")
+                }
                 alt="cover"
                 className="w-16 h-10 rounded-md"
               />
@@ -297,7 +299,9 @@ export const LeftRight = ({
     <View className="flex flex-row w-full items-center mt-4 px-4">
       {track?.artwork && (
         <Image
-          src={track?.artwork + "@500w"}
+          src={
+            track.artwork + (track.artwork.includes("file://") ? "" : "@500w")
+          }
           alt="cover"
           className="w-16 h-10 rounded-md"
         />

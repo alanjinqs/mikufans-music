@@ -247,7 +247,10 @@ export default function FullScreenPlayer({
             <View className="flex flex-col gap-8">
               {currentTrack?.artwork && (
                 <Image
-                  src={currentTrack?.artwork + "@500w"}
+                  src={
+                    currentTrack.artwork +
+                    (currentTrack.artwork.includes("file://") ? "" : "@500w")
+                  }
                   alt="cover"
                   className="rounded-md"
                   style={{
@@ -396,33 +399,3 @@ export default function FullScreenPlayer({
     </View>
   );
 }
-
-export const LeftRight = ({
-  track,
-  isPlaying,
-}: {
-  track?: Track;
-  isPlaying: boolean;
-}) => {
-  return (
-    <View className="flex flex-row w-full items-center">
-      {track?.artwork && (
-        <Image
-          src={track?.artwork + "@200w"}
-          alt="cover"
-          className="w-16 h-10 rounded-md"
-        />
-      )}
-      <View className="text-white pl-3 pr-2 flex-1 flex flex-col justify-center">
-        <Text numberOfLines={1} className="text-white text-md">
-          {track?.title || "- 播放列表为空 -"}
-        </Text>
-
-        <Text className="text-white/50 text-sm">
-          {track?.artist || "暂无歌手信息"}
-        </Text>
-      </View>
-      <View className="flex justify-center align-middle w-6"></View>
-    </View>
-  );
-};
