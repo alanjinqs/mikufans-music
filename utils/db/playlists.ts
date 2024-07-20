@@ -225,3 +225,10 @@ export const removeSongFromPlaylist = async (
       )
     );
 };
+
+export const removePlaylist = async (playlistId: number) => {
+  await db
+    .delete(songToPlaylist)
+    .where(eq(songToPlaylist.playlistId, playlistId));
+  await db.delete(playlist).where(eq(playlist.id, playlistId));
+};

@@ -9,7 +9,12 @@ import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { router, useLocalSearchParams, useRouter } from "expo-router";
 import { memo, useEffect, useRef, useState } from "react";
-import { Image, Share } from "react-native";
+import {
+  Animated,
+  Image,
+  Share,
+  TouchableOpacity as RNTouchableOpacity,
+} from "react-native";
 
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
@@ -23,7 +28,7 @@ import {
   TouchableOpacity,
 } from "react-native-gesture-handler";
 import AddNewSong from "@/components/playlist/addNewSong";
-import { removeSongFromPlaylist } from "@/utils/db/playlists";
+import { removePlaylist, removeSongFromPlaylist } from "@/utils/db/playlists";
 import { ListStart } from "@/lib/icons/ListStart";
 import { Trash2 } from "@/lib/icons/Trash2";
 import { SquareArrowOutUpRight } from "@/lib/icons/SquareArrowOutUpRight";
@@ -37,6 +42,13 @@ import {
   addSongDownloadedCoverPath,
   addSongDownloadedPath,
 } from "@/utils/db/song";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu } from "@/lib/icons/Menu";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -75,6 +87,27 @@ export default function PlaylistView() {
         </Text>
       </View>
       <View className="flex flex-row items-center justify-end gap-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="mb-5 mt-2" variant={"outline"} size={"sm"}>
+              <Menu className="text-primary" size={13} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64 native:w-72">
+            <DropdownMenuItem
+              onPress={() => {
+                removePlaylist(playlistId).then(() => {
+                  router.back();
+                });
+              }}
+            >
+              <View className="flex flex-row items-center gap-2">
+                <Trash2 className="text-primary" size={20} />
+                <Text>删除歌单</Text>
+              </View>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <AddNewSong playlistId={playlistId} />
         <Button
           className="mb-5 mt-2"
@@ -178,113 +211,115 @@ const CardActionRight = memo(
   }
 );
 
-const SongCard = memo(({
-  song,
-  playlistId,
-  fetchPlaylist,
-}: {
-  song: typeof schema.song.$inferSelect;
-  playlistId: number;
-  fetchPlaylist: () => void;
-}) => {
-  const swipeableRef = useRef<Swipeable>(null);
+const SongCard = memo(
+  ({
+    song,
+    playlistId,
+    fetchPlaylist,
+  }: {
+    song: typeof schema.song.$inferSelect;
+    playlistId: number;
+    fetchPlaylist: () => void;
+  }) => {
+    const swipeableRef = useRef<Swipeable>(null);
 
-  return (
-    <View
-      style={{
-        paddingBottom: 8,
-      }}
-    >
-      <Swipeable
-        ref={swipeableRef}
-        // onFailed={() => playSong(song.song)}
-        key={song.id}
-        renderLeftActions={() => (
-          <CardActionLeft
-            onPressTrash={() => {
-              swipeableRef.current?.close();
-              removeSongFromPlaylist(song.id, playlistId).then(() => {
-                fetchPlaylist();
-              });
-            }}
-            onPressShare={() => {
-              swipeableRef.current?.close();
-              Share.share({
-                message: `【${song.title}】 https://b23.tv/${song.bvid}`,
-                url: `https://b23.tv/${song.bvid}`,
-              });
-            }}
-          />
-        )}
-        renderRightActions={() => (
-          <CardActionRight
-            onPressReplaceCurrentPlaying={() => {
-              swipeableRef.current?.close();
-              TrackPlayer.setPlayWhenReady(true);
-              replaceCurrentPlaying(song);
-            }}
-            onPressAddToQueue={() => {
-              swipeableRef.current?.close();
-              addSongToQueue(song);
-            }}
-            onPressDownload={() => {
-              swipeableRef.current?.close();
-              if (!song.cid || !song.bvid) return;
-              biliCoverImgDownload({
-                url: song.artwork + "@500w",
-                fileName: `${song.bvid}_cover`,
-              }).then((path) => {
-                addSongDownloadedCoverPath(path, song.id);
-              });
-              getBiliBsetAudioDash(song.cid, song.bvid).then((dash) => {
-                biliVideoDownload({
-                  url: dash.base_url,
-                  fileName: `${song.bvid}_${song.cid}`,
-                  callback: (res) => {
-                    console.log(res);
-                  },
-                }).then((path) => {
-                  addSongDownloadedPath(path, song.id, dash.duration);
-                });
-              });
-            }}
-          />
-        )}
+    return (
+      <View
+        style={{
+          paddingBottom: 8,
+        }}
       >
-        <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
-          {song.artwork && (
-            <Image
-              src={song.downloadedCoverPath || song.artwork + "@200w"}
-              alt="cover"
-              className="w-16 h-10 rounded-md "
+        <Swipeable
+          ref={swipeableRef}
+          // onFailed={() => playSong(song.song)}
+          key={song.id}
+          renderLeftActions={() => (
+            <CardActionLeft
+              onPressTrash={() => {
+                swipeableRef.current?.close();
+                removeSongFromPlaylist(song.id, playlistId).then(() => {
+                  fetchPlaylist();
+                });
+              }}
+              onPressShare={() => {
+                swipeableRef.current?.close();
+                Share.share({
+                  message: `【${song.title}】 https://b23.tv/${song.bvid}`,
+                  url: `https://b23.tv/${song.bvid}`,
+                });
+              }}
             />
           )}
-          <View className="pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
-            <Text className="text-md" numberOfLines={1}>
-              {song.title}
-            </Text>
+          renderRightActions={() => (
+            <CardActionRight
+              onPressReplaceCurrentPlaying={() => {
+                swipeableRef.current?.close();
+                TrackPlayer.setPlayWhenReady(true);
+                replaceCurrentPlaying(song);
+              }}
+              onPressAddToQueue={() => {
+                swipeableRef.current?.close();
+                addSongToQueue(song);
+              }}
+              onPressDownload={() => {
+                swipeableRef.current?.close();
+                if (!song.cid || !song.bvid) return;
+                biliCoverImgDownload({
+                  url: song.artwork + "@500w",
+                  fileName: `${song.bvid}_cover`,
+                }).then((path) => {
+                  addSongDownloadedCoverPath(path, song.id);
+                });
+                getBiliBsetAudioDash(song.cid, song.bvid).then((dash) => {
+                  biliVideoDownload({
+                    url: dash.base_url,
+                    fileName: `${song.bvid}_${song.cid}`,
+                    callback: (res) => {
+                      console.log(res);
+                    },
+                  }).then((path) => {
+                    addSongDownloadedPath(path, song.id, dash.duration);
+                  });
+                });
+              }}
+            />
+          )}
+        >
+          <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
+            {song.artwork && (
+              <Image
+                src={song.downloadedCoverPath || song.artwork + "@200w"}
+                alt="cover"
+                className="w-16 h-10 rounded-md "
+              />
+            )}
+            <View className="pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
+              <Text className="text-md" numberOfLines={1}>
+                {song.title}
+              </Text>
 
-            <View className="flex flex-row w-full items-center justify-between">
-              <View className="flex flex-row items-center gap-1">
-                {song.artistAvatar && (
-                  <Image
-                    src={song.artistAvatar + "@128w"}
-                    alt="cover"
-                    className="w-6 h-6 rounded-full"
-                  />
+              <View className="flex flex-row w-full items-center justify-between">
+                <View className="flex flex-row items-center gap-1">
+                  {song.artistAvatar && (
+                    <Image
+                      src={song.artistAvatar + "@128w"}
+                      alt="cover"
+                      className="w-6 h-6 rounded-full"
+                    />
+                  )}
+                  <Text className="text-secondary-foreground/50 text-xs">
+                    {song.artistName}
+                  </Text>
+                </View>
+
+                {song.downloadedMp3Path && (
+                  <Download size={10} className="text-green-800/40" />
                 )}
-                <Text className="text-secondary-foreground/50 text-xs">
-                  {song.artistName}
-                </Text>
               </View>
-
-              {song.downloadedMp3Path && (
-                <Download size={10} className="text-green-800/40" />
-              )}
             </View>
           </View>
-        </View>
-      </Swipeable>
-    </View>
-  );
-})
+        </Swipeable>
+      </View>
+    );
+  }
+);
