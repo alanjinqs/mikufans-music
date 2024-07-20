@@ -4,6 +4,7 @@ import TrackPlayer, {
   Event,
   State,
   Track,
+  useActiveTrack,
   usePlaybackState,
 } from "react-native-track-player";
 import { Text } from "@/components/ui/text";
@@ -24,7 +25,7 @@ import { ChevronDown } from "@/lib/icons/ChevronDown";
 import { List } from "@/lib/icons/List";
 import { useSharedValue } from "react-native-reanimated";
 import { Slider } from "react-native-awesome-slider";
-import { Link, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import SongSearchDialog from "@/components/lyrics/SongSearch";
 import LyricsView from "@/components/lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
@@ -50,9 +51,10 @@ const secToStrTime = (sec: number) => {
 export default function FullScreenPlayer() {
   useKeepAwake();
 
+  const query = useLocalSearchParams();
+
   const screenHeight = Dimensions.get("screen").height;
   const router = useRouter();
-  const [currentTrack, setCurrentTrack] = useState<undefined | Track>();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
   const [currentBvid, setCurrentBvid] = useState("");
 
@@ -64,10 +66,13 @@ export default function FullScreenPlayer() {
   const [eventsRegistered, setEventsRegistered] = useState(false);
 
   const playbackState = usePlaybackState();
+  const currentTrack = useActiveTrack();
 
   const updateIsPlaying = async () => {
-    const state = (await TrackPlayer.getPlaybackState()).state;
-    setIsPlaying(state === State.Playing || state === State.Buffering);
+    setIsPlaying(
+      playbackState.state === State.Playing ||
+        playbackState.state === State.Buffering
+    );
   };
 
   const updateProgress = () => {
@@ -89,30 +94,15 @@ export default function FullScreenPlayer() {
   };
 
   useEffect(() => {
+    updateIsPlaying();
+  }, [playbackState]);
+
+  useEffect(() => {
     updateProgress();
     if (!eventsRegistered) {
       setEventsRegistered(true);
 
-      TrackPlayer.getActiveTrack().then((track) => {
-        if (track && track.id === currentTrack?.id) return;
-        setCurrentTrack(track);
-        setCurrentBvid(track?.id.split("$")[1] || "");
-      });
-
       updateIsPlaying();
-
-      TrackPlayer.addEventListener(
-        Event.PlaybackActiveTrackChanged,
-        async (e) => {
-          if (e.track && e.track.id === currentTrack?.id) return;
-          setCurrentTrack(e.track);
-          setCurrentBvid(e.track?.id.split("$")[1] || "");
-        }
-      );
-
-      TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
-        _.debounce(updateIsPlaying, 500)();
-      });
 
       TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
         setCurrentProgress(e.position);
@@ -133,6 +123,7 @@ export default function FullScreenPlayer() {
   useEffect(() => {
     updateProgress();
     onSongUpdated();
+    setCurrentBvid(currentTrack?.id.split("$")[1] || "");
   }, [currentTrack]);
 
   const [currentProgress, setCurrentProgress] = useState(0);
@@ -159,7 +150,8 @@ export default function FullScreenPlayer() {
     <View
       className="w-screen"
       style={{
-        backgroundColor: currentSong?.color || "#333",
+        backgroundColor:
+          currentSong?.color || (query.color as string) || "#333",
         height: screenHeight,
       }}
     >
@@ -226,6 +218,8 @@ export default function FullScreenPlayer() {
                       Toast.show({
                         type: "info",
                         text1: "进入推荐模式",
+                        text2:
+                          "推荐模式下，播放列表将会自动从当前播放的推荐列表中随机更新音乐区视频",
                       });
                     }
                   }

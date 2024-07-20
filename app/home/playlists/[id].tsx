@@ -299,18 +299,25 @@ const SongCard = memo(
               </Text>
 
               <View className="flex flex-row w-full items-center justify-between">
-                <View className="flex flex-row items-center gap-1">
-                  {song.artistAvatar && (
-                    <Image
-                      src={song.artistAvatar + "@128w"}
-                      alt="cover"
-                      className="w-6 h-6 rounded-full"
-                    />
-                  )}
-                  <Text className="text-secondary-foreground/50 text-xs">
-                    {song.artistName}
-                  </Text>
-                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (!song.artistMid) return;
+                    router.push(`/home/user/${song.artistMid}`);
+                  }}
+                >
+                  <View className="flex flex-row items-center gap-1">
+                    {song.artistAvatar && (
+                      <Image
+                        src={song.artistAvatar + "@128w"}
+                        alt="cover"
+                        className="w-6 h-6 rounded-full"
+                      />
+                    )}
+                    <Text className="text-secondary-foreground/50 text-xs">
+                      {song.artistName}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
 
                 {song.downloadedMp3Path && (
                   <Download size={10} className="text-green-800/40" />
