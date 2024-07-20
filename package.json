@@ -25,6 +25,7 @@
     "@react-navigation/native": "^6.0.2",
     "@rn-primitives/avatar": "^1.0.3",
     "@rn-primitives/dialog": "^1.0.3",
+    "@rn-primitives/dropdown-menu": "^1.0.3",
     "@rn-primitives/label": "^1.0.3",
     "@rn-primitives/navigation-menu": "^1.0.3",
     "@rn-primitives/portal": "^1.0.3",

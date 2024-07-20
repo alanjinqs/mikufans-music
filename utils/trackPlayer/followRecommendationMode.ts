@@ -5,6 +5,7 @@ import { isMusicType } from "../bili/biliTypeIdFilters";
 import { bv2Cid } from "../bili/avBvCid";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { bvCid2Track } from "../bili/biliVideo";
+import Toast from "react-native-toast-message";
 
 export const enterFollowRecommendationMode = async () => {
   // destroy the current queue

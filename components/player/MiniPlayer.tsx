@@ -26,6 +26,7 @@ import {
   TouchableOpacity,
 } from "react-native-gesture-handler";
 import dayjs from "dayjs";
+import { router } from "expo-router";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -38,11 +39,7 @@ const secToStrTime = (sec: number) => {
 
 const tpLog = () => {};
 
-export default function MiniPlayer({
-  onShowFullScreenPlayer,
-}: {
-  onShowFullScreenPlayer: () => void;
-}) {
+export default function MiniPlayer() {
   const [currentTrack, setCurrentTrack] = useState<undefined | Track>();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
 
@@ -149,6 +146,10 @@ export default function MiniPlayer({
       }),
     };
   });
+
+  const onShowFullScreenPlayer = () => {
+    router.push(`fullScreenPlayer?color=` + (currentSong?.color || "#333"));
+  };
 
   return (
     <View

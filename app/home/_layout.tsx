@@ -22,10 +22,6 @@ export default function HomeIndex() {
 
   const [userInfo, setUserInfo] = useState<BiliUserInfo | null>(null);
 
-  const onShowFullScreenPlayer = () => {
-    router.push("fullScreenPlayer");
-  };
-
   const updateUserInfo = () => {
     getUserInfo().then((data) => {
       setUserInfo({
@@ -69,7 +65,7 @@ export default function HomeIndex() {
             <Slot />
           </View>
           <View>
-            <MiniPlayer onShowFullScreenPlayer={onShowFullScreenPlayer} />
+            <MiniPlayer />
           </View>
         </View>
       </SafeAreaView>

@@ -72,7 +72,7 @@ export default function PlaylistView() {
         if (!nextTrack) continue;
         const [nextTrackCid, nextTrackBvid, nextTrackQuality] =
           nextTrack.id.split("$");
-          
+
         const nextTrackSong = await cidBvToSong(nextTrackCid, nextTrackBvid);
         tpList.push({
           id: currentTrackIndex! + i,

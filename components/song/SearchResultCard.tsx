@@ -10,6 +10,7 @@ import { useRef } from "react";
 import { Text } from "@/components/ui/text";
 import { cidBvToSong } from "@/utils/db/song";
 import { replaceCurrentPlaying } from "@/utils/trackPlayer/addToQueue";
+import { router } from "expo-router";
 
 export type SearchResult = {
   aid: number;
@@ -128,11 +129,18 @@ export const SearchResultCard = ({
               {result.title}
             </Text>
 
-            <View className="flex flex-row items-center gap-1">
-              <Text className="text-secondary-foreground/50 text-xs">
-                {result.artistName}
-              </Text>
-            </View>
+            <TouchableOpacity
+              onPress={() => {
+                if (!result.artistMid) return;
+                router.push(`/home/user/${result.artistMid}`);
+              }}
+            >
+              <View className="flex flex-row items-center gap-1">
+                <Text className="text-secondary-foreground/50 text-xs">
+                  {result.artistName}
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
       </Swipeable>
@@ -178,25 +186,33 @@ export const SearchResultCardSq = ({
           <Text className="text-secondary-foreground p-2" numberOfLines={2}>
             {result?.title}
           </Text>
-          <View className="mx-2 mb-2 flex flex-row items-center gap-2">
-            {result?.artistAvatar && (
-              <Image
-                src={result?.artistAvatar + "@128w"}
-                alt="artistAvatar"
-                style={{
-                  width: 20,
-                  aspectRatio: 1,
-                  borderRadius: 10,
-                }}
-              />
-            )}
-            <Text
-              className="text-secondary-foreground/80 text-xs"
-              numberOfLines={1}
-            >
-              {result?.artistName}
-            </Text>
-          </View>
+
+          <TouchableOpacity
+            onPress={() => {
+              if (!result.artistMid) return;
+              router.push(`/home/user/${result.artistMid}`);
+            }}
+          >
+            <View className="mx-2 mb-2 flex flex-row items-center gap-2">
+              {result?.artistAvatar && (
+                <Image
+                  src={result?.artistAvatar + "@128w"}
+                  alt="artistAvatar"
+                  style={{
+                    width: 20,
+                    aspectRatio: 1,
+                    borderRadius: 10,
+                  }}
+                />
+              )}
+              <Text
+                className="text-secondary-foreground/80 text-xs"
+                numberOfLines={1}
+              >
+                {result?.artistName}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     </View>
