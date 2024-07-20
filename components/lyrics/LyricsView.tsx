@@ -201,21 +201,21 @@ export default function LyricsView({
       </View>
       <View className="flex flex-row items-center justify-center text-xs my-4 text-white gap-5">
         <TouchableOpacity
-          onPress={() => setCurrentOffset(currentOffset - 1000)}
+          onPress={() => setCurrentOffset(currentOffset - 500)}
         >
           <Text className="text-white/30 p-2">- 0.5s</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setCurrentOffset(currentOffset - 100)}>
+        <TouchableOpacity onPress={() => setCurrentOffset(currentOffset - 200)}>
           <Text className="text-white/30 p-2">- 0.2s</Text>
         </TouchableOpacity>
         <Text className="text-white/50 p-2">
           {(currentOffset / 1000).toFixed(1)}s
         </Text>
-        <TouchableOpacity onPress={() => setCurrentOffset(currentOffset + 100)}>
+        <TouchableOpacity onPress={() => setCurrentOffset(currentOffset + 200)}>
           <Text className="text-white/30 p-2">+0.2s</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setCurrentOffset(currentOffset + 1000)}
+          onPress={() => setCurrentOffset(currentOffset + 500)}
         >
           <Text className="text-white/30 p-2">+0.5s</Text>
         </TouchableOpacity>

@@ -7,6 +7,8 @@ import TrackPlayer, {
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { sendHeartbeat } from "../bili/heartbeat";
 import { bvCid2Track } from "../bili/biliVideo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { continueFollowRecommendationQueue } from "./followRecommendationMode";
 
 const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
   const activeTrack = await TrackPlayer.getActiveTrack();
@@ -63,12 +65,17 @@ module.exports = async function () {
     ) {
       playbackFinishedHeartbeat({
         activeTrack: e.lastTrack,
-      }).then(() => {
-        console.log("playbackFinishedHeartbeat done");
       });
     }
 
-    await addQueueToTrackPlayer();
+    const inFollowRecommendationMode = await AsyncStorage.getItem(
+      "followRecommendationMode"
+    );
+    if (inFollowRecommendationMode && inFollowRecommendationMode === "true") {
+      await continueFollowRecommendationQueue();
+    } else {
+      await addQueueToTrackPlayer();
+    }
   });
   TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
     if (Math.floor(e.position) % 15 === 0) {

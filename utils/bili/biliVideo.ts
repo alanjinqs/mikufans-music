@@ -98,6 +98,7 @@ export const bvCid2Track = async (
   }
 
   const meta = await getBiliVideoMeta(bvid);
+  console.log("meta", meta);
 
   let artwork = meta.data.pic.replace("http://", "https://");
   if (song && song.downloadedCoverPath) {

@@ -29,10 +29,14 @@ import SongSearchDialog from "@/components/lyrics/SongSearch";
 import LyricsView from "@/components/lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
 import { Tv } from "@/lib/icons/Tv";
+import { Dices } from "@/lib/icons/Dices";
 import { CaseSensitive } from "@/lib/icons/CaseSensitive";
 import { Plus } from "@/lib/icons/Plus";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { ListVideo } from "@/lib/icons/ListVideo";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { enterFollowRecommendationMode } from "@/utils/trackPlayer/followRecommendationMode";
+import Toast from "react-native-toast-message";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -199,6 +203,34 @@ export default function FullScreenPlayer() {
               }}
             >
               <Plus size={28} className="text-white" />
+            </TouchableOpacity>
+          )}
+          {currentTrack && (
+            <TouchableOpacity
+              onPress={() => {
+                AsyncStorage.getItem("followRecommendationMode").then(
+                  (currentInFollowRecommendationMode) => {
+                    if (
+                      currentInFollowRecommendationMode &&
+                      currentInFollowRecommendationMode == "true"
+                    ) {
+                      AsyncStorage.removeItem("followRecommendationMode");
+                      Toast.show({
+                        type: "info",
+                        text1: "退出推荐模式",
+                      });
+                    } else {
+                      enterFollowRecommendationMode();
+                      Toast.show({
+                        type: "info",
+                        text1: "进入推荐模式",
+                      });
+                    }
+                  }
+                );
+              }}
+            >
+              <Dices size={28} className="text-white" />
             </TouchableOpacity>
           )}
           {currentTrack && Platform.OS === "android" && (

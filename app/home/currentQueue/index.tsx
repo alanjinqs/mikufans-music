@@ -12,7 +12,7 @@ import { Trash2 } from "@/lib/icons/Trash2";
 import TrackPlayer, { useActiveTrack } from "react-native-track-player";
 import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 import { currentQueueIdsToSongs } from "@/utils/db/queue";
-import { cidToSong } from "@/utils/db/song";
+import { cidBvToSong } from "@/utils/db/song";
 import {
   dpQueueSkipTo,
   shuffleQueue,
@@ -57,7 +57,7 @@ export default function PlaylistView() {
       const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
 
       const [cid, bvid, quality] = currentTrack.id.split("$");
-      const currentTrackSong = await cidToSong(cid);
+      const currentTrackSong = await cidBvToSong(cid, bvid);
       tpList.push({
         id: currentTrackIndex!,
         song: currentTrackSong!,
@@ -65,12 +65,15 @@ export default function PlaylistView() {
         type: "tp",
         quality,
       });
+
       const trackQuue = await TrackPlayer.getQueue();
       let i = 1;
       for (const nextTrack of trackQuue.slice(currentTrackIndex! + 1)) {
+        if (!nextTrack) continue;
         const [nextTrackCid, nextTrackBvid, nextTrackQuality] =
           nextTrack.id.split("$");
-        const nextTrackSong = await cidToSong(nextTrackCid);
+          
+        const nextTrackSong = await cidBvToSong(nextTrackCid, nextTrackBvid);
         tpList.push({
           id: currentTrackIndex! + i,
           song: nextTrackSong!,
@@ -85,6 +88,7 @@ export default function PlaylistView() {
       setSongs(data);
     }
   };
+
   const currentTrack = useActiveTrack();
   useEffect(() => {
     _.debounce(loadSongs, 500)();
@@ -153,7 +157,7 @@ export default function PlaylistView() {
       <View className="flex-1">
         <FlatList
           data={songs}
-          keyExtractor={(item) => item.songId.toString()}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item: song }) => {
             return (
               <View
@@ -163,7 +167,6 @@ export default function PlaylistView() {
               >
                 <TouchableOpacity
                   onPress={() => skipToSong(song)}
-                  key={song.songId}
                   className=""
                   disabled={isSkipping}
                 >

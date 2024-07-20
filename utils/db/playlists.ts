@@ -1,5 +1,5 @@
 import { playlist, song, songToPlaylist } from "@/db/schema";
-import { db } from "./db";
+import { db, SongDB } from "./db";
 import { fetchFavList, fetchFavMeta } from "../bili/biliFavList";
 import dayjs from "dayjs";
 import { artworkToDarkColor } from "../artworkToColor";
@@ -33,6 +33,26 @@ export const deleteAllPlaylist = async () => {
   await db.delete(songToPlaylist);
 };
 
+export const bv2Song = async (bvId: string, cid?: number) => {
+  const songId = bv2av(bvId as any);
+
+  const meta = await getBiliVideoMeta(bvId);
+  const artwork = meta.data.pic.replace("http://", "https://");
+  const color = await artworkToDarkColor(artwork);
+  return {
+    id: songId,
+    title: meta.data.title,
+    artwork,
+    bvid: bvId,
+    cid: cid ? cid : null,
+    artistMid: meta.data.owner.mid,
+    artistName: meta.data.owner.name,
+    artistAvatar: meta.data.owner.face,
+    addedAt: new Date(),
+    color,
+  } as SongDB;
+};
+
 export const addSongToPlaylist = async (
   bvId: string,
   playlistId: number,
@@ -45,26 +65,12 @@ export const addSongToPlaylist = async (
   });
   if (playlistCurrentSongs.map((s) => s.songId).includes(songId)) return;
 
-  const meta = await getBiliVideoMeta(bvId);
-
-  const artwork = meta.data.pic.replace("http://", "https://");
-  const color = await artworkToDarkColor(artwork);
-  const resSong = await db
+  const [resSong] = await db
     .insert(song)
-    .values({
-      id: songId,
-      title: meta.data.title,
-      artwork,
-      bvid: bvId,
-      cid: null,
-      artistMid: meta.data.owner.mid,
-      artistName: meta.data.owner.name,
-      artistAvatar: meta.data.owner.face,
-      addedAt: new Date(),
-      color,
-    })
+    .values(await bv2Song(bvId))
     .onConflictDoNothing()
     .returning();
+
   await db.insert(songToPlaylist).values({
     playlistId,
     songId,
@@ -75,11 +81,15 @@ export const addSongToPlaylist = async (
   const thePlaylist = await db.query.playlist.findFirst({
     where: eq(playlist.id, playlistId),
   });
-  if (updatePlaylistCover || thePlaylist?.cover === null || thePlaylist?.cover === "") {
+  if (
+    updatePlaylistCover ||
+    thePlaylist?.cover === null ||
+    thePlaylist?.cover === ""
+  ) {
     await db
       .update(playlist)
       .set({
-        cover: artwork,
+        cover: resSong.artwork,
         updatedAt: new Date(),
       })
       .where(eq(playlist.id, playlistId));

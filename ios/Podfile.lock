@@ -287,6 +287,13 @@ PODS:
   - EXUpdatesInterface (0.16.2):
     - ExpoModulesCore
   - FBLazyVector (0.74.3)
+  - ffmpeg-kit-ios-https (6.0)
+  - ffmpeg-kit-react-native (6.0.2):
+    - ffmpeg-kit-react-native/https (= 6.0.2)
+    - React-Core
+  - ffmpeg-kit-react-native/https (6.0.2):
+    - ffmpeg-kit-ios-https (= 6.0)
+    - React-Core
   - fmt (9.1.0)
   - glog (0.3.5)
   - hermes-engine (0.74.3):
@@ -1585,6 +1592,7 @@ DEPENDENCIES:
   - EXSplashScreen (from `../node_modules/expo-splash-screen/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
+  - ffmpeg-kit-react-native (from `../node_modules/ffmpeg-kit-react-native`)
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
@@ -1651,6 +1659,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - ffmpeg-kit-ios-https
     - SocketRocket
     - sqlite3
     - SwiftAudioEx
@@ -1704,6 +1713,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-updates-interface/ios"
   FBLazyVector:
     :path: "../node_modules/react-native/Libraries/FBLazyVector"
+  ffmpeg-kit-react-native:
+    :path: "../node_modules/ffmpeg-kit-react-native"
   fmt:
     :podspec: "../node_modules/react-native/third-party-podspecs/fmt.podspec"
   glog:
@@ -1853,6 +1864,8 @@ SPEC CHECKSUMS:
   EXSplashScreen: fbf0ec78e9cee911df188bf17b4fe51d15a84b87
   EXUpdatesInterface: 996527fd7d1a5d271eb523258d603f8f92038f24
   FBLazyVector: 7e977dd099937dc5458851233141583abba49ff2
+  ffmpeg-kit-ios-https: f9c838aa5400a6c5ba12324c6b798f52197ba354
+  ffmpeg-kit-react-native: 3cea88c9c5cfad62e1465279ea7d800dfbba3b00
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: fdfdfe5479092de0c4bdbebedd9056951f092c4f
   hermes-engine: 1f547997900dd0752dc0cc0ae6dd16173c49e09b

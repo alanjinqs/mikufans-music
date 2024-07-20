@@ -8,6 +8,8 @@ import { Linking, View, Image, DimensionValue } from "react-native";
 import { Swipeable, TouchableOpacity } from "react-native-gesture-handler";
 import { useRef } from "react";
 import { Text } from "@/components/ui/text";
+import { cidBvToSong } from "@/utils/db/song";
+import { replaceCurrentPlaying } from "@/utils/trackPlayer/addToQueue";
 
 export type SearchResult = {
   aid: number;
@@ -104,13 +106,8 @@ export const SearchResultCard = ({
           <CardActionRight
             onPressReplaceCurrentPlaying={async () => {
               const [cid] = await bv2Cid(result.bvid);
-              const track = await bvCid2Track({
-                cid: cid.cid,
-                bvid: result.bvid,
-              });
-
-              await TrackPlayer.load(track);
-              await TrackPlayer.play();
+              const song = await cidBvToSong(cid.cid, result.bvid);
+              replaceCurrentPlaying(song);
             }}
             onPressOpenInBili={() => {
               Linking.openURL(`bilibili://video/${result.bvid}`);
@@ -155,13 +152,8 @@ export const SearchResultCardSq = ({
       <TouchableOpacity
         onPress={async () => {
           const [cid] = await bv2Cid(result.bvid);
-          const track = await bvCid2Track({
-            cid: cid.cid,
-            bvid: result.bvid,
-          });
-
-          await TrackPlayer.load(track);
-          await TrackPlayer.play();
+          const song = await cidBvToSong(cid.cid, result.bvid);
+          await replaceCurrentPlaying(song);
         }}
       >
         <View className="bg-secondary rounded-md overflow-hidden">

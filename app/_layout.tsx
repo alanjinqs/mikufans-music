@@ -113,12 +113,11 @@ function RootLayout() {
                 headerShown: false,
               }}
             />
-
             <Stack.Screen
               name="fullScreenPlayer"
               options={{
-                animation: "slide_from_bottom",
                 presentation: "modal",
+                animation: "slide_from_bottom",
               }}
             />
           </Stack>

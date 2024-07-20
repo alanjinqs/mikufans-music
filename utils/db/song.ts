@@ -1,10 +1,26 @@
 import { song } from "@/db/schema";
-import { db } from "./db";
+import { db, SongDB } from "./db";
 import { eq } from "drizzle-orm";
 import { qqMusicMidToLrc } from "../qqmusic/qqMusicSearch";
+import { bv2Song } from "./playlists";
+import { Track } from "react-native-track-player";
+import { bv2av } from "../bili/avBvCid";
 
 export const cidToSong = async (cid: number) => {
   return db.query.song.findFirst({ where: eq(song.cid, cid) });
+};
+
+export const cidBvToSong = async (cid: number, bvId: string) => {
+  const res = await db.query.song.findFirst({ where: eq(song.cid, cid) });
+  if (res) return res;
+
+  const [resSong] = await db
+    .insert(song)
+    .values(await bv2Song(bvId, cid))
+    .onConflictDoNothing()
+    .returning();
+
+  return resSong;
 };
 
 export const updateSongQQMid = async (songId: number, mid: string) => {
