@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Text } from "@/components/ui/text";
-import { ListPlus } from "@/lib/icons/ListPlus";
+import { Plus } from "@/lib/icons/Plus";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -97,7 +97,7 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
       <DialogTrigger asChild>
         <Button className="mb-5 mt-2" variant={"outline"} size={"sm"}>
           <View className="flex flex-row items-center gap-2">
-            <ListPlus className="text-primary" size={13} />
+            <Plus className="text-primary" size={13} />
           </View>
         </Button>
       </DialogTrigger>

@@ -19,7 +19,9 @@ export const fetchVideoCollection = async (seasonId: number) => {
     );
     const json = await res.json();
     hasNext =
-      json.data.meta.total > json.data.meta.page * json.data.meta.pagesize;
+      json.data.page.total > json.data.page.page_num * json.data.page.page_size;
+
+    console.log("page", json.data.page)
 
     if (!collectionInfo) {
       collectionInfo = json.data.meta;
