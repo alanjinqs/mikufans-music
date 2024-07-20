@@ -1,4 +1,4 @@
-import { Plus } from "@/lib/icons/Plus";
+import { ListPlus } from "@/lib/icons/ListPlus";
 import { Play } from "@/lib/icons/Play";
 import TrackPlayer from "react-native-track-player";
 import { bv2Cid } from "@/utils/bili/avBvCid";
@@ -44,7 +44,7 @@ const CardActionLeft = ({
       </TouchableOpacity> */}
       <TouchableOpacity onPress={onPressAddToPlaylist}>
         <View className="bg-purple-300 h-full flex items-center justify-center px-4 !m-0 rounded-l-md">
-          <Plus size={20} className="text-white" />
+          <ListPlus size={20} className="text-white" />
         </View>
       </TouchableOpacity>
     </View>

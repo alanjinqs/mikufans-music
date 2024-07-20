@@ -1,5 +1,5 @@
 import { asc, desc, eq, inArray } from "drizzle-orm";
-import { db, schema } from "../db/db";
+import { db, schema, SongDB } from "../db/db";
 import {
   currentQueue,
   currentQueueMeta,
@@ -12,24 +12,19 @@ import { bvCid2Track } from "../bili/biliVideo";
 import { getCurrentQueueMeta, updateMeta } from "../db/queue";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 
-export const addSongToQueue = async (songId: number) => {
-  const song = await db.query.song.findFirst({
-    where: eq(schema.song.id, songId),
+export const addSongToQueue = async (song: SongDB) => {
+  if (!song || !song.cid || !song.bvid) return;
+  const currentIndex = await TrackPlayer.getActiveTrackIndex();
+  const track = await bvCid2Track({
+    cid: song.cid,
+    bvid: song.bvid,
+    song,
   });
-  if (!song) return;
-
-  const [id] = await db
-    .insert(currentQueue)
-    .values({ songId: song.id })
-    .returning({ queueId: currentQueue.id });
-
-  const metaObj = await getCurrentQueueMeta();
-
-  const queue = metaObj.queue ? JSON.parse(metaObj.queue) : [];
-  queue.push(id.queueId);
-  await updateMeta("queue", JSON.stringify(queue));
-
-  await addQueueToTrackPlayer();
+  if (!currentIndex) {
+    TrackPlayer.add(track);
+  } else {
+    await TrackPlayer.add(track, currentIndex + 1);
+  }
 };
 
 export const replacePlaylistByQueue = async (

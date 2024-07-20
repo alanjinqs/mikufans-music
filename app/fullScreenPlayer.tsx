@@ -31,7 +31,7 @@ import { useKeepAwake } from "expo-keep-awake";
 import { Tv } from "@/lib/icons/Tv";
 import { Dices } from "@/lib/icons/Dices";
 import { CaseSensitive } from "@/lib/icons/CaseSensitive";
-import { Plus } from "@/lib/icons/Plus";
+import { ListPlus } from "@/lib/icons/ListPlus";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { ListVideo } from "@/lib/icons/ListVideo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -118,7 +118,6 @@ export default function FullScreenPlayer() {
         setCurrentProgress(e.position);
         setDuration(e.duration);
       });
-
     }
   }, []);
 
@@ -205,7 +204,7 @@ export default function FullScreenPlayer() {
                 setIsPLSelectionDialogOpen(true);
               }}
             >
-              <Plus size={28} className="text-white" />
+              <ListPlus size={28} className="text-white" />
             </TouchableOpacity>
           )}
           {currentTrack && (
@@ -288,21 +287,24 @@ export default function FullScreenPlayer() {
               <Text className="text-white text-xl">
                 {currentTrack?.title || "- 播放列表为空 -"}
               </Text>
-
-              <View className="flex flex-row justify-between items-end">
-                <View className="flex flex-row items-center gap-4">
-                  {currentSong?.artistAvatar && (
-                    <Image
-                      src={currentSong?.artistAvatar + "@128w"}
-                      alt="cover"
-                      className="w-10 h-10 rounded-full"
-                    />
-                  )}
-                  <Text className="text-white/90 text-md">
-                    {currentTrack?.artist || "暂无歌手信息"}
-                  </Text>
-                </View>
-              </View>
+              {currentSong?.artistMid && (
+                <Link href={`/home/user/${currentSong?.artistMid}`}>
+                  <View className="flex flex-row justify-between items-end">
+                    <View className="flex flex-row items-center gap-4">
+                      {currentSong?.artistAvatar && (
+                        <Image
+                          src={currentSong?.artistAvatar + "@128w"}
+                          alt="cover"
+                          className="w-10 h-10 rounded-full"
+                        />
+                      )}
+                      <Text className="text-white/90 text-md">
+                        {currentTrack?.artist || "暂无歌手信息"}
+                      </Text>
+                    </View>
+                  </View>
+                </Link>
+              )}
             </View>
           </View>
         )}

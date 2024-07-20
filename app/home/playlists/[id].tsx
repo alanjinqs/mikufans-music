@@ -24,7 +24,7 @@ import {
 } from "react-native-gesture-handler";
 import AddNewSong from "@/components/playlist/addNewSong";
 import { removeSongFromPlaylist } from "@/utils/db/playlists";
-import { Plus } from "@/lib/icons/Plus";
+import { ListStart } from "@/lib/icons/ListStart";
 import { Trash2 } from "@/lib/icons/Trash2";
 import { SquareArrowOutUpRight } from "@/lib/icons/SquareArrowOutUpRight";
 import { Download } from "@/lib/icons/Download";
@@ -165,7 +165,7 @@ const CardActionRight = memo(
         </TouchableOpacity>
         <TouchableOpacity onPress={onPressAddToQueue}>
           <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
-            <Plus size={20} className="text-white" />
+            <ListStart size={20} className="text-white" />
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={onPressReplaceCurrentPlaying}>
@@ -225,7 +225,7 @@ const SongCard = memo(({
             }}
             onPressAddToQueue={() => {
               swipeableRef.current?.close();
-              addSongToQueue(song.id);
+              addSongToQueue(song);
             }}
             onPressDownload={() => {
               swipeableRef.current?.close();
