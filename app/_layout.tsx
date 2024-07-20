@@ -2,7 +2,7 @@ import "@/global.css";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Theme, ThemeProvider } from "@react-navigation/native";
-import { SplashScreen, Stack } from "expo-router";
+import { router, SplashScreen, Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as React from "react";
 import { Platform, View } from "react-native";
@@ -20,6 +20,7 @@ import "react-native-reanimated";
 import "react-native-gesture-handler";
 import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 import Toast from "react-native-toast-message";
+import { MikufansMusicContext } from "./context";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -43,6 +44,7 @@ const db = drizzle(expoDb);
 
 export default function DrizzleLoad() {
   const { success, error } = useMigrations(db, migrations);
+
   if (error) {
     return (
       <View>
@@ -63,9 +65,21 @@ export default function DrizzleLoad() {
 function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
+  const [isDevMode, setIsDevMode] = React.useState(false);
+  const pathname = usePathname();
 
   React.useEffect(() => {
     (async () => {
+      AsyncStorage.getItem("isDevMode").then((devMode) => {
+        if (devMode && devMode === "true") {
+          setIsDevMode(true);
+          Toast.show({
+            type: "dev",
+            text1: "开发者模式已开启",
+          });
+        }
+      });
+
       await initTrackPlayer();
 
       const theme = await AsyncStorage.getItem("theme");
@@ -96,9 +110,8 @@ function RootLayout() {
   if (!isColorSchemeLoaded) {
     return null;
   }
-
   return (
-    <>
+    <MikufansMusicContext.Provider value={{ isDevMode, setIsDevMode }}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
         <GestureHandlerRootView>
           <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
@@ -122,9 +135,19 @@ function RootLayout() {
             />
           </Stack>
         </GestureHandlerRootView>
+        <PortalHost />
+        <Toast
+          config={{
+            dev: ({ text1, text2 }) => (
+              <View className="bg-black !text-white rounded-lg p-4 m-4 border border-white flex flex-col gap-2">
+                <Text className="!text-white">{text1}</Text>
+                <Text className="!text-white text-sm">{text2}</Text>
+                <Text className="!text-white/70 text-xs">{pathname}</Text>
+              </View>
+            ),
+          }}
+        />
       </ThemeProvider>
-      <PortalHost />
-      <Toast />
-    </>
+    </MikufansMusicContext.Provider>
   );
 }

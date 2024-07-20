@@ -8,7 +8,7 @@ import {
 import { eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { router, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Image, Share } from "react-native";
 
 import { View } from "react-native";
@@ -121,60 +121,64 @@ export default function PlaylistView() {
   );
 }
 
-const CardActionLeft = ({
-  onPressTrash,
-  onPressShare,
-}: {
-  onPressTrash: () => void;
-  onPressShare: () => void;
-}) => {
-  return (
-    <View className="flex flex-row items-center">
-      <TouchableOpacity onPress={onPressTrash}>
-        <View className="bg-red-500 h-full flex items-center justify-center px-4 rounded-l-md !m-0">
-          <Trash2 size={20} className="text-white" />
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onPressShare}>
-        <View className="bg-purple-300 h-full flex items-center justify-center px-4 !m-0">
-          <SquareArrowOutUpRight size={20} className="text-white" />
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
+const CardActionLeft = memo(
+  ({
+    onPressTrash,
+    onPressShare,
+  }: {
+    onPressTrash: () => void;
+    onPressShare: () => void;
+  }) => {
+    return (
+      <View className="flex flex-row items-center">
+        <TouchableOpacity onPress={onPressTrash}>
+          <View className="bg-red-500 h-full flex items-center justify-center px-4 rounded-l-md !m-0">
+            <Trash2 size={20} className="text-white" />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onPressShare}>
+          <View className="bg-purple-300 h-full flex items-center justify-center px-4 !m-0">
+            <SquareArrowOutUpRight size={20} className="text-white" />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+);
 
-const CardActionRight = ({
-  onPressAddToQueue,
-  onPressReplaceCurrentPlaying,
-  onPressDownload,
-}: {
-  onPressAddToQueue: () => void;
-  onPressReplaceCurrentPlaying: () => void;
-  onPressDownload: () => void;
-}) => {
-  return (
-    <View className="flex flex-row items-center">
-      <TouchableOpacity onPress={onPressDownload}>
-        <View className="bg-sky-300 h-full flex items-center justify-center px-4 !m-0">
-          <Download size={20} className="text-white" />
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onPressAddToQueue}>
-        <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
-          <Plus size={20} className="text-white" />
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={onPressReplaceCurrentPlaying}>
-        <View className="bg-green-300 h-full flex items-center justify-center px-4 rounded-r-md !m-0">
-          <Play size={20} className="text-white" />
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-};
+const CardActionRight = memo(
+  ({
+    onPressAddToQueue,
+    onPressReplaceCurrentPlaying,
+    onPressDownload,
+  }: {
+    onPressAddToQueue: () => void;
+    onPressReplaceCurrentPlaying: () => void;
+    onPressDownload: () => void;
+  }) => {
+    return (
+      <View className="flex flex-row items-center">
+        <TouchableOpacity onPress={onPressDownload}>
+          <View className="bg-sky-300 h-full flex items-center justify-center px-4 !m-0">
+            <Download size={20} className="text-white" />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onPressAddToQueue}>
+          <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
+            <Plus size={20} className="text-white" />
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={onPressReplaceCurrentPlaying}>
+          <View className="bg-green-300 h-full flex items-center justify-center px-4 rounded-r-md !m-0">
+            <Play size={20} className="text-white" />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+);
 
-const SongCard = ({
+const SongCard = memo(({
   song,
   playlistId,
   fetchPlaylist,
@@ -283,4 +287,4 @@ const SongCard = ({
       </Swipeable>
     </View>
   );
-};
+})

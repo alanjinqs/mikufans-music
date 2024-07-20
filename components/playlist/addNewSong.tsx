@@ -47,11 +47,11 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
         addSongToPlaylist(matchedBvID[0], playlistId, updateCover)
           .then((res) => {
             setBvid("");
-            if (res && res[0]) {
+            if (res) {
               Toast.show({
                 type: "success",
                 text1: "添加成功",
-                text2: `${res[0].title}`,
+                text2: `${res.title}`,
               });
             }
           })
@@ -71,7 +71,23 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
           parseInt(videoCollectionId),
           playlistId,
           updateCover
-        );
+        )
+          .then((res) => {
+            setVideoCollectionId("");
+            if (res) {
+              Toast.show({
+                type: "success",
+                text1: "添加成功",
+              });
+            }
+          })
+          .catch((e) => {
+            Toast.show({
+              type: "error",
+              text1: "添加失败",
+              text2: e.message,
+            });
+          });
         break;
     }
   };

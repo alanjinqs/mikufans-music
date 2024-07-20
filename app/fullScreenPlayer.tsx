@@ -91,12 +91,16 @@ export default function FullScreenPlayer() {
   useEffect(() => {
     updateProgress();
     if (!eventsRegistered) {
+      setEventsRegistered(true);
+
       TrackPlayer.getActiveTrack().then((track) => {
         if (track && track.id === currentTrack?.id) return;
         setCurrentTrack(track);
         setCurrentBvid(track?.id.split("$")[1] || "");
       });
+
       updateIsPlaying();
+
       TrackPlayer.addEventListener(
         Event.PlaybackActiveTrackChanged,
         async (e) => {
@@ -115,7 +119,6 @@ export default function FullScreenPlayer() {
         setDuration(e.duration);
       });
 
-      setEventsRegistered(true);
     }
   }, []);
 

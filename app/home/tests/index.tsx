@@ -6,6 +6,13 @@ import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CookieManager from "@react-native-cookies/cookies";
+import { useContext, useEffect, useState } from "react";
+import { HeartPulse } from "@/lib/icons/HeartPulse";
+import { HeartOff } from "@/lib/icons/HeartOff";
+import { MikufansMusicContext } from "@/app/context";
+import { Bug } from "@/lib/icons/Bug";
+import { BugOff } from "@/lib/icons/BugOff";
+import Toast from "react-native-toast-message";
 
 export default function TestView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
@@ -13,6 +20,41 @@ export default function TestView() {
     db.select().from(schema.songToPlaylist)
   );
   const { data: song } = useLiveQuery(db.select().from(schema.song));
+
+  const [isHeartbeatDisabled, setIsHeartbeatDisabled] = useState(false);
+
+  const { isDevMode, setIsDevMode } = useContext(MikufansMusicContext);
+
+  useEffect(() => {
+    AsyncStorage.getItem("disableHeartbeat").then((heartBeatSetting) => {
+      if (heartBeatSetting) {
+        setIsHeartbeatDisabled(true);
+      }
+    });
+  }, []);
+
+  const toggleHeartbeat = async () => {
+    if (isHeartbeatDisabled) {
+      await AsyncStorage.removeItem("disableHeartbeat");
+    } else {
+      await AsyncStorage.setItem("disableHeartbeat", "true");
+    }
+    setIsHeartbeatDisabled(!isHeartbeatDisabled);
+  };
+
+  const toggleDevMode = async () => {
+    if (isDevMode) {
+      await AsyncStorage.removeItem("isDevMode");
+    } else {
+      await AsyncStorage.setItem("isDevMode", "true");
+      Toast.show({
+        type: "dev",
+        text1: "已进入开发模式",
+        text2: "开发模式下会显示大量调试信息，截图时请注意保护账户 Cookie",
+      });
+    }
+    setIsDevMode(!isDevMode);
+  };
 
   return (
     <View className="w-full flex">
@@ -22,47 +64,26 @@ export default function TestView() {
       <View className="flex flex-row gap-2 flex-wrap">
         <Button
           onPress={() => {
-            AsyncStorage.setItem("heartbeat", "off");
+            toggleHeartbeat();
           }}
         >
-          <Text>heartbeat OFF</Text>
-        </Button>
-        <Button
-          onPress={() => {
-            AsyncStorage.setItem("heartbeat", "on");
-          }}
-        >
-          <Text>heartbeat ON</Text>
-        </Button>
-        <Button
-          onPress={() => {
-            TrackPlayer.setQueue([]);
-          }}
-        >
-          <Text>emptyTPQueue</Text>
-        </Button>
-        <Button
-          onPress={async () => {
-            await db.delete(schema.currentQueue);
-            await db.delete(schema.currentQueueMeta);
-            console.log(await db.select().from(schema.currentQueue));
-          }}
-        >
-          <Text>emptyDBQueue</Text>
+          {isHeartbeatDisabled ? (
+            <HeartOff size={20} className="text-white" />
+          ) : (
+            <HeartPulse size={20} className="text-white" />
+          )}
         </Button>
 
         <Button
-          onPress={async () => {
-            await db.delete(schema.currentQueue);
-            await db.delete(schema.currentQueueMeta);
-            await db.delete(schema.songToPlaylist);
-            await db.delete(schema.playlist);
-            await db.delete(schema.song);
-            await TrackPlayer.reset();
-            BackHandler.exitApp();
+          onPress={() => {
+            toggleDevMode();
           }}
         >
-          <Text>Delete ALL songs and PLs</Text>
+          {isDevMode ? (
+            <Bug size={20} className="text-white" />
+          ) : (
+            <BugOff size={20} className="text-white" />
+          )}
         </Button>
         <Button
           onPress={() => {

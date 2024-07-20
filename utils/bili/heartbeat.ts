@@ -23,8 +23,8 @@ export const sendHeartbeat = async (
   // realTime: number,
   isPlaying: boolean
 ) => {
-  const heartBeatSetting = await AsyncStorage.getItem("heartbeat");
-  if (heartBeatSetting && heartBeatSetting === "off") return;
+  const heartBeatSetting = await AsyncStorage.getItem("disableHeartbeat");
+  if (heartBeatSetting && heartBeatSetting === "true") return;
 
   const cookies = await AsyncStorage.getItem("auth-cookies");
   if (!cookies) return;

@@ -183,6 +183,8 @@ export const addCollectionToPlaylist = async (
       })
       .where(eq(playlist.id, playlistId));
   }
+
+  return collectionInfo;
 };
 
 export const createNewPlaylistByBiliFav = async (mediaId: number) => {

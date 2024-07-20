@@ -94,4 +94,5 @@ export const replaceCurrentPlaying = async (
     song,
   });
   await TrackPlayer.load(track);
+  await TrackPlayer.play();
 };

@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
@@ -35,5 +36,7 @@ export const initTrackPlayer = async () => {
       capabilities,
       progressUpdateEventInterval: 1,
     });
+
+    await AsyncStorage.removeItem("followRecommendationMode");
   }
 };

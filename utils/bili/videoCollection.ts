@@ -45,6 +45,9 @@ export const fetchVideoCollection = async (seasonId: number) => {
         lyrics: null,
         translatedLyrics: null,
         lyricsOffset: null,
+        downloadedMp3Duration: null,
+        downloadedMp3Path: null,
+        downloadedCoverPath: null,
       });
     }
     page += 1;
