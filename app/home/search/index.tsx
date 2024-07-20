@@ -6,7 +6,7 @@ import {
   TouchableOpacity as RNTouchableOpacity,
 } from "react-native";
 import { Text } from "@/components/ui/text";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "@/lib/icons/Search";
@@ -21,6 +21,8 @@ import {
   SearchResult,
   SearchResultCard,
 } from "@/components/song/SearchResultCard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Music } from "@/lib/icons/Music";
 
 export default function SearchPage() {
   const [keywodInput, setKeywordInput] = useState("");
@@ -30,6 +32,17 @@ export default function SearchPage() {
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] =
     useState<string>("");
+  const [isMusicFilterOn, setIsMusicFilterOn] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem("isMusicFilterOn").then((res) => {
+      if (res === "true") {
+        setIsMusicFilterOn(true);
+      } else {
+        setIsMusicFilterOn(false);
+      }
+    });
+  }, []);
 
   const updateSearchResult = (res: any[]) => {
     const parsedRes: SearchResult[] = res.map((item: any) => ({
@@ -61,16 +74,18 @@ export default function SearchPage() {
   const loadNextPage = async () => {
     const res = await biliVideoSearch(
       currentSearchingKeyword,
-      currentSearchPage + 1
+      currentSearchPage + 1,
+      isMusicFilterOn
     );
     setCurrentSearchPage(res.page);
     updateSearchResult(res.result);
   };
   const onSearchPress = () => {
     setSearchResult([]);
+    setCurrentSearchPage(1);
     setCurrentSearchingKeyword(keywodInput);
     console.log("onSearchPress", keywodInput);
-    biliVideoSearch(keywodInput).then((res) => {
+    biliVideoSearch(keywodInput, 1, isMusicFilterOn).then((res) => {
       setCurrentSearchPage(res.page);
       updateSearchResult(res.result);
     });
@@ -82,11 +97,33 @@ export default function SearchPage() {
           {currentSearchingKeyword || "搜索"}
         </Text>
       </View>
-      <View className="flex flex-row items-center gap-3 mt-2 mb-4">
-        <Input onChangeText={setKeywordInput} className="flex-1" />
+      <View className="flex flex-row items-center mt-2 mb-4">
+        <Input
+          onChangeText={setKeywordInput}
+          className="flex-1 rounded-l-full !rounded-r-none"
+        />
+
+        <Button
+          className="flex flex-row items-center gap-2 !rounded-none !w-10"
+          variant={isMusicFilterOn ? "default" : "outline"}
+          onPress={() => {
+            AsyncStorage.setItem(
+              "isMusicFilterOn",
+              isMusicFilterOn ? "false" : "true"
+            );
+            setIsMusicFilterOn(!isMusicFilterOn);
+          }}
+        >
+          <Music
+            className={
+              isMusicFilterOn ? "text-primary-foreground" : "text-primary"
+            }
+            size={16}
+          />
+        </Button>
         <Button
           onPress={onSearchPress}
-          className="flex flex-row items-center gap-2"
+          className="flex flex-row items-center gap-2 rounded-r-full !rounded-l-none"
         >
           <Search className="text-background" size={16} />
         </Button>
