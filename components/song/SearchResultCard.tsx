@@ -9,7 +9,11 @@ import { Swipeable, TouchableOpacity } from "react-native-gesture-handler";
 import { useRef } from "react";
 import { Text } from "@/components/ui/text";
 import { cidBvToSong } from "@/utils/db/song";
-import { replaceCurrentPlaying } from "@/utils/trackPlayer/addToQueue";
+import {
+  addSongToQueue,
+  replaceCurrentPlaying,
+} from "@/utils/trackPlayer/addToQueue";
+import { ListStart } from "@/lib/icons/ListStart";
 import { router } from "expo-router";
 
 export type SearchResult = {
@@ -55,15 +59,23 @@ const CardActionLeft = ({
 const CardActionRight = ({
   onPressOpenInBili,
   onPressReplaceCurrentPlaying,
+  onPressAddToQueue,
 }: {
   onPressOpenInBili: () => void;
   onPressReplaceCurrentPlaying: () => void;
+  onPressAddToQueue: () => void;
 }) => {
   return (
     <View className="flex flex-row items-center">
       <TouchableOpacity onPress={onPressOpenInBili}>
         <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
           <Tv size={20} className="text-white" />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onPressAddToQueue}>
+        <View className="bg-sky-300 h-full flex items-center justify-center px-4 !m-0">
+          <ListStart size={20} className="text-white" />
         </View>
       </TouchableOpacity>
       <TouchableOpacity onPress={onPressReplaceCurrentPlaying}>
@@ -106,12 +118,20 @@ export const SearchResultCard = ({
         renderRightActions={() => (
           <CardActionRight
             onPressReplaceCurrentPlaying={async () => {
+              swipeableRef.current?.close();
               const [cid] = await bv2Cid(result.bvid);
               const song = await cidBvToSong(cid.cid, result.bvid);
               replaceCurrentPlaying(song);
             }}
             onPressOpenInBili={() => {
+              swipeableRef.current?.close();
               Linking.openURL(`bilibili://video/${result.bvid}`);
+            }}
+            onPressAddToQueue={async () => {
+              swipeableRef.current?.close();
+              const [cid] = await bv2Cid(result.bvid);
+              const song = await cidBvToSong(cid.cid, result.bvid);
+              await addSongToQueue(song);
             }}
           />
         )}

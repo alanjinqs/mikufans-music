@@ -192,12 +192,12 @@ const CardActionRight = memo(
     return (
       <View className="flex flex-row items-center">
         <TouchableOpacity onPress={onPressDownload}>
-          <View className="bg-sky-300 h-full flex items-center justify-center px-4 !m-0">
+          <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
             <Download size={20} className="text-white" />
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={onPressAddToQueue}>
-          <View className="bg-blue-300 h-full flex items-center justify-center px-4 !m-0">
+          <View className="bg-sky-300 h-full flex items-center justify-center px-4 !m-0">
             <ListStart size={20} className="text-white" />
           </View>
         </TouchableOpacity>
