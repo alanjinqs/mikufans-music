@@ -182,7 +182,7 @@ export default function FullScreenPlayer() {
             <TouchableOpacity
               onPress={() => {
                 router.dismiss();
-                router.push(`/home/video/recommend/${currentBvid}`);
+                router.push(`/home/videos/recommend/${currentBvid}`);
               }}
             >
               <ListVideo size={28} className="text-white" />

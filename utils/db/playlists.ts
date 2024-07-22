@@ -6,8 +6,6 @@ import { artworkToDarkColor } from "../artworkToColor";
 import { and, eq } from "drizzle-orm";
 import { bv2av } from "../bili/avBvCid";
 import { getBiliVideoMeta } from "../bili/biliVideo";
-import { fetchVideoCollection } from "../bili/videoCollection";
-
 export const createNewPlaylist = async ({
   name,
   cover,
@@ -139,52 +137,6 @@ export const addFavoriteToPlaylist = async (
       })
       .where(eq(playlist.id, playlistId));
   }
-};
-
-export const addCollectionToPlaylist = async (
-  mediaId: number,
-  playlistId: number,
-  updatePlaylistCover = false
-) => {
-  const { collectionInfo, songList } = await fetchVideoCollection(mediaId);
-
-  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
-    where: eq(songToPlaylist.playlistId, playlistId),
-  });
-
-  const playlistCurrentSongIds = playlistCurrentSongs.map((s) => s.songId);
-
-  const favCover = collectionInfo.cover;
-  for (const s of songList) {
-    if (playlistCurrentSongIds.includes(s.id)) continue;
-
-    const color = await artworkToDarkColor(s.artwork || undefined);
-    await db
-      .insert(song)
-      .values({
-        ...s,
-        color,
-      })
-      .onConflictDoNothing();
-    await db.insert(songToPlaylist).values({
-      playlistId,
-      songId: s.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
-
-  if (updatePlaylistCover) {
-    await db
-      .update(playlist)
-      .set({
-        cover: favCover,
-        updatedAt: new Date(),
-      })
-      .where(eq(playlist.id, playlistId));
-  }
-
-  return collectionInfo;
 };
 
 export const createNewPlaylistByBiliFav = async (mediaId: number) => {

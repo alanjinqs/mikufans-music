@@ -5,7 +5,7 @@ import {
   replaceCurrentPlaying,
   addSongToQueue,
 } from "@/utils/trackPlayer/addToQueue";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { router, useLocalSearchParams, useRouter } from "expo-router";
 import { memo, useEffect, useRef, useState } from "react";
@@ -63,6 +63,7 @@ export default function PlaylistView() {
         song: true,
       },
       where: eq(schema.songToPlaylist.playlistId, parseInt(id as string)),
+      orderBy: desc(schema.songToPlaylist.id),
     })
   );
 

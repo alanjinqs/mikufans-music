@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { useLocalSearchParams } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 
-import { View, Image } from "react-native";
+import { View, Image, TouchableOpacity } from "react-native";
 import { Text } from "@/components/ui/text";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, ScrollView } from "react-native-gesture-handler";
 import {
   SearchResult,
   SearchResultCard,
@@ -13,7 +13,16 @@ import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { getUserVideos } from "@/utils/bili/biliUserVides";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Music } from "@/lib/icons/Music";
-import { getArtistInfo } from "@/utils/bili/userInfo";
+import {
+  getArtistInfo,
+  getUserFavorites,
+  UserCreatedFavorite,
+} from "@/utils/bili/userInfo";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  getUserSeasonsSeriesList,
+  SeasonSeriesList,
+} from "@/utils/bili/biliSeasonsSeriesList";
 
 export default function UserPage() {
   const { mid } = useLocalSearchParams();
@@ -27,6 +36,8 @@ export default function UserPage() {
   const [artistName, setArtistName] = useState("");
   const [artistAvatar, setArtistAvatar] = useState("");
   const [artistSign, setArtistSign] = useState("");
+
+  const [tab, setTab] = useState("videos");
 
   const updateSearchResult = (res: any[]) => {
     const parsedRes: SearchResult[] = res.map((item: any) => {
@@ -127,39 +138,66 @@ export default function UserPage() {
           </Text>
         </View>
       </View>
-      <View className="flex flex-row items-center justify-end gap-3">
-        <View className="flex flex-row items-center justify-end gap-3">
-          <Button
-            className="mb-5 mt-2"
-            variant={isMusicFilterOn ? "default" : "outline"}
-            size={"sm"}
-            onPress={onSetMusicFilter}
-          >
-            <Music
-              className={
-                isMusicFilterOn ? "text-primary-foreground" : "text-primary"
-              }
-              size={13}
-            />
-          </Button>
-        </View>
-      </View>
-      <View className="flex-1">
-        <FlatList
-          data={searchResult}
-          onEndReached={loadNextPage}
-          renderItem={({ item }) => {
-            return (
-              <SearchResultCard
-                result={item}
-                setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-                setCurrentSelectedSongBvid={setCurrentSelectedSongBvid}
-              />
-            );
-          }}
-          keyExtractor={(item) => item.bvid.toString() || ""}
-        ></FlatList>
-      </View>
+
+      <Tabs
+        value={tab}
+        onValueChange={setTab}
+        className="w-full mx-auto flex flex-col gap-1.5 flex-1 "
+      >
+        <TabsList className="flex-row w-full mt-4">
+          <TabsTrigger value="videos" className="flex-1">
+            <Text>视频</Text>
+          </TabsTrigger>
+          <TabsTrigger value="favorite" className="flex-1">
+            <Text>收藏</Text>
+          </TabsTrigger>
+          <TabsTrigger value="seasonsSeriesList" className="flex-1">
+            <Text>合集与列表</Text>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="videos" className="flex-1">
+          <View className="flex flex-col flex-1">
+            <View className="flex flex-row items-center justify-end gap-3">
+              <Button
+                className="mb-5 mt-2"
+                variant={isMusicFilterOn ? "default" : "outline"}
+                size={"sm"}
+                onPress={onSetMusicFilter}
+              >
+                <Music
+                  className={
+                    isMusicFilterOn ? "text-primary-foreground" : "text-primary"
+                  }
+                  size={13}
+                />
+              </Button>
+            </View>
+
+            <View className="flex-1">
+              <FlatList
+                data={searchResult}
+                onEndReached={loadNextPage}
+                renderItem={({ item }) => {
+                  return (
+                    <SearchResultCard
+                      result={item}
+                      setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
+                      setCurrentSelectedSongBvid={setCurrentSelectedSongBvid}
+                    />
+                  );
+                }}
+                keyExtractor={(item) => item.bvid.toString() || ""}
+              ></FlatList>
+            </View>
+          </View>
+        </TabsContent>
+        <TabsContent value="favorite" className="flex-1">
+          <UserFavoriteList mid={mid as string} />
+        </TabsContent>
+        <TabsContent value="seasonsSeriesList" className="flex-1">
+          <UserSeasonsSeriesList mid={mid as string} />
+        </TabsContent>
+      </Tabs>
       <AddToPlaylistsDialog
         setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
         isPLSelectionDialogOpen={isPLSelectionDialogOpen}
@@ -168,3 +206,123 @@ export default function UserPage() {
     </View>
   );
 }
+
+const UserFavoriteList = ({ mid }: { mid: string }) => {
+  const [userFavoriteList, setUserFavoriteList] = useState<
+    UserCreatedFavorite[]
+  >([]);
+
+  useEffect(() => {
+    getUserFavorites(parseInt(mid)).then((res) => {
+      setUserFavoriteList(res);
+    });
+  }, [mid]);
+
+  return (
+    <View className="flex flex-col flex-1">
+      <View className="flex-1">
+        {userFavoriteList.length === 0 ? (
+          <View className="w-full h-full flex items-center justify-center">
+            <Text className="font-bold opacity-50 text-xl">
+              没有公开的收藏夹 :(
+            </Text>
+          </View>
+        ) : (
+          <ScrollView>
+            <View className="w-full flex flex-col gap-2">
+              {userFavoriteList.map((item) => {
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    className="w-full"
+                    onPress={() => {
+                      router.push(`/home/videos/favorite/${item.id}`);
+                    }}
+                  >
+                    <View className="w-full flex flex-col p-2 bg-secondary rounded-md text-secondary-foreground">
+                      <Text className="text-md" numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      <Text className="text-secondary-foreground/50 text-xs">
+                        共 {item.mediaCount} 个视频
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+        )}
+      </View>
+    </View>
+  );
+};
+
+const UserSeasonsSeriesList = ({ mid }: { mid: string }) => {
+  const [page, setPage] = useState(0);
+  const [seasonsSeriesList, setSeasonsSeriesList] = useState<
+    SeasonSeriesList[]
+  >([]);
+
+  const getNextPage = (pg?: number) => {
+    getUserSeasonsSeriesList(mid, pg || page + 1).then((res) => {
+      setPage(pg || page + 1);
+      setSeasonsSeriesList((current) => [...current, ...res]);
+    });
+  };
+
+  useEffect(() => {
+    getNextPage(1);
+    setSeasonsSeriesList([]);
+  }, [mid]);
+
+  return (
+    <View className="flex flex-col flex-1">
+      <View className="flex-1">
+        {seasonsSeriesList.length === 0 ? (
+          <View className="w-full h-full flex items-center justify-center">
+            <Text className="font-bold opacity-50 text-xl">
+              用户没有公开的合集或列表 :(
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={seasonsSeriesList}
+            renderItem={({ item }) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push(`/home/videos/seasonsSeries/${item.type}_${item.id}`);
+                  }}
+                >
+                  <View className="w-full flex flex-row items-center p-2 bg-secondary rounded-md text-secondary-foreground mb-2 gap-2">
+                    {item.cover && (
+                      <Image
+                        src={item.cover + "@200w"}
+                        alt="cover"
+                        className="w-16 h-10 rounded-md "
+                      />
+                    )}
+                    <View className="flex flex-col">
+                      <Text className="text-md" numberOfLines={1}>
+                        {item.name}
+                      </Text>
+
+                      <Text className="text-secondary-foreground/50 text-xs">
+                        共 {item.total} 个视频
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+            keyExtractor={(item) => item.id.toString()}
+            onEndReached={() => {
+              getNextPage();
+            }}
+          />
+        )}
+      </View>
+    </View>
+  );
+};

@@ -15,3 +15,11 @@ export const videoRecommend = async (bvid: string) => {
   const json = await res.json();
   return json.data;
 };
+
+export const rankingRecommend = async () => {
+  const res = await biliFetch(
+    "https://api.bilibili.com/x/web-interface/ranking/v2?tid=3"
+  );
+  const json = await res.json();
+  return json.data;
+};

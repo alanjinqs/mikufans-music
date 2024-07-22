@@ -28,11 +28,35 @@ export const getUserInfo = async () => {
   return json;
 };
 
-
 export const getArtistInfo = async (mid: number) => {
   const res = await biliFetch(
     `https://api.bilibili.com/x/space/wbi/acc/info?mid=${mid}`
   );
   const json = await res.json();
   return json;
-}
+};
+
+export type UserCreatedFavorite = {
+  id: number;
+  ownerMid: string;
+  title: string;
+  mediaCount: number;
+};
+
+export const getUserFavorites = async (mid: number) => {
+  const res = await biliFetch(
+    `https://api.bilibili.com/x/v3/fav/folder/created/list-all?up_mid=${mid}`
+  );
+  const json = await res.json();
+  if (!json.data || !json.data.list) {
+    return [];
+  }
+  const userCreatedFavorites = json.data.list.map((item: any) => ({
+    id: item.id,
+    ownerMid: item.mid,
+    title: item.title,
+    mediaCount: item.media_count,
+  }));
+
+  return userCreatedFavorites as UserCreatedFavorite[];
+};

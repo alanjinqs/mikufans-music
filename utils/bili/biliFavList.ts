@@ -2,6 +2,7 @@ import { song } from "@/db/schema";
 import { schema, SongDB } from "../db/db";
 import { biliFetch } from "./biliFetch";
 import { bv2Cid } from "./avBvCid";
+import { SearchResult } from "@/components/song/SearchResultCard";
 
 // export const fetchFavList = async (mediaId: number) => {
 //   const res = await biliFetch(
@@ -41,7 +42,6 @@ export const fetchFavList = async (mid: number) => {
       `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${mid}&pn=${page}&ps=20`
     );
     const json = await res.json();
-    console.log(json);
     hasNext = json.data.has_more;
     if (!favInfo) {
       favInfo = json.data.info;
@@ -51,7 +51,6 @@ export const fetchFavList = async (mid: number) => {
       if (media.type !== 2) {
         console.error("NOT IMPLMENTED: media type is not video.");
       }
-      // const cid = await bv2Cid(media.bvid);
       songList.push({
         bvid: media.bvid,
         title: media.title,
@@ -62,11 +61,48 @@ export const fetchFavList = async (mid: number) => {
         artistName: media.upper.name,
         artistAvatar: media.upper.face,
         addedAt: new Date(),
-        color: "#9897E1",
+        color: "#333",
+        downloadedCoverPath: null,
+        downloadedMp3Duration: null,
+        downloadedMp3Path: null,
+        qqMusicMid: null,
+        lyrics: null,
+        translatedLyrics: null,
+        lyricsOffset: 0,
       });
     }
     page += 1;
   }
 
   return { songList, favInfo };
+};
+
+export const getFavListByPage = async (mid: string, page: number) => {
+  const res = await biliFetch(
+    `https://api.bilibili.com/x/v3/fav/resource/list?media_id=${mid}&pn=${page}&ps=20`
+  );
+
+  const json = await res.json();
+  const songList: SearchResult[] = json.data.medias.map((media: any) => {
+    return {
+      aid: parseInt(media.id),
+      artistName: media.upper.name,
+      artistMid: media.upper.mid,
+      artistAvatar: media.upper.face.replace("http://", "https://"),
+      bvid: media.bvid,
+      title: media.title,
+      artwork: media.cover.replace("http://", "https://"),
+      play: media.cnt_info.play,
+      danmu: media.cnt_info.danmaku,
+      favorite: media.cnt_info.favorite,
+      publishedAt: media.pubdate,
+      duration: media.duration,
+    };
+  });
+
+  return {
+    songList,
+    hasNextPage: json.data.has_more,
+    meta: json.data.info
+  };
 };

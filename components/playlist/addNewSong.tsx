@@ -18,7 +18,6 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
-  addCollectionToPlaylist,
   addFavoriteToPlaylist,
   addSongToPlaylist,
 } from "@/utils/db/playlists";
@@ -66,29 +65,6 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
       case "favorite":
         addFavoriteToPlaylist(parseInt(favId), playlistId, updateCover);
         break;
-      case "videoCollection":
-        addCollectionToPlaylist(
-          parseInt(videoCollectionId),
-          playlistId,
-          updateCover
-        )
-          .then((res) => {
-            setVideoCollectionId("");
-            if (res) {
-              Toast.show({
-                type: "success",
-                text1: "添加成功",
-              });
-            }
-          })
-          .catch((e) => {
-            Toast.show({
-              type: "error",
-              text1: "添加失败",
-              text2: e.message,
-            });
-          });
-        break;
     }
   };
 
@@ -118,9 +94,6 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
               <TabsTrigger value="favorite" className="flex-1">
                 <Text>收藏</Text>
               </TabsTrigger>
-              <TabsTrigger value="videoCollection" className="flex-1">
-                <Text>合集</Text>
-              </TabsTrigger>
             </TabsList>
             <TabsContent value="bvid">
               <Input
@@ -138,15 +111,6 @@ export default function AddNewSong({ playlistId }: { playlistId: number }) {
                   setFavId(e);
                 }}
                 value={favId}
-              ></Input>
-            </TabsContent>
-            <TabsContent value="videoCollection">
-              <Input
-                placeholder="视频合集 ID"
-                onChangeText={(e) => {
-                  setVideoCollectionId(e);
-                }}
-                value={videoCollectionId}
               ></Input>
             </TabsContent>
           </Tabs>

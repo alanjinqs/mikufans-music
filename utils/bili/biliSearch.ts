@@ -13,3 +13,11 @@ export const biliVideoSearch = async (
   const json = await res.json();
   return json.data;
 };
+
+export const biliUserSearch = async (keyword: string, page: number = 1) => {
+  const res = await biliFetch(
+    `https://api.bilibili.com/x/web-interface/search/type?search_type=bili_user&keyword=${keyword}&page=${page}`
+  );
+  const json = await res.json();
+  return json.data;
+};

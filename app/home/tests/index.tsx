@@ -68,9 +68,9 @@ export default function TestView() {
           }}
         >
           {isHeartbeatDisabled ? (
-            <HeartOff size={20} className="text-white" />
+            <HeartOff size={20} className="text-secondary" />
           ) : (
-            <HeartPulse size={20} className="text-white" />
+            <HeartPulse size={20} className="text-secondary" />
           )}
         </Button>
 
@@ -80,9 +80,9 @@ export default function TestView() {
           }}
         >
           {isDevMode ? (
-            <Bug size={20} className="text-white" />
+            <Bug size={20} className="text-secondary" />
           ) : (
-            <BugOff size={20} className="text-white" />
+            <BugOff size={20} className="text-secondary" />
           )}
         </Button>
         <Button

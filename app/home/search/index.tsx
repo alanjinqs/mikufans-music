@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "@/lib/icons/Search";
-import { biliVideoSearch } from "@/utils/bili/biliSearch";
+import { biliUserSearch, biliVideoSearch } from "@/utils/bili/biliSearch";
 import {
   FlatList,
   Swipeable,
@@ -23,6 +23,7 @@ import {
 } from "@/components/song/SearchResultCard";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Music } from "@/lib/icons/Music";
+import { router } from "expo-router";
 
 export default function SearchPage() {
   const [keywodInput, setKeywordInput] = useState("");
@@ -33,6 +34,16 @@ export default function SearchPage() {
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] =
     useState<string>("");
   const [isMusicFilterOn, setIsMusicFilterOn] = useState(false);
+
+  const [searchUserResult, setSearchUserResult] = useState<
+    {
+      mid: string;
+      name: string;
+      sign: string;
+      videos: string;
+      cover: string;
+    }[]
+  >([]);
 
   useEffect(() => {
     AsyncStorage.getItem("isMusicFilterOn").then((res) => {
@@ -84,10 +95,24 @@ export default function SearchPage() {
     setSearchResult([]);
     setCurrentSearchPage(1);
     setCurrentSearchingKeyword(keywodInput);
-    console.log("onSearchPress", keywodInput);
     biliVideoSearch(keywodInput, 1, isMusicFilterOn).then((res) => {
       setCurrentSearchPage(res.page);
       updateSearchResult(res.result);
+    });
+
+    biliUserSearch(keywodInput).then((res) => {
+      console.log(res.result);
+      setSearchUserResult(
+        res.result.map((item: any) => {
+          return {
+            mid: item.mid,
+            name: item.uname,
+            sign: item.usign,
+            videos: item.videos,
+            cover: item.upic,
+          };
+        })
+      );
     });
   };
   return (
@@ -129,6 +154,40 @@ export default function SearchPage() {
         </Button>
       </View>
       <View className="flex-1">
+        {searchUserResult.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex flex-row gap-2">
+              {searchUserResult.map((item) => {
+                return (
+                  <TouchableOpacity
+                    key={item.mid}
+                    onPress={() => {
+                      router.push("/home/user/" + item.mid);
+                    }}
+                  >
+                    <View
+                      className="flex flex-col items-center"
+                      style={{
+                        height: 165,
+                      }}
+                    >
+                      <Image
+                        src={"https:" + item.cover}
+                        className="!rounded-full w-16 h-16"
+                      />
+                      <Text className="text-md w-26" numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      <Text className="text-sm opacity-50">
+                        {item.videos} 视频
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+        )}
         <FlatList
           data={searchResult}
           onEndReached={() => {
