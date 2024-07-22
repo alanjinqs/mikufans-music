@@ -3,5 +3,12 @@ import { useEffect } from "react";
 import { View } from "react-native";
 
 export default function NotificationClick() {
-  return <Redirect href="/home" />;
+  useEffect(() => {
+    if (router.canDismiss()) {
+      router.dismiss();
+    } else {
+      router.replace("/home");
+    }
+  }, []);
+  return <div></div>;
 }

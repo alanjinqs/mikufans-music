@@ -157,7 +157,7 @@ export default function PlaylistView() {
       <View className="flex-1">
         <FlatList
           data={songs}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.songId + "_" + item.id}
           renderItem={({ item: song }) => {
             return (
               <View
