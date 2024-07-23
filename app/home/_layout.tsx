@@ -15,6 +15,7 @@ import {
 } from "expo-router";
 import { Text } from "@/components/ui/text";
 import { ChevronLeft } from "@/lib/icons/ChevronLeft";
+import MiniPlayerNew from "@/components/player/MiniPlayerNew";
 
 export default function HomeIndex() {
   const pathname = usePathname();
@@ -41,8 +42,8 @@ export default function HomeIndex() {
   return (
     <>
       <SafeAreaView>
-        <View className="p-4 flex flex-col h-full">
-          <View className="flex flex-row justify-between items-center mb-6">
+        <View className="flex flex-col h-full">
+          <View className="flex flex-row justify-between items-center mb-6 p-4">
             <View>
               {pathname !== "/home" ? (
                 <TouchableOpacity
@@ -61,11 +62,12 @@ export default function HomeIndex() {
             </View>
             <AvatarOrLoginBtn userInfo={userInfo} onSuccess={updateUserInfo} />
           </View>
-          <View className="flex-1">
+          <View className="flex-1 p-4">
             <Slot />
           </View>
-          <View>
-            <MiniPlayer />
+          <View className="px-3 pb-1">
+            {/* <MiniPlayer /> */}
+            <MiniPlayerNew />
           </View>
         </View>
       </SafeAreaView>

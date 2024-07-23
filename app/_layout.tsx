@@ -122,10 +122,17 @@ function RootLayout() {
     <MikufansMusicContext.Provider value={{ isDevMode, setIsDevMode }}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
         <GestureHandlerRootView>
-          <StatusBar style={isDarkColorScheme ? "light" : "dark"} />
+          <StatusBar
+            style={
+              isDarkColorScheme || pathname === "/fullScreenPlayer"
+                ? "light"
+                : "dark"
+            }
+          />
           <Stack
             screenOptions={{
               headerShown: false,
+              navigationBarColor: isDarkColorScheme ? "#000" : "#fff",
             }}
           >
             <Stack.Screen

@@ -24,7 +24,12 @@ import { ChevronDown } from "@/lib/icons/ChevronDown";
 import { List } from "@/lib/icons/List";
 import { useSharedValue } from "react-native-reanimated";
 import { Slider } from "react-native-awesome-slider";
-import { Link, useLocalSearchParams, useRouter } from "expo-router";
+import {
+  Link,
+  useLocalSearchParams,
+  useNavigation,
+  useRouter,
+} from "expo-router";
 import SongSearchDialog from "@/components/lyrics/SongSearch";
 import LyricsView from "@/components/lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
@@ -127,9 +132,13 @@ export default function FullScreenPlayer() {
     }
   }, []);
 
+  const navigation = useNavigation();
+
   const onSongUpdated = () => {
     cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
       setCurrentSong(song);
+      navigation.setOptions({ navigationBarColor: song?.color || "#333" });
+
       if (!song?.lyrics || song.lyrics.length === 0) {
         setIsShowingLyrics(false);
       }
