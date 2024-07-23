@@ -344,7 +344,7 @@ export default function FullScreenPlayer() {
             />
           </View>
         ) : (
-          <View className="flex flex-col gap-8 items-center">
+          <View className="flex flex-col gap-8">
             {currentTrack?.artwork && (
               <Image
                 src={
@@ -361,12 +361,12 @@ export default function FullScreenPlayer() {
               />
             )}
             <View className="w-full text-white flex flex-col justify-center gap-4">
-              <Text className="text-white text-xl">
+              <Text className="text-white text-xl w-full">
                 {currentTrack?.title || "- 播放列表为空 -"}
               </Text>
               {currentSong?.artistMid && (
                 <Link href={`/home/user/${currentSong?.artistMid}`}>
-                  <View className="flex flex-row justify-between items-end">
+                  <View className="w-full">
                     <View className="flex flex-row items-center gap-4">
                       {currentSong?.artistAvatar && (
                         <Image
