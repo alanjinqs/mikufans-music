@@ -22,6 +22,7 @@ import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 import Toast from "react-native-toast-message";
 import { MikufansMusicContext } from "./context";
 import { createId0Playlist } from "@/utils/db/playlists";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -45,7 +46,7 @@ const db = drizzle(expoDb);
 
 export default function DrizzleLoad() {
   const { success, error } = useMigrations(db, migrations);
-
+  useDrizzleStudio(expoDb);
   if (error) {
     return (
       <View>
@@ -112,6 +113,7 @@ function RootLayout() {
   if (!isColorSchemeLoaded) {
     return null;
   }
+
   return (
     <MikufansMusicContext.Provider value={{ isDevMode, setIsDevMode }}>
       <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
