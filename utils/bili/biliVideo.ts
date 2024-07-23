@@ -37,9 +37,16 @@ export const biliDashVideoInfoToBestAudio = (
 ) => {
   const audio = data.dash.audio;
   if (backupStream) return audio[0];
+
+  if (data.dash.flac && data.dash.flac.audio) {
+    console.log("[flac]", data.dash.flac);
+    return data.dash.flac.audio;
+  }
+
   const bestAudio = audio.sort(
     (a: any, b: any) => b.bandwidth - a.bandwidth
   )[0];
+
   return bestAudio;
 };
 
