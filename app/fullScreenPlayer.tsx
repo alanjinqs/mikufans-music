@@ -43,6 +43,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "@/lib/icons/Menu";
@@ -50,6 +51,7 @@ import { Heart } from "@/lib/icons/Heart";
 import clsx from "clsx";
 import { bv2av } from "@/utils/bili/avBvCid";
 import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
+import { PortalHost, useModalPortalRoot } from "@rn-primitives/portal";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -176,9 +178,18 @@ export default function FullScreenPlayer() {
   const [isShowingLyrics, setIsShowingLyrics] = useState(false);
 
   const insets = useSafeAreaInsets();
+  const { sideOffset, ...rootProps } = useModalPortalRoot();
+  const contentInsets = {
+    top: insets.top,
+    // Make sure the content is not hidden by the bottom safe area
+    bottom: insets.bottom + Math.abs(sideOffset),
+    left: 16,
+    right: 16,
+  };
 
   return (
     <View
+      {...rootProps}
       className="w-screen"
       style={{
         backgroundColor:
@@ -232,7 +243,12 @@ export default function FullScreenPlayer() {
             <DropdownMenuTrigger asChild>
               <Menu size={28} className="text-white" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 native:w-72">
+            <DropdownMenuContent
+              insets={contentInsets}
+              sideOffset={sideOffset}
+              className="w-64 native:w-72"
+              portalHost={"modal-fullScreenPlayer"}
+            >
               {currentTrack && (
                 <DropdownMenuItem
                   onPress={() => {
@@ -474,6 +490,7 @@ export default function FullScreenPlayer() {
           currentSelectedSongBvid={currentBvid}
         />
       )}
+      <PortalHost name="modal-fullScreenPlayer" />
     </View>
   );
 }
