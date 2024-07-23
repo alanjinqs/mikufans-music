@@ -129,7 +129,6 @@ export default function PlaylistView() {
           onPress={() => {
             if (!playlist?.id) return;
             replacePlaylistByQueue(playlist?.id, true);
-            TrackPlayer.setPlayWhenReady(true);
           }}
         >
           <Shuffle className="text-primary" size={13} />
@@ -141,7 +140,6 @@ export default function PlaylistView() {
           onPress={() => {
             if (!playlist?.id) return;
             replacePlaylistByQueue(playlist?.id);
-            TrackPlayer.setPlayWhenReady(true);
           }}
         >
           <Play className="text-primary" size={13} />
@@ -302,7 +300,6 @@ const SongCard = memo(
             <CardActionRight
               onPressReplaceCurrentPlaying={() => {
                 swipeableRef.current?.close();
-                TrackPlayer.setPlayWhenReady(true);
                 replaceCurrentPlaying(song);
               }}
               onPressAddToQueue={() => {
