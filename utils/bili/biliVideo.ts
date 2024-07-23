@@ -43,6 +43,10 @@ export const biliDashVideoInfoToBestAudio = (
     return data.dash.flac.audio;
   }
 
+  if (data.dash.dolby && data.dash.dolby.audio) {
+    console.log("[dolby]", data.dash.dolby);
+    return data.dash.dolby.audio;
+  }
   const bestAudio = audio.sort(
     (a: any, b: any) => b.bandwidth - a.bandwidth
   )[0];
