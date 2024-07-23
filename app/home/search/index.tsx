@@ -56,6 +56,7 @@ export default function SearchPage() {
   }, []);
 
   const updateSearchResult = (res: any[]) => {
+    if (!res.map) return;
     const parsedRes: SearchResult[] = res.map((item: any) => ({
       aid: parseInt(item.aid),
       artistName: item.author,
@@ -102,6 +103,9 @@ export default function SearchPage() {
 
     biliUserSearch(keywodInput).then((res) => {
       console.log(res.result);
+      if (!res.result) {
+        setSearchUserResult([]);
+      }
       setSearchUserResult(
         res.result.map((item: any) => {
           return {
