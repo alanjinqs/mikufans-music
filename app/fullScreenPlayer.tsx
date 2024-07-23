@@ -246,7 +246,7 @@ export default function FullScreenPlayer() {
             </TouchableOpacity>
           )}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger>
               <Menu size={28} className="text-white" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -344,7 +344,7 @@ export default function FullScreenPlayer() {
             />
           </View>
         ) : (
-          <View className="flex flex-col gap-8">
+          <View className="flex flex-col gap-8 items-center">
             {currentTrack?.artwork && (
               <Image
                 src={
