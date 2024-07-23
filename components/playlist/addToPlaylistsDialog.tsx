@@ -27,10 +27,12 @@ export default function AddToPlaylistsDialog({
   isPLSelectionDialogOpen,
   setIsPLSelectionDialogOpen,
   currentSelectedSongBvid,
+  portalHost,
 }: {
   isPLSelectionDialogOpen: boolean;
   setIsPLSelectionDialogOpen: (open: boolean) => void;
   currentSelectedSongBvid: string;
+  portalHost?: string;
 }) {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
   const [currentSelectedPlaylists, setCurrentSelectedPlaylists] = useState<
@@ -48,7 +50,7 @@ export default function AddToPlaylistsDialog({
         setIsPLSelectionDialogOpen(open);
       }}
     >
-      <DialogContent className="w-[300px] h-[400px]">
+      <DialogContent className="w-[300px] h-[400px]" portalHost={portalHost}>
         <DialogHeader>
           <DialogTitle>添加到播放列表</DialogTitle>
         </DialogHeader>

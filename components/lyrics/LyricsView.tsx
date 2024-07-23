@@ -29,7 +29,6 @@ export default function LyricsView({
   const [lyrics, setLyrics] = useState<TranslatedLyricLine[]>([]);
 
   const [songHasTranslatedLyrics, setSongHasTranslatedLyrics] = useState(false);
-  const { height, width } = useWindowDimensions();
 
   const currentProgress = useProgress(200);
 
@@ -124,85 +123,69 @@ export default function LyricsView({
   const [isScrolling, setIsScrolling] = useState(false);
 
   return (
-    <View className="w-full">
-      <View
-        style={{
-          height: height - 400,
-          width: "100%",
+    <View className="w-full flex flex-col h-full">
+      <ScrollView
+        onScrollBeginDrag={() => {
+          setIsScrolling(true);
         }}
+        onScrollEndDrag={() => {
+          setTimeout(() => {
+            setIsScrolling(false);
+          }, 1000);
+        }}
+        ref={scrollViewRef}
+        className="w-full flex-1"
       >
-        <ScrollView
-          onScrollBeginDrag={() => {
-            setIsScrolling(true);
-          }}
-          onScrollEndDrag={() => {
-            setTimeout(() => {
-              setIsScrolling(false);
-            }, 1000);
-          }}
-          ref={scrollViewRef}
-          style={{
-            width: "100%",
-          }}
-        >
-          {lyrics.map((line, i) => {
-            return (
-              <TouchableWithoutFeedback
-                key={i}
-                onPress={() => {
-                  TrackPlayer.seekTo(
-                    (line.startMillisecond - currentOffset) / 1000
-                  );
-                }}
-              >
-                <View className="w-full">
-                  <View
-                    style={{
-                      height: 35,
-                    }}
-                    className="felx flex-col items-start justify-end"
+        {lyrics.map((line, i) => {
+          return (
+            <TouchableWithoutFeedback
+              key={i}
+              onPress={() => {
+                TrackPlayer.seekTo(
+                  (line.startMillisecond - currentOffset) / 1000
+                );
+              }}
+            >
+              <View className="w-full">
+                <View
+                  style={{
+                    height: 35,
+                  }}
+                  className="felx flex-col items-start justify-end"
+                >
+                  <Text
+                    className={clsx(
+                      "",
+                      currentLine == i
+                        ? "text-white text-xl font-bold"
+                        : "text-white/20"
+                    )}
                   >
-                    <Text
-                      className={clsx(
-                        "",
-                        currentLine == i
-                          ? "text-white text-xl font-bold"
-                          : "text-white/20"
-                      )}
-                    >
-                      {line.content}
-                    </Text>
-                  </View>
-                  {songHasTranslatedLyrics && (
-                    <Text
-                      className={clsx(
-                        "",
-                        currentLine == i
-                          ? "text-white/80 text-lg font-bold"
-                          : "text-white/20"
-                      )}
-                      style={{
-                        height: 25,
-                      }}
-                    >
-                      {line.translatedContent || ""}
-                    </Text>
-                  )}
+                    {line.content}
+                  </Text>
                 </View>
-              </TouchableWithoutFeedback>
-            );
-          })}
-          <View
-            style={{
-              width: width - 100,
-            }}
-          ></View>
-        </ScrollView>
-      </View>
+                {songHasTranslatedLyrics && (
+                  <Text
+                    className={clsx(
+                      "",
+                      currentLine == i
+                        ? "text-white/80 text-lg font-bold"
+                        : "text-white/20"
+                    )}
+                    style={{
+                      height: 25,
+                    }}
+                  >
+                    {line.translatedContent || ""}
+                  </Text>
+                )}
+              </View>
+            </TouchableWithoutFeedback>
+          );
+        })}
+      </ScrollView>
       <View className="flex flex-row items-center justify-center text-xs my-4 text-white gap-5">
-        <TouchableOpacity
-          onPress={() => setCurrentOffset(currentOffset - 500)}
-        >
+        <TouchableOpacity onPress={() => setCurrentOffset(currentOffset - 500)}>
           <Text className="text-white/30 p-2">- 0.5s</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setCurrentOffset(currentOffset - 200)}>
@@ -214,9 +197,7 @@ export default function LyricsView({
         <TouchableOpacity onPress={() => setCurrentOffset(currentOffset + 200)}>
           <Text className="text-white/30 p-2">+0.2s</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setCurrentOffset(currentOffset + 500)}
-        >
+        <TouchableOpacity onPress={() => setCurrentOffset(currentOffset + 500)}>
           <Text className="text-white/30 p-2">+0.5s</Text>
         </TouchableOpacity>
       </View>

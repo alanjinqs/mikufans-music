@@ -65,8 +65,9 @@ export default function HomeView() {
   }, []);
 
   useEffect(() => {
-    if (playlists.length === 1) {
-      setItemPerRow(1);
+    console.log(width);
+    if (width > 1000) {
+      setItemPerRow(Math.floor(width / 300));
     } else {
       setItemPerRow(2);
     }
@@ -133,7 +134,6 @@ export default function HomeView() {
             className="flex flex-row flex-wrap"
             style={{
               gap: 10,
-              minHeight: height - 100,
             }}
           >
             {playlists?.map((playlist) => (
@@ -193,14 +193,14 @@ export default function HomeView() {
             {recommendVideos.map((video) => (
               <SearchResultCardSq
                 key={video.bvid}
-                width={(width - 18) / 3 - 6}
+                width={(width - 18) / itemPerRow - 10}
                 result={video}
               />
             ))}
           </View>
           <View className="flex flex-row items-center justify-center my-5">
             <Button onPress={getNewRecommend} variant="outline" size="sm">
-              <Text>加载更多</Text>
+              <Text>加载更多首页推荐</Text>
             </Button>
           </View>
         </ScrollView>

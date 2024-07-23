@@ -5,6 +5,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+
+import QRCode from "react-native-qrcode-svg";
 
 const loginStateToText = {
   pending: "等待扫码",
@@ -26,6 +37,7 @@ export default function AvatarOrLoginBtn({
   >("unknown");
 
   const [showLoginSheet, setShowLoginSheet] = useState(false);
+  const [loginUrl, setLoginUrl] = useState("");
 
   const onLogin = async () => {
     try {
@@ -37,6 +49,7 @@ export default function AvatarOrLoginBtn({
       setShowLoginSheet(true);
       setLoginState("pending");
       Linking.openURL(data.data.url);
+      setLoginUrl(data.data.url);
 
       const fetching = setInterval(async () => {
         console.log("fetching");
@@ -82,35 +95,32 @@ export default function AvatarOrLoginBtn({
           </AvatarFallback>
         </Avatar>
       ) : (
-        <Button onPress={onLogin} className=" rounded-full">
-          <Text>登录</Text>
-        </Button>
+        <Dialog open={showLoginSheet} onOpenChange={setShowLoginSheet}>
+          <DialogTrigger asChild>
+            <Button onPress={onLogin} className="rounded-full">
+              <Text>登录</Text>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>登录</DialogTitle>
+            </DialogHeader>
+            <DialogDescription>
+              {loginStateToText[loginState as keyof typeof loginStateToText]}
+            </DialogDescription>
+            {loginState === "pending" && loginUrl.length > 0 && (
+              <QRCode value={loginUrl} />
+            )}
+            {loginState === "timeout" || loginState === "unknown" ? (
+              <DialogFooter>
+                <Button onPress={onLogin}>
+                  <Text>重新发起登录</Text>
+                </Button>
+              </DialogFooter>
+            ) : null}
+          </DialogContent>
+        </Dialog>
       )}
-      {/* 
-      <Sheet
-        modal
-        open={showLoginSheet}
-        dismissOnSnapToBottom
-        zIndex={100_000}
-        animation="medium"
-      >
-        <Sheet.Overlay
-          animation="lazy"
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
-        />
-        <Sheet.Handle
-          collapsable={loginState === "success" || loginState === "unknown"}
-        />
-        <Sheet.Frame padding="$4" justifyContent="center" alignItems="center">
-          <Text>
-            {loginStateToText[loginState as keyof typeof loginStateToText]}
-          </Text>
-          {loginState === "timeout" || loginState === "unknown" ? (
-            <Button onPress={onLogin}>重新发起登录</Button>
-          ) : null}
-        </Sheet.Frame>
-      </Sheet> */}
     </>
   );
 }

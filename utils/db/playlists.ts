@@ -63,9 +63,10 @@ export const addSongToPlaylist = async (
   });
   if (playlistCurrentSongs.map((s) => s.songId).includes(songId)) return;
 
+  const songItem = await bv2Song(bvId);
   const [resSong] = await db
     .insert(song)
-    .values(await bv2Song(bvId))
+    .values(songItem)
     .onConflictDoNothing()
     .returning();
 
@@ -80,14 +81,16 @@ export const addSongToPlaylist = async (
     where: eq(playlist.id, playlistId),
   });
   if (
-    updatePlaylistCover ||
-    thePlaylist?.cover === null ||
-    thePlaylist?.cover === ""
+    (updatePlaylistCover ||
+      thePlaylist?.cover === null ||
+      thePlaylist?.cover === "") &&
+    thePlaylist?.id !== 0 &&
+    songItem.artwork
   ) {
     await db
       .update(playlist)
       .set({
-        cover: resSong.artwork,
+        cover: songItem.artwork,
         updatedAt: new Date(),
       })
       .where(eq(playlist.id, playlistId));

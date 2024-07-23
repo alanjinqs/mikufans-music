@@ -27,9 +27,11 @@ import { TouchableOpacity as RNGHTouchableOpacity } from "react-native-gesture-h
 export default function SongSearchDialog({
   song,
   onSongUpdated,
+  portalHost,
 }: {
   song: SongDB;
   onSongUpdated: () => void;
+  portalHost?: string;
 }) {
   const [keyword, setKeyword] = useState("");
   const [selectedMid, setSelectedMid] = useState("");
@@ -57,7 +59,7 @@ export default function SongSearchDialog({
           <Text className="text-white">搜索歌词</Text>
         </RNGHTouchableOpacity>
       </DialogTrigger>
-      <DialogContent className="w-[300px] ">
+      <DialogContent className="w-[300px]" portalHost={portalHost}>
         <DialogHeader>
           <DialogTitle>搜索歌词</DialogTitle>
         </DialogHeader>

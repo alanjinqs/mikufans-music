@@ -71,8 +71,6 @@ export default function FullScreenPlayer() {
   useKeepAwake();
 
   const query = useLocalSearchParams();
-
-  const screenHeight = Dimensions.get("screen").height;
   const router = useRouter();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
   const [currentBvid, setCurrentBvid] = useState("");
@@ -199,11 +197,10 @@ export default function FullScreenPlayer() {
   return (
     <View
       {...rootProps}
-      className="w-screen"
+      className="w-full h-full"
       style={{
         backgroundColor:
           currentSong?.color || (query.color as string) || "#333",
-        height: screenHeight,
       }}
     >
       <View
@@ -253,6 +250,7 @@ export default function FullScreenPlayer() {
               <Menu size={28} className="text-white" />
             </DropdownMenuTrigger>
             <DropdownMenuContent
+              align="end"
               insets={contentInsets}
               sideOffset={sideOffset}
               className="w-64 native:w-72"
@@ -333,16 +331,12 @@ export default function FullScreenPlayer() {
           </TouchableOpacity>
         </View>
       </View>
-      <View className="flex flex-col items-center justify-center h-full gap-8 px-10 pb-10 w-full">
+      <View className="flex flex-col items-center justify-center flex-1 gap-8 px-10 pb-10 w-full">
         {isShowingLyrics &&
         currentSong &&
         currentSong.lyrics &&
         currentSong.lyrics.length > 0 ? (
-          <View
-            style={{
-              width: "100%",
-            }}
-          >
+          <View className="flex-1 w-full">
             <LyricsView song={currentSong} onSongUpdated={onSongUpdated} />
           </View>
         ) : (
@@ -357,6 +351,7 @@ export default function FullScreenPlayer() {
                 className="rounded-md"
                 style={{
                   width: "100%",
+                  maxHeight: Dimensions.get("window").height / 2 - 100,
                   aspectRatio: 1.77777778,
                 }}
               />
@@ -487,6 +482,7 @@ export default function FullScreenPlayer() {
             <SongSearchDialog
               song={currentSong}
               onSongUpdated={onSongUpdated}
+              portalHost="modal-fullScreenPlayer"
             />
           </View>
         )}
@@ -497,6 +493,7 @@ export default function FullScreenPlayer() {
           isPLSelectionDialogOpen={isPLSelectionDialogOpen}
           setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
           currentSelectedSongBvid={currentBvid}
+          portalHost="modal-fullScreenPlayer"
         />
       )}
       <PortalHost name="modal-fullScreenPlayer" />

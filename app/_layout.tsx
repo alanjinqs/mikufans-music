@@ -144,7 +144,7 @@ function RootLayout() {
             <Stack.Screen
               name="fullScreenPlayer"
               options={{
-                presentation: "modal",
+                presentation: "fullScreenModal",
                 animation: "slide_from_bottom",
               }}
             />

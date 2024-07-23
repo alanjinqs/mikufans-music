@@ -65,7 +65,7 @@ export default function HomeIndex() {
           <View className="flex-1 p-4">
             <Slot />
           </View>
-          <View className="px-3 pb-1">
+          <View className="px-3 pb-2">
             {/* <MiniPlayer /> */}
             <MiniPlayerNew />
           </View>
