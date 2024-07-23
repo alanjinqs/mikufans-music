@@ -206,7 +206,7 @@ export default function FullScreenPlayer() {
       <View
         className="w-full flex flex-row justify-between"
         style={{
-          paddingTop: Platform.OS !== "ios" ? insets.top : 24,
+          paddingTop: insets.top,
           paddingLeft: insets.left + 24,
           paddingRight: insets.right + 24,
         }}
@@ -337,7 +337,11 @@ export default function FullScreenPlayer() {
         currentSong.lyrics &&
         currentSong.lyrics.length > 0 ? (
           <View className="flex-1 w-full">
-            <LyricsView song={currentSong} onSongUpdated={onSongUpdated} />
+            <LyricsView
+              song={currentSong}
+              onSongUpdated={onSongUpdated}
+              portalHost="modal-fullScreenPlayer"
+            />
           </View>
         ) : (
           <View className="flex flex-col gap-8">
