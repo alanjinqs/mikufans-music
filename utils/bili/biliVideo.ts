@@ -1,4 +1,4 @@
-import { Track } from "react-native-track-player";
+import { RatingType, Track } from "react-native-track-player";
 import { biliFetch, UA } from "./biliFetch";
 import { Platform } from "react-native";
 import { SongDB } from "../db/db";
@@ -93,6 +93,7 @@ export const bvCid2Track = async (
       artist: song.artistName,
       artwork: song.downloadedCoverPath,
       duration: song.downloadedMp3Duration,
+      rating: RatingType.Heart,
     };
     return track;
   }
@@ -127,6 +128,7 @@ export const bvCid2Track = async (
       headers: {
         Referer: `https://www.bilibili.com/video/${bvid}`,
       },
+      rating: RatingType.Heart,
     };
     return track;
   } else {

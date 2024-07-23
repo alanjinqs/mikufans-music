@@ -184,3 +184,39 @@ export const removePlaylist = async (playlistId: number) => {
     .where(eq(songToPlaylist.playlistId, playlistId));
   await db.delete(playlist).where(eq(playlist.id, playlistId));
 };
+
+export const createId0Playlist = async () => {
+  if (await db.query.playlist.findFirst({ where: eq(playlist.id, 0) }))
+    return 0;
+  const insertingRes = await db
+    .insert(playlist)
+    .values({
+      name: "我的收藏",
+      cover: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      id: 0,
+    })
+    .onConflictDoNothing()
+    .returning();
+  return insertingRes[0].id;
+};
+
+export const addOrRemoveToId0Playlist = async (song: SongDB) => {
+  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
+    where: and(
+      eq(songToPlaylist.playlistId, 0),
+      eq(songToPlaylist.songId, song.id)
+    ),
+  });
+  if (playlistCurrentSongs.length > 0) {
+    removeSongFromPlaylist(song.id, 0);
+  } else {
+    await db.insert(songToPlaylist).values({
+      playlistId: 0,
+      songId: song.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+};

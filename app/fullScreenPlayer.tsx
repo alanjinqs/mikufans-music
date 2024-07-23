@@ -12,13 +12,12 @@ import { Image } from "react-native";
 import { Play } from "@/lib/icons/Play";
 import { X } from "@/lib/icons/X";
 import { Pause } from "@/lib/icons/Pause";
-import { schema } from "@/utils/db/db";
+import { db, schema } from "@/utils/db/db";
 import { cidToSong } from "@/utils/db/song";
 import _ from "lodash";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-
 import { SkipForward } from "@/lib/icons/SkipForward";
 import { SkipBack } from "@/lib/icons/SkipBack";
 import { ChevronDown } from "@/lib/icons/ChevronDown";
@@ -38,6 +37,19 @@ import { ListVideo } from "@/lib/icons/ListVideo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { enterFollowRecommendationMode } from "@/utils/trackPlayer/followRecommendationMode";
 import Toast from "react-native-toast-message";
+import { useLiveQuery } from "drizzle-orm/expo-sqlite";
+import { eq } from "drizzle-orm";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu } from "@/lib/icons/Menu";
+import { Heart } from "@/lib/icons/Heart";
+import clsx from "clsx";
+import { bv2av } from "@/utils/bili/avBvCid";
+import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -57,6 +69,8 @@ export default function FullScreenPlayer() {
   const router = useRouter();
   const [currentSong, setCurrentSong] = useState<undefined | Song>();
   const [currentBvid, setCurrentBvid] = useState("");
+  const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
+    useState(false);
 
   const [isPlaying, setIsPlaying] = useState(true);
 
@@ -118,6 +132,23 @@ export default function FullScreenPlayer() {
         setIsShowingLyrics(false);
       }
     });
+
+    db.query.songToPlaylist
+      .findMany({
+        with: {
+          song: true,
+        },
+        where: eq(schema.songToPlaylist.playlistId, 0),
+      })
+      .then((res) => {
+        if (
+          res.find((item) => item.song.bvid === currentTrack?.id.split("$")[1])
+        ) {
+          setIsCurrentSongInId0Playlist(true);
+        } else {
+          setIsCurrentSongInId0Playlist(false);
+        }
+      });
   };
 
   useEffect(() => {
@@ -178,74 +209,102 @@ export default function FullScreenPlayer() {
                 <CaseSensitive size={30} className="text-white" />
               </TouchableOpacity>
             )}
-          {currentTrack && (
-            <TouchableOpacity
-              onPress={() => {
-                router.dismiss();
-                router.push(`/home/videos/recommend/${currentBvid}`);
-              }}
-            >
-              <ListVideo size={28} className="text-white" />
-            </TouchableOpacity>
-          )}
         </View>
         <View className="flex flex-row items-center justify-end gap-4">
-          {currentTrack && (
+          {currentSong && (
             <TouchableOpacity
               onPress={() => {
-                setIsPLSelectionDialogOpen(true);
+                addOrRemoveToId0Playlist(currentSong);
+                setIsCurrentSongInId0Playlist(!isCurrentSongInId0Playlist);
               }}
             >
-              <ListPlus size={28} className="text-white" />
+              <Heart
+                size={28}
+                className={
+                  isCurrentSongInId0Playlist
+                    ? "fill-red-400 text-red-400"
+                    : "text-white fill-none"
+                }
+              />
             </TouchableOpacity>
           )}
-          {currentTrack && (
-            <TouchableOpacity
-              onPress={() => {
-                AsyncStorage.getItem("followRecommendationMode").then(
-                  (currentInFollowRecommendationMode) => {
-                    if (
-                      currentInFollowRecommendationMode &&
-                      currentInFollowRecommendationMode == "true"
-                    ) {
-                      AsyncStorage.removeItem("followRecommendationMode");
-                      Toast.show({
-                        type: "info",
-                        text1: "退出推荐模式",
-                      });
-                    } else {
-                      enterFollowRecommendationMode();
-                      Toast.show({
-                        type: "info",
-                        text1: "进入推荐模式",
-                        text2:
-                          "推荐模式下，播放列表将会自动从当前播放的推荐列表中随机更新音乐区视频",
-                      });
-                    }
-                  }
-                );
-              }}
-            >
-              <Dices size={28} className="text-white" />
-            </TouchableOpacity>
-          )}
-          {currentTrack && Platform.OS === "android" && (
-            <TouchableOpacity
-              onPress={() => {
-                TrackPlayer.pause();
-                Linking.openURL(`bilibili://video/${currentBvid}`);
-              }}
-            >
-              <Tv size={28} className="text-white" />
-            </TouchableOpacity>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Menu size={28} className="text-white" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 native:w-72">
+              {currentTrack && (
+                <DropdownMenuItem
+                  onPress={() => {
+                    setIsPLSelectionDialogOpen(true);
+                  }}
+                >
+                  <ListPlus size={28} className="text-primary" />
+                  <Text>添加到播放列表</Text>
+                </DropdownMenuItem>
+              )}
+              {currentTrack && (
+                <DropdownMenuItem
+                  onPress={() => {
+                    router.dismiss();
+                    router.push(`/home/videos/recommend/${currentBvid}`);
+                  }}
+                >
+                  <ListVideo size={28} className="text-primary" />
+                  <Text>相关推荐</Text>
+                </DropdownMenuItem>
+              )}
+              {currentTrack && (
+                <DropdownMenuItem
+                  onPress={() => {
+                    AsyncStorage.getItem("followRecommendationMode").then(
+                      (currentInFollowRecommendationMode) => {
+                        if (
+                          currentInFollowRecommendationMode &&
+                          currentInFollowRecommendationMode == "true"
+                        ) {
+                          AsyncStorage.removeItem("followRecommendationMode");
+                          Toast.show({
+                            type: "info",
+                            text1: "退出推荐模式",
+                          });
+                        } else {
+                          enterFollowRecommendationMode();
+                          Toast.show({
+                            type: "info",
+                            text1: "进入推荐模式",
+                            text2:
+                              "推荐模式下，播放列表将会自动从当前播放的推荐列表中随机更新音乐区视频",
+                          });
+                        }
+                      }
+                    );
+                  }}
+                >
+                  <Dices size={28} className="text-primary" />
+                  <Text>推荐跟随模式</Text>
+                </DropdownMenuItem>
+              )}
+              {currentTrack && Platform.OS === "android" && (
+                <DropdownMenuItem
+                  onPress={() => {
+                    TrackPlayer.pause();
+                    Linking.openURL(`bilibili://video/${currentBvid}`);
+                  }}
+                >
+                  <Tv size={28} className="text-primary" />
+                  <Text>在哔哩哔哩中打开</Text>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <TouchableOpacity
             onPress={() => {
               router.dismiss();
               router.push("/home/currentQueue");
             }}
           >
-            <List size={30} className="text-white" />
+            <ListVideo size={30} className="text-white" />
           </TouchableOpacity>
         </View>
       </View>

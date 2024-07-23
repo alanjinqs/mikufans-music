@@ -126,6 +126,7 @@ export default function SearchPage() {
         <Input
           onChangeText={setKeywordInput}
           className="flex-1 rounded-l-full !rounded-r-none"
+          onSubmitEditing={onSearchPress}
         />
 
         <Button

@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
+  RatingType,
   State,
 } from "react-native-track-player";
 
@@ -25,7 +27,9 @@ export const initTrackPlayer = async () => {
 
     TrackPlayer.registerPlaybackService(() => require("./trackPlayerService"));
 
-    await TrackPlayer.setupPlayer();
+    await TrackPlayer.setupPlayer({
+      autoHandleInterruptions: true,
+    });
 
     await TrackPlayer.updateOptions({
       android: {
@@ -35,6 +39,7 @@ export const initTrackPlayer = async () => {
       compactCapabilities: capabilities,
       capabilities,
       progressUpdateEventInterval: 1,
+      ratingType: RatingType.Heart,
     });
 
     await AsyncStorage.removeItem("followRecommendationMode");

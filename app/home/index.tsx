@@ -24,8 +24,8 @@ import {
   SearchResult,
   SearchResultCardSq,
 } from "@/components/song/SearchResultCard";
-import { debounce } from "lodash";
-import { isMusicType } from "@/utils/bili/biliTypeIdFilters";
+import { Heart } from "@/lib/icons/Heart";
+import clsx from "clsx";
 
 export default function HomeView() {
   const { width, height } = useWindowDimensions();
@@ -42,36 +42,33 @@ export default function HomeView() {
     setIsGettingNewRecommend(true);
     console.log("get new recommend");
     const res = await indexRecommend();
-    const recommendVideos: SearchResult[] = res.item
-      .map((item: any) => ({
-        aid: parseInt(item.id),
-        artistName: item.owner.name,
-        artistMid: item.owner.mid,
-        artistAvatar: item.owner.face.replace("http://", "https://"),
-        bvid: item.bvid,
-        title: item.title,
-        artwork: item.pic.replace("http://", "https://"),
-        publishedAt: item.pubdate,
-        duration: item.duration,
-        danmu: item.stat.danmaku,
-        view: item.stat.view,
-        like: item.stat.like,
-      }));
+    const recommendVideos: SearchResult[] = res.item.map((item: any) => ({
+      aid: parseInt(item.id),
+      artistName: item.owner.name,
+      artistMid: item.owner.mid,
+      artistAvatar: item.owner.face.replace("http://", "https://"),
+      bvid: item.bvid,
+      title: item.title,
+      artwork: item.pic.replace("http://", "https://"),
+      publishedAt: item.pubdate,
+      duration: item.duration,
+      danmu: item.stat.danmaku,
+      view: item.stat.view,
+      like: item.stat.like,
+    }));
     setRecommendVideos((current) => [...current, ...recommendVideos]);
     setIsGettingNewRecommend(false);
   };
   useEffect(() => {
     if (indexRecommend.length > 0) return;
-    getNewRecommend();
+    // getNewRecommend();
   }, []);
 
   useEffect(() => {
     if (playlists.length === 1) {
       setItemPerRow(1);
-    } else if (playlists.length % 2 === 0) {
+    } else {
       setItemPerRow(2);
-    } else if (playlists.length % 3 === 0) {
-      setItemPerRow(3);
     }
   }, [playlists]);
 
@@ -145,26 +142,41 @@ export default function HomeView() {
                 onPress={() => router.push(`/home/playlists/${playlist.id}`)}
               >
                 <View className="bg-secondary rounded-md overflow-hidden">
-                  {playlist?.cover ? (
-                    <Image
-                      src={playlist?.cover + "@480w"}
-                      alt="cover"
-                      style={{
-                        width: (width - 18) / itemPerRow - 10,
-                        aspectRatio: 1.77777778,
-                      }}
-                    />
-                  ) : (
-                    <View
-                      className="bg-gray-400 flex items-center justify-center"
-                      style={{
-                        width: (width - 18) / itemPerRow - 10,
-                        aspectRatio: 1.77777778,
-                      }}
-                    >
-                      <ListMusic className="text-white/50" size={40} />
-                    </View>
-                  )}
+                  <View className="relative">
+                    {playlist?.cover ? (
+                      <Image
+                        src={playlist?.cover + "@480w"}
+                        alt="cover"
+                        style={{
+                          width: (width - 18) / itemPerRow - 10,
+                          aspectRatio: 1.77777778,
+                        }}
+                      />
+                    ) : (
+                      <View
+                        className={clsx(
+                          playlist.id == 0 ? "bg-red-300" : "bg-gray-400",
+                          "flex items-center justify-center"
+                        )}
+                        style={{
+                          width: (width - 18) / itemPerRow - 10,
+                          aspectRatio: 1.77777778,
+                        }}
+                      >
+                        {playlist.id !== 0 && (
+                          <ListMusic className="text-white/50" size={40} />
+                        )}
+                      </View>
+                    )}
+
+                    {playlist.id === 0 && (
+                      <View className="absolute w-full h-full ">
+                        <View className="w-full h-full items-center justify-center">
+                          <Heart className="text-white fill-white" size={40} />
+                        </View>
+                      </View>
+                    )}
+                  </View>
                   <Text className="text-secondary-foreground font-bold p-2 text-lg">
                     {playlist?.name}
                   </Text>

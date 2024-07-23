@@ -10,5 +10,5 @@ export default function NotificationClick() {
       router.replace("/home");
     }
   }, []);
-  return <div></div>;
+  return <View></View>;
 }

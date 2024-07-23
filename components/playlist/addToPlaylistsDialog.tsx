@@ -69,7 +69,8 @@ export default function AddToPlaylistsDialog({
               >
                 <View
                   className={clsx(
-                    "flex flex-row p-2 bg-secondary dark rounded-md"
+                    "flex flex-row p-2 dark rounded-md",
+                    playlist.id === 0 ? "bg-red-50" : "bg-secondary"
                   )}
                 >
                   {playlist?.cover && (
@@ -79,6 +80,7 @@ export default function AddToPlaylistsDialog({
                       className="w-16 h-10 rounded-md"
                     />
                   )}
+
                   <View className="text-secondary-foreground pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
                     <Text className="text-secondary-foreground text-md">
                       {playlist?.name}

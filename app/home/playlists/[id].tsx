@@ -21,14 +21,17 @@ import { Text } from "@/components/ui/text";
 import { Play } from "@/lib/icons/Play";
 import { Shuffle } from "@/lib/icons/Shuffle";
 import TrackPlayer from "react-native-track-player";
-import { MotiView } from "moti";
 import {
   FlatList,
   Swipeable,
   TouchableOpacity,
 } from "react-native-gesture-handler";
 import AddNewSong from "@/components/playlist/addNewSong";
-import { removePlaylist, removeSongFromPlaylist } from "@/utils/db/playlists";
+import {
+  addOrRemoveToId0Playlist,
+  removePlaylist,
+  removeSongFromPlaylist,
+} from "@/utils/db/playlists";
 import { ListStart } from "@/lib/icons/ListStart";
 import { Trash2 } from "@/lib/icons/Trash2";
 import { SquareArrowOutUpRight } from "@/lib/icons/SquareArrowOutUpRight";
@@ -49,6 +52,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "@/lib/icons/Menu";
+import clsx from "clsx";
+import { Heart } from "@/lib/icons/Heart";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -56,6 +61,13 @@ export default function PlaylistView() {
   const [playlist, setPlaylist] = useState<
     typeof schema.playlist.$inferSelect | undefined
   >();
+
+  const { data: id0Songs } = useLiveQuery(
+    db
+      .select()
+      .from(schema.songToPlaylist)
+      .where(eq(schema.songToPlaylist.playlistId, 0))
+  );
 
   const { data: songs } = useLiveQuery(
     db.query.songToPlaylist.findMany({
@@ -145,6 +157,7 @@ export default function PlaylistView() {
                 song={item.song}
                 playlistId={playlistId}
                 fetchPlaylist={fetchPlaylist}
+                id0Songs={id0Songs}
               />
             );
           }}
@@ -159,20 +172,46 @@ const CardActionLeft = memo(
   ({
     onPressTrash,
     onPressShare,
+    heart,
+    onPressHeart,
+    showTrash,
   }: {
     onPressTrash: () => void;
     onPressShare: () => void;
+    heart: boolean;
+    onPressHeart: () => void;
+    showTrash?: boolean;
   }) => {
     return (
       <View className="flex flex-row items-center">
-        <TouchableOpacity onPress={onPressTrash}>
-          <View className="bg-red-500 h-full flex items-center justify-center px-4 rounded-l-md !m-0">
-            <Trash2 size={20} className="text-white" />
+        {showTrash && (
+          <TouchableOpacity onPress={onPressTrash}>
+            <View className="bg-red-700 h-full flex items-center justify-center px-4 rounded-l-md !m-0">
+              <Trash2 size={20} className="text-white" />
+            </View>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity onPress={onPressShare}>
+          <View
+            className={clsx(
+              "bg-purple-300 h-full flex items-center justify-center px-4 !m-0",
+              !showTrash && "rounded-l-md"
+            )}
+          >
+            <SquareArrowOutUpRight size={20} className="text-white" />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={onPressShare}>
-          <View className="bg-purple-300 h-full flex items-center justify-center px-4 !m-0">
-            <SquareArrowOutUpRight size={20} className="text-white" />
+        <TouchableOpacity onPress={onPressHeart}>
+          <View
+            className={clsx(
+              "bg-red-300 h-full flex items-center justify-center px-4 !m-0"
+            )}
+          >
+            <Heart
+              size={20}
+              className={clsx(heart ? "fill-white" : "fill-none", "text-white")}
+            />
           </View>
         </TouchableOpacity>
       </View>
@@ -217,10 +256,12 @@ const SongCard = memo(
     song,
     playlistId,
     fetchPlaylist,
+    id0Songs,
   }: {
     song: typeof schema.song.$inferSelect;
     playlistId: number;
     fetchPlaylist: () => void;
+    id0Songs: (typeof schema.songToPlaylist.$inferSelect)[];
   }) => {
     const swipeableRef = useRef<Swipeable>(null);
 
@@ -249,6 +290,12 @@ const SongCard = memo(
                   url: `https://b23.tv/${song.bvid}`,
                 });
               }}
+              onPressHeart={() => {
+                swipeableRef.current?.close();
+                addOrRemoveToId0Playlist(song);
+              }}
+              heart={id0Songs.find((s) => s.songId === song.id) ? true : false}
+              showTrash={playlistId !== 0}
             />
           )}
           renderRightActions={() => (

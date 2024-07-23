@@ -21,6 +21,7 @@ import "react-native-gesture-handler";
 import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 import Toast from "react-native-toast-message";
 import { MikufansMusicContext } from "./context";
+import { createId0Playlist } from "@/utils/db/playlists";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -104,6 +105,7 @@ function RootLayout() {
       console.log("hideSplashScreen");
       SplashScreen.hideAsync();
       addQueueToTrackPlayer();
+      createId0Playlist();
     });
   }, []);
 
