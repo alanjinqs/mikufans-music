@@ -46,7 +46,11 @@ const db = drizzle(expoDb);
 
 export default function DrizzleLoad() {
   const { success, error } = useMigrations(db, migrations);
-  useDrizzleStudio(expoDb);
+
+  if (__DEV__) {
+    useDrizzleStudio(expoDb);
+  }
+
   if (error) {
     return (
       <View>
