@@ -105,7 +105,7 @@ export const bvCid2Track = async (
   if (song && song.downloadedCoverPath) {
     artwork = song.downloadedCoverPath;
   }
-  if (Platform.OS !== "ios") {
+  if (Platform.OS !== "ios" || true) {
     const videoPlaybackInfo = await getBiliVideoDashPlaybackInfo(cid, bvid);
     const bestPlaybackAudio = biliDashVideoInfoToBestAudio(
       videoPlaybackInfo.data,
@@ -130,6 +130,7 @@ export const bvCid2Track = async (
       },
       rating: RatingType.Heart,
     };
+    console.log("track", track);
     return track;
   } else {
     // console.error("NOT TESTED");
