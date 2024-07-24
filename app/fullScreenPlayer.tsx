@@ -344,22 +344,24 @@ export default function FullScreenPlayer() {
             />
           </View>
         ) : (
-          <View className="flex flex-col gap-8">
-            {currentTrack?.artwork && (
-              <Image
-                src={
-                  currentTrack.artwork +
-                  (currentTrack.artwork.includes("file://") ? "" : "@500w")
-                }
-                alt="cover"
-                className="rounded-md"
-                style={{
-                  width: "100%",
-                  maxHeight: Dimensions.get("window").height / 2 - 100,
-                  aspectRatio: 1.77777778,
-                }}
-              />
-            )}
+          <View className="flex flex-col gap-8 w-full">
+            <View className="flex flex-col items-center justify-center">
+              {currentTrack?.artwork && (
+                <Image
+                  src={
+                    currentTrack.artwork +
+                    (currentTrack.artwork.includes("file://") ? "" : "@500w")
+                  }
+                  alt="cover"
+                  className="rounded-md"
+                  style={{
+                    width: "100%",
+                    maxHeight: Dimensions.get("window").height / 2 - 100,
+                    aspectRatio: 1.77777778,
+                  }}
+                />
+              )}
+            </View>
             <View className="w-full text-white flex flex-col justify-center gap-4">
               <Text className="text-white text-xl w-full">
                 {currentTrack?.title || "- 播放列表为空 -"}
