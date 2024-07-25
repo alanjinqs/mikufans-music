@@ -1,11 +1,12 @@
 import { playlist, song, songToPlaylist } from "@/db/schema";
 import { db, SongDB } from "./db";
-import { fetchFavList, fetchFavMeta } from "../bili/biliFavList";
+import { fetchFavListAsSong } from "../bili/biliFavList";
 import dayjs from "dayjs";
 import { artworkToDarkColor } from "../artworkToColor";
 import { and, eq } from "drizzle-orm";
 import { bv2av } from "../bili/avBvCid";
 import { getBiliVideoMeta } from "../bili/biliVideo";
+import { fetchSeasonSeriesToSongs } from "../bili/biliSeasonsSeriesList";
 export const createNewPlaylist = async ({
   name,
   cover,
@@ -98,12 +99,53 @@ export const addSongToPlaylist = async (
   return resSong;
 };
 
+export const addSeasonsSeriesToPlaylist = async (
+  type: "season" | "series",
+  mid: string,
+  seriesId: string,
+  playlistId: number,
+  updatePlaylistCover = false
+) => {
+  const { songList, seasonsInfo } = await fetchSeasonSeriesToSongs(
+    type,
+    mid,
+    seriesId
+  );
+
+  for (const s of songList) {
+    const color = await artworkToDarkColor(s.artwork || undefined);
+    await db
+      .insert(song)
+      .values({
+        ...s,
+        color,
+      })
+      .onConflictDoNothing();
+    await db.insert(songToPlaylist).values({
+      playlistId,
+      songId: s.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  if (updatePlaylistCover) {
+    await db
+      .update(playlist)
+      .set({
+        cover: seasonsInfo.cover.replace("http://", "https://"),
+        updatedAt: new Date(),
+      })
+      .where(eq(playlist.id, playlistId));
+  }
+};
+
 export const addFavoriteToPlaylist = async (
   mediaId: number,
   playlistId: number,
   updatePlaylistCover = false
 ) => {
-  const { favInfo, songList } = await fetchFavList(mediaId);
+  const { favInfo, songList } = await fetchFavListAsSong(mediaId);
 
   const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
     where: eq(songToPlaylist.playlistId, playlistId),
@@ -143,7 +185,7 @@ export const addFavoriteToPlaylist = async (
 };
 
 export const createNewPlaylistByBiliFav = async (mediaId: number) => {
-  const { favInfo, songList } = await fetchFavList(mediaId);
+  const { favInfo, songList } = await fetchFavListAsSong(mediaId);
 
   const favName = favInfo.title;
   const favCover = favInfo.cover;

@@ -28,7 +28,7 @@ export const getUserInfo = async () => {
   return json;
 };
 
-export const getArtistInfo = async (mid: number) => {
+export const getArtistInfo = async (mid: string | number) => {
   const res = await biliFetch(
     `https://api.bilibili.com/x/space/wbi/acc/info?mid=${mid}`
   );

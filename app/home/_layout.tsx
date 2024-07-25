@@ -43,7 +43,7 @@ export default function HomeIndex() {
     <>
       <SafeAreaView>
         <View className="flex flex-col h-full">
-          <View className="flex flex-row justify-between items-center mb-6 p-4">
+          <View className="flex flex-row justify-between items-center mb-4 p-4">
             <View>
               {pathname !== "/home" ? (
                 <TouchableOpacity
@@ -62,7 +62,7 @@ export default function HomeIndex() {
             </View>
             <AvatarOrLoginBtn userInfo={userInfo} onSuccess={updateUserInfo} />
           </View>
-          <View className="flex-1 p-4">
+          <View className="flex-1 px-4">
             <Slot />
           </View>
           <View className="px-3 pb-2">

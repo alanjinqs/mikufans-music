@@ -31,7 +31,7 @@ export const fetchFavMeta = async (mid: number) => {
   return res.json();
 };
 
-export const fetchFavList = async (mid: number) => {
+export const fetchFavListAsSong = async (mid: number) => {
   const songList: SongDB[] = [];
 
   let favInfo: any;

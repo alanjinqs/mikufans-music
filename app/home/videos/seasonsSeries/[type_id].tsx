@@ -15,6 +15,11 @@ import {
   getSeries,
   getSeriesMeta,
 } from "@/utils/bili/biliSeasonsSeriesList";
+import { Button } from "@/components/ui/button";
+import { ListPlus } from "@/lib/icons/ListPlus";
+import Toast from "react-native-toast-message";
+import { addSeasonsSeriesToPlaylist } from "@/utils/db/playlists";
+import SelectPlaylistDialog from "@/components/playlist/selectPlaylistDialog";
 
 export default function FavoriteList() {
   const { type_id } = useLocalSearchParams();
@@ -24,6 +29,8 @@ export default function FavoriteList() {
   const [favoriteTitle, setFavoriteTitle] = useState("");
   const [favoriteCover, setFavoriteCover] = useState("");
   const [mid, setMid] = useState("");
+
+  const [addToPlaylistLoading, setAddToPlaylistLoading] = useState(false);
 
   const getNextPage = () => {
     const [type, id] = (type_id as string).split("_");
@@ -61,6 +68,7 @@ export default function FavoriteList() {
     } else {
       getSeasons(id, 1).then((res) => {
         setPage(1);
+        setMid(res.meta.mid);
         setRecommendVideos((current) => [...current, ...res.list]);
         setFavoriteCover(res.meta.cover.replace("http://", "https://"));
         setFavoriteTitle(res.meta.name);
@@ -69,6 +77,8 @@ export default function FavoriteList() {
   }, [type_id]);
 
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
+  const [isPLSelection2DialogOpen, setIsPLSelection2DialogOpen] =
+    useState(false);
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] = useState("");
 
   return (
@@ -84,6 +94,19 @@ export default function FavoriteList() {
         <Text className="text-foreground text-3xl font-bold" numberOfLines={1}>
           {favoriteTitle || ""}
         </Text>
+      </View>
+      <View className="flex flex-row items-center justify-end gap-3">
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={() => {
+            setIsPLSelection2DialogOpen(true);
+          }}
+          disabled={addToPlaylistLoading}
+        >
+          <ListPlus className="text-primary" size={13} />
+        </Button>
       </View>
 
       <View className="flex-1">
@@ -106,6 +129,27 @@ export default function FavoriteList() {
         setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
         isPLSelectionDialogOpen={isPLSelectionDialogOpen}
         currentSelectedSongBvid={currentSelectedSongBvid}
+      />
+
+      <SelectPlaylistDialog
+        isPLSelectionDialogOpen={isPLSelection2DialogOpen}
+        setIsPLSelectionDialogOpen={setIsPLSelection2DialogOpen}
+        onPlaylistSelected={(playlistId) => {
+          const [type, id] = (type_id as string).split("_");
+          setAddToPlaylistLoading(true);
+
+          setAddToPlaylistLoading(true);
+          addSeasonsSeriesToPlaylist(type as any, mid, id, playlistId, false)
+            .then(() => {
+              Toast.show({
+                type: "success",
+                text1: "已添加到播放列表",
+              });
+            })
+            .finally(() => {
+              setAddToPlaylistLoading(false);
+            });
+        }}
       />
     </View>
   );

@@ -10,6 +10,11 @@ import { FlatList } from "react-native-gesture-handler";
 import { Text } from "@/components/ui/text";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { getFavListByPage } from "@/utils/bili/biliFavList";
+import { Button } from "@/components/ui/button";
+import { ListPlus } from "@/lib/icons/ListPlus";
+import SelectPlaylistDialog from "@/components/playlist/selectPlaylistDialog";
+import { addFavoriteToPlaylist } from "@/utils/db/playlists";
+import Toast from "react-native-toast-message";
 
 export default function FavoriteList() {
   const { mediaId } = useLocalSearchParams();
@@ -36,6 +41,8 @@ export default function FavoriteList() {
   }, [mediaId]);
 
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
+  const [isPLSelection2DialogOpen, setIsPLSelection2DialogOpen] =
+    useState(false);
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] = useState("");
 
   return (
@@ -51,6 +58,18 @@ export default function FavoriteList() {
         <Text className="text-foreground text-3xl font-bold" numberOfLines={1}>
           {favoriteTitle || mediaId}
         </Text>
+      </View>
+      <View className="flex flex-row items-center justify-end gap-3">
+        <Button
+          className="mb-5 mt-2"
+          variant={"outline"}
+          size={"sm"}
+          onPress={() => {
+            setIsPLSelection2DialogOpen(true);
+          }}
+        >
+          <ListPlus className="text-primary" size={13} />
+        </Button>
       </View>
 
       <View className="flex-1">
@@ -73,6 +92,22 @@ export default function FavoriteList() {
         setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
         isPLSelectionDialogOpen={isPLSelectionDialogOpen}
         currentSelectedSongBvid={currentSelectedSongBvid}
+      />
+      <SelectPlaylistDialog
+        isPLSelectionDialogOpen={isPLSelection2DialogOpen}
+        setIsPLSelectionDialogOpen={setIsPLSelection2DialogOpen}
+        onPlaylistSelected={(playlistId) => {
+          addFavoriteToPlaylist(
+            parseInt(mediaId as string),
+            playlistId,
+            false
+          ).then(() => {
+            Toast.show({
+              type: "success",
+              text1: "已添加到播放列表",
+            });
+          });
+        }}
       />
     </View>
   );
