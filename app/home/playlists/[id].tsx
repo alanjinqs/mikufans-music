@@ -18,6 +18,7 @@ import {
 
 import { View } from "react-native";
 import { Text } from "@/components/ui/text";
+import { Edit3 } from "@/lib/icons/Edit3";
 import { Play } from "@/lib/icons/Play";
 import { Shuffle } from "@/lib/icons/Shuffle";
 import TrackPlayer from "react-native-track-player";
@@ -29,6 +30,7 @@ import {
 import AddNewSong from "@/components/playlist/addNewSong";
 import {
   addOrRemoveToId0Playlist,
+  editPlaylistName,
   removePlaylist,
   removeSongFromPlaylist,
 } from "@/utils/db/playlists";
@@ -54,6 +56,7 @@ import {
 import { Menu } from "@/lib/icons/Menu";
 import clsx from "clsx";
 import { Heart } from "@/lib/icons/Heart";
+import EditPlaylistName from "@/components/playlist/editPlaylistName";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -61,6 +64,7 @@ export default function PlaylistView() {
   const [playlist, setPlaylist] = useState<
     typeof schema.playlist.$inferSelect | undefined
   >();
+  const [showEditPlaylist, setShowEditPlaylist] = useState(false);
 
   const { data: id0Songs } = useLiveQuery(
     db
@@ -100,35 +104,48 @@ export default function PlaylistView() {
         </Text>
       </View>
       <View className="flex flex-row items-center justify-end gap-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="mb-5 mt-2" variant={"outline"} size={"sm"}>
-              <Menu className="text-primary" size={13} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-64 native:w-72">
-            <DropdownMenuItem
-              onPress={() => {
-                removePlaylist(playlistId).then(() => {
-                  router.back();
-                });
-              }}
-            >
-              <View className="flex flex-row items-center gap-2">
-                <Trash2 className="text-primary" size={20} />
-                <Text>删除歌单</Text>
-              </View>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {playlistId !== -1 && playlistId !== 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="mb-5 mt-2" variant={"outline"} size={"sm"}>
+                <Menu className="text-primary" size={13} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-64 native:w-72">
+              <>
+                <DropdownMenuItem
+                  onPress={() => {
+                    removePlaylist(playlistId).then(() => {
+                      router.back();
+                    });
+                  }}
+                >
+                  <View className="flex flex-row items-center gap-2">
+                    <Trash2 className="text-primary" size={20} />
+                    <Text>删除歌单</Text>
+                  </View>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onPress={() => {
+                    setShowEditPlaylist(true);
+                  }}
+                >
+                  <View className="flex flex-row items-center gap-2">
+                    <Edit3 className="text-primary" size={20} />
+                    <Text>修改歌单名称</Text>
+                  </View>
+                </DropdownMenuItem>
+              </>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         <AddNewSong playlistId={playlistId} />
         <Button
           className="mb-5 mt-2"
           variant={"outline"}
           size={"sm"}
           onPress={() => {
-            if (!playlist?.id) return;
-            replacePlaylistByQueue(playlist?.id, true);
+            replacePlaylistByQueue(playlistId, true);
           }}
         >
           <Shuffle className="text-primary" size={13} />
@@ -138,8 +155,7 @@ export default function PlaylistView() {
           variant={"outline"}
           size={"sm"}
           onPress={() => {
-            if (!playlist?.id) return;
-            replacePlaylistByQueue(playlist?.id);
+            replacePlaylistByQueue(playlistId);
           }}
         >
           <Play className="text-primary" size={13} />
@@ -162,6 +178,11 @@ export default function PlaylistView() {
           keyExtractor={(item) => item.id.toString() || ""}
         ></FlatList>
       </View>
+      <EditPlaylistName
+        playlistId={playlistId}
+        showDialog={showEditPlaylist}
+        setShowDialog={setShowEditPlaylist}
+      />
     </View>
   );
 }

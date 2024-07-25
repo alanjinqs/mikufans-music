@@ -265,3 +265,13 @@ export const addOrRemoveToId0Playlist = async (song: SongDB) => {
     });
   }
 };
+
+export const editPlaylistName = async (playlistId: number, name: string) => {
+  await db
+    .update(playlist)
+    .set({
+      name,
+      updatedAt: new Date(),
+    })
+    .where(eq(playlist.id, playlistId));
+};

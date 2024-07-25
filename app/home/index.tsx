@@ -56,7 +56,6 @@ export default function HomeView() {
   }, []);
 
   useEffect(() => {
-    console.log(width);
     if (width > 1000) {
       setItemPerRow(Math.floor(width / 300));
     } else {
