@@ -82,6 +82,7 @@ function RootLayout() {
           Toast.show({
             type: "dev",
             text1: "开发者模式已开启",
+            text2: "截图时请注意保护 Cookie 及 Token",
           });
         }
       });
@@ -113,10 +114,6 @@ function RootLayout() {
       createId0Playlist();
     });
   }, []);
-
-  if (!isColorSchemeLoaded) {
-    return null;
-  }
 
   return (
     <MikufansMusicContext.Provider value={{ isDevMode, setIsDevMode }}>

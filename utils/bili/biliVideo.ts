@@ -141,7 +141,6 @@ export const bvCid2Track = async (
       },
       rating: RatingType.Heart,
     };
-    console.log("track", track);
     return track;
   } else {
     // console.error("NOT TESTED");

@@ -97,7 +97,6 @@ module.exports = async function () {
           },
           true
         );
-        console.log("track", track);
         if (track) {
           await TrackPlayer.load(track);
           TrackPlayer.play();
