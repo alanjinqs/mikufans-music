@@ -203,7 +203,7 @@ export const SearchResultCardSq = ({
               }}
             ></View>
           )}
-          <Text className="text-secondary-foreground p-2" numberOfLines={2}>
+          <Text className="text-secondary-foreground p-2 h-16" numberOfLines={2}>
             {result?.title}
           </Text>
 

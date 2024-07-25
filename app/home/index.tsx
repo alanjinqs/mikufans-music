@@ -26,6 +26,7 @@ import {
 } from "@/components/song/SearchResultCard";
 import { Heart } from "@/lib/icons/Heart";
 import clsx from "clsx";
+import { getFeed } from "@/utils/bili/biliFeed";
 
 export default function HomeView() {
   const { width, height } = useWindowDimensions();
@@ -37,31 +38,21 @@ export default function HomeView() {
   const [itemPerRow, setItemPerRow] = useState(2);
   const [recommendVideos, setRecommendVideos] = useState<SearchResult[]>([]);
   const [isGettingNewRecommend, setIsGettingNewRecommend] = useState(false);
+  const [offset, setOffset] = useState(0);
+
   const getNewRecommend = async () => {
     if (isGettingNewRecommend) return;
     setIsGettingNewRecommend(true);
     console.log("get new recommend");
-    const res = await indexRecommend();
-    const recommendVideos: SearchResult[] = res.item.map((item: any) => ({
-      aid: parseInt(item.id),
-      artistName: item.owner.name,
-      artistMid: item.owner.mid,
-      artistAvatar: item.owner.face.replace("http://", "https://"),
-      bvid: item.bvid,
-      title: item.title,
-      artwork: item.pic.replace("http://", "https://"),
-      publishedAt: item.pubdate,
-      duration: item.duration,
-      danmu: item.stat.danmaku,
-      view: item.stat.view,
-      like: item.stat.like,
-    }));
-    setRecommendVideos((current) => [...current, ...recommendVideos]);
+    const res = await getFeed(offset);
+
+    setRecommendVideos((current) => [...current, ...res.results]);
     setIsGettingNewRecommend(false);
+    setOffset(res.nextOffset);
   };
   useEffect(() => {
     if (indexRecommend.length > 0) return;
-    // getNewRecommend();
+    getNewRecommend();
   }, []);
 
   useEffect(() => {
@@ -187,12 +178,12 @@ export default function HomeView() {
           <View
             className="mt-5 flex flex-row flex-wrap"
             style={{
-              gap: 4,
+              gap: 10,
             }}
           >
             {recommendVideos.map((video) => (
               <SearchResultCardSq
-                key={video.bvid}
+                key={video.bvid + "_" + video.artistMid}
                 width={(width - 18) / itemPerRow - 10}
                 result={video}
               />
@@ -200,7 +191,7 @@ export default function HomeView() {
           </View>
           <View className="flex flex-row items-center justify-center my-5">
             <Button onPress={getNewRecommend} variant="outline" size="sm">
-              <Text>加载更多首页推荐</Text>
+              <Text>加载更多</Text>
             </Button>
           </View>
         </ScrollView>
