@@ -6,8 +6,12 @@ export default function NotificationClick() {
   useEffect(() => {
     if (router.canDismiss()) {
       router.dismiss();
+    } else if(router.canGoBack()) {
+      router.back();
     } else {
-      router.replace("/home");
+      setTimeout(() => {
+        router.replace("/home");
+      }, 500);
     }
   }, []);
   return <View></View>;
