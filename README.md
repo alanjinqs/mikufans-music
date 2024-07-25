@@ -58,7 +58,7 @@ A music player for Bilibili.com (a video website) that has the following feature
 
 <!-- GETTING STARTED -->
 
-## Getting Started (Without EAS) / 本地构建
+<h2 id="getting-started">Getting Started (Without EAS) / 本地构建</h2>
 
 ```bash
 git clone https://github.com/AlanJinqs/mikufans-music.git
