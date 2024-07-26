@@ -5,12 +5,12 @@ import { currentQueue, currentQueueMeta } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { bv2Cid } from "../bili/avBvCid";
 import { bvCid2Track } from "../bili/biliVideo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { mmkvStorage } from "../storage/storage";
 
 export const addQueueToTrackPlayer = async () => {
-  const isUpdating = await AsyncStorage.getItem("isTPQueueUpdating");
-  if (isUpdating === "true") return true;
-  await AsyncStorage.setItem("isTPQueueUpdating", "true");
+  const isUpdating = mmkvStorage.getBoolean("isTPQueueUpdating");
+  if (isUpdating) return true;
+  mmkvStorage.set("isTPQueueUpdating", true);
   // return: hasNext
   const currentTPQueue = await TrackPlayer.getQueue();
   const currentTPIndex = await TrackPlayer.getActiveTrackIndex();
@@ -61,7 +61,7 @@ export const addQueueToTrackPlayer = async () => {
       }
     }
   })();
-  await AsyncStorage.setItem("isTPQueueUpdating", "false");
+  mmkvStorage.set("isTPQueueUpdating", false);
   return hasNext;
 };
 

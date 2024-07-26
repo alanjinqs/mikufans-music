@@ -39,7 +39,6 @@ import { CaseSensitive } from "@/lib/icons/CaseSensitive";
 import { ListPlus } from "@/lib/icons/ListPlus";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { ListVideo } from "@/lib/icons/ListVideo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { enterFollowRecommendationMode } from "@/utils/trackPlayer/followRecommendationMode";
 import Toast from "react-native-toast-message";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
@@ -57,6 +56,7 @@ import clsx from "clsx";
 import { bv2av } from "@/utils/bili/avBvCid";
 import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
 import { PortalHost, useModalPortalRoot } from "@rn-primitives/portal";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -280,28 +280,24 @@ export default function FullScreenPlayer() {
               {currentTrack && (
                 <DropdownMenuItem
                   onPress={() => {
-                    AsyncStorage.getItem("followRecommendationMode").then(
-                      (currentInFollowRecommendationMode) => {
-                        if (
-                          currentInFollowRecommendationMode &&
-                          currentInFollowRecommendationMode == "true"
-                        ) {
-                          AsyncStorage.removeItem("followRecommendationMode");
-                          Toast.show({
-                            type: "info",
-                            text1: "退出推荐模式",
-                          });
-                        } else {
-                          enterFollowRecommendationMode();
-                          Toast.show({
-                            type: "info",
-                            text1: "进入推荐模式",
-                            text2:
-                              "推荐模式下，播放列表将会自动从当前播放的推荐列表中随机更新音乐区视频",
-                          });
-                        }
-                      }
-                    );
+                    const currentInFollowRecommendationMode =
+                      mmkvStorage.getBoolean("followRecommendationMode");
+
+                    if (currentInFollowRecommendationMode) {
+                      mmkvStorage.delete("followRecommendationMode");
+                      Toast.show({
+                        type: "info",
+                        text1: "退出推荐模式",
+                      });
+                    } else {
+                      enterFollowRecommendationMode();
+                      Toast.show({
+                        type: "info",
+                        text1: "进入推荐模式",
+                        text2:
+                          "推荐模式下，播放列表将会自动从当前播放的推荐列表中随机更新音乐区视频",
+                      });
+                    }
                   }}
                 >
                   <Dices size={28} className="text-primary" />

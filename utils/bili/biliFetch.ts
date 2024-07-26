@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CookieManager from "@react-native-cookies/cookies";
 import { encWbi } from "./wbiSignature";
+import { mmkvStorage } from "../storage/storage";
 
 export const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
@@ -25,8 +25,8 @@ export const biliFetch = async (
   headers.set("Referer", "https://www.bilibili.com/");
   headers.set("Origin", "https://www.bilibili.com/");
 
-  const img_key = await AsyncStorage.getItem("img_key");
-  const sub_key = await AsyncStorage.getItem("sub_key");
+  const img_key = mmkvStorage.getString("img-key");
+  const sub_key = mmkvStorage.getString("sub-key");
 
   let params = {};
   if (typeof url === "string") {
@@ -61,7 +61,7 @@ export const biliFetch = async (
 };
 
 export const loadAndSetCookies = async () => {
-  const cookiesStr = await AsyncStorage.getItem("auth-cookies");
+  const cookiesStr = mmkvStorage.getString("auth-cookies");
   if (!cookiesStr) return false;
   try {
     const res = await CookieManager.setFromResponse(
@@ -69,9 +69,6 @@ export const loadAndSetCookies = async () => {
       cookiesStr
     );
 
-    // const { img_key, sub_key } = await getWbiKeys();
-    // await AsyncStorage.setItem("img_key", img_key);
-    // await AsyncStorage.setItem("sub_key", sub_key);
     return true;
   } catch {
     return false;

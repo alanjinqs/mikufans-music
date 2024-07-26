@@ -21,9 +21,9 @@ import {
   SearchResult,
   SearchResultCard,
 } from "@/components/song/SearchResultCard";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Music } from "@/lib/icons/Music";
 import { router } from "expo-router";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function SearchPage() {
   const [keywodInput, setKeywordInput] = useState("");
@@ -46,13 +46,7 @@ export default function SearchPage() {
   >([]);
 
   useEffect(() => {
-    AsyncStorage.getItem("isMusicFilterOn").then((res) => {
-      if (res === "true") {
-        setIsMusicFilterOn(true);
-      } else {
-        setIsMusicFilterOn(false);
-      }
-    });
+    setIsMusicFilterOn(mmkvStorage.getBoolean("isMusicFilterOn") || false);
   }, []);
 
   const updateSearchResult = (res: any[]) => {
@@ -137,10 +131,7 @@ export default function SearchPage() {
           className="flex flex-row items-center gap-2 !rounded-none !w-10"
           variant={isMusicFilterOn ? "default" : "outline"}
           onPress={() => {
-            AsyncStorage.setItem(
-              "isMusicFilterOn",
-              isMusicFilterOn ? "false" : "true"
-            );
+            mmkvStorage.set("isMusicFilterOn", isMusicFilterOn);
             setIsMusicFilterOn(!isMusicFilterOn);
           }}
         >

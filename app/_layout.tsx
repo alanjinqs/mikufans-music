@@ -1,6 +1,5 @@
 import "@/global.css";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Theme, ThemeProvider } from "@react-navigation/native";
 import { router, SplashScreen, Stack, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -23,6 +22,7 @@ import Toast from "react-native-toast-message";
 import { MikufansMusicContext } from "./context";
 import { createId0Playlist } from "@/utils/db/playlists";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 const LIGHT_THEME: Theme = {
   dark: false,
@@ -76,26 +76,24 @@ function RootLayout() {
 
   React.useEffect(() => {
     (async () => {
-      AsyncStorage.getItem("isDevMode").then((devMode) => {
-        if (devMode && devMode === "true") {
-          setIsDevMode(true);
-          Toast.show({
-            type: "dev",
-            text1: "开发者模式已开启",
-            text2: "截图时请注意保护 Cookie 及 Token",
-          });
-        }
-      });
+      if (mmkvStorage.getBoolean("isDevMode")) {
+        setIsDevMode(true);
+        Toast.show({
+          type: "dev",
+          text1: "开发者模式已开启",
+          text2: "截图时请注意保护 Cookie 及 Token",
+        });
+      }
 
       await initTrackPlayer();
 
-      const theme = await AsyncStorage.getItem("theme");
+      const theme = mmkvStorage.getString("theme");
       if (Platform.OS === "web") {
         // Adds the background color to the html element to prevent white background on overscroll.
         document.documentElement.classList.add("bg-background");
       }
       if (!theme) {
-        AsyncStorage.setItem("theme", colorScheme);
+        mmkvStorage.set("theme", colorScheme);
         setIsColorSchemeLoaded(true);
         return;
       }

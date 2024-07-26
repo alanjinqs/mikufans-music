@@ -9,7 +9,11 @@ export const getFeed = async (offset = 0) => {
   );
 
   const data = await res.json();
-
+  if (!data || !data.data)
+    return {
+      results: [],
+      nextOffset: 0,
+    };
   const nextOffset = data.data.offset;
 
   const results: SearchResult[] = data.data.items.map((item: any) => {

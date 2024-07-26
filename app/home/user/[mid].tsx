@@ -11,7 +11,6 @@ import {
 import { useEffect, useState } from "react";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { getUserVideos } from "@/utils/bili/biliUserVides";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Music } from "@/lib/icons/Music";
 import {
   getArtistInfo,
@@ -23,6 +22,7 @@ import {
   getUserSeasonsSeriesList,
   SeasonSeriesList,
 } from "@/utils/bili/biliSeasonsSeriesList";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function UserPage() {
   const { mid } = useLocalSearchParams();
@@ -92,14 +92,9 @@ export default function UserPage() {
   };
 
   const loadMusicFilter = async () => {
-    const res = await AsyncStorage.getItem("isMusicFilterOn");
-    if (res === "true") {
-      setIsMusicFilterOn(true);
-      return true;
-    } else {
-      setIsMusicFilterOn(false);
-      return false;
-    }
+    const res = mmkvStorage.getBoolean("isMusicFilterOn") || false;
+    setIsMusicFilterOn(res);
+    return res;
   };
 
   useEffect(() => {
@@ -114,7 +109,7 @@ export default function UserPage() {
   }, [mid]);
 
   const onSetMusicFilter = () => {
-    AsyncStorage.setItem("isMusicFilterOn", isMusicFilterOn ? "false" : "true");
+    mmkvStorage.set("isMusicFilterOn", !isMusicFilterOn);
     setIsMusicFilterOn(!isMusicFilterOn);
     loadFirstPage(!isMusicFilterOn);
   };
@@ -292,7 +287,9 @@ const UserSeasonsSeriesList = ({ mid }: { mid: string }) => {
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    router.push(`/home/videos/seasonsSeries/${item.type}_${item.id}`);
+                    router.push(
+                      `/home/videos/seasonsSeries/${item.type}_${item.id}`
+                    );
                   }}
                 >
                   <View className="w-full flex flex-row items-center p-2 bg-secondary rounded-md text-secondary-foreground mb-2 gap-2">

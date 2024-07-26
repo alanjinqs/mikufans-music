@@ -1,11 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
   RatingType,
   State,
 } from "react-native-track-player";
+import { mmkvStorage } from "../storage/storage";
 
 const capabilities = [
   Capability.Play,
@@ -19,7 +18,7 @@ const capabilities = [
 ];
 
 export const initTrackPlayer = async () => {
-  AsyncStorage.removeItem("isTPQueueUpdating");
+  mmkvStorage.delete("isTPQueueUpdating");
   try {
     const state = await TrackPlayer.getPlaybackState();
     console.log("state", state.state);
@@ -42,7 +41,6 @@ export const initTrackPlayer = async () => {
       progressUpdateEventInterval: 1,
       ratingType: RatingType.Heart,
     });
-
-    await AsyncStorage.removeItem("followRecommendationMode");
+    mmkvStorage.delete("isTPQueueUpdating");
   }
 };

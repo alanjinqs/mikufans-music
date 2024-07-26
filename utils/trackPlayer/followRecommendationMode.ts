@@ -3,16 +3,16 @@ import { db, schema } from "../db/db";
 import { videoRecommend } from "../bili/biliRecommend";
 import { isMusicType } from "../bili/biliTypeIdFilters";
 import { bv2Cid } from "../bili/avBvCid";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { bvCid2Track } from "../bili/biliVideo";
-import Toast from "react-native-toast-message";
+
+import { mmkvStorage } from "../storage/storage";
 
 export const enterFollowRecommendationMode = async () => {
   // destroy the current queue
   await TrackPlayer.removeUpcomingTracks();
   await db.delete(schema.currentQueue);
   await db.delete(schema.currentQueueMeta);
-  await AsyncStorage.setItem("followRecommendationMode", "true");
+  mmkvStorage.set("followRecommendationMode", true);
   await continueFollowRecommendationQueue();
   await continueFollowRecommendationQueue();
   await continueFollowRecommendationQueue();

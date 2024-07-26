@@ -1,7 +1,6 @@
 import { biliFetch } from "@/utils/bili/biliFetch";
 import { useState } from "react";
 import { Linking } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -16,6 +15,9 @@ import {
 } from "../ui/dialog";
 
 import QRCode from "react-native-qrcode-svg";
+import { mmkvStorage } from "@/utils/storage/storage";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { Link } from "expo-router";
 
 const loginStateToText = {
   pending: "等待扫码",
@@ -71,11 +73,11 @@ export default function AvatarOrLoginBtn({
           // DedeUserID DedeUserID__ckMd5 SESSDATA bili_jct
           const cookies = res.headers.get("set-cookie");
           const refreshToken = pollData.data.refresh_token;
-          await AsyncStorage.setItem("auth-refreshToken", refreshToken);
-          await AsyncStorage.setItem("auth-cookies", cookies as string);
+          mmkvStorage.set("auth-refreshToken", refreshToken);
+          mmkvStorage.set("auth-cookies", cookies as string);
           onSuccess();
         }
-      }, 2000);
+      }, 3000);
 
       setTimeout(() => {
         setLoginState("timeout");
@@ -88,12 +90,16 @@ export default function AvatarOrLoginBtn({
   return (
     <>
       {userInfo ? (
-        <Avatar alt="头像">
-          <AvatarImage source={{ uri: userInfo.avatarURL }} />
-          <AvatarFallback>
-            <view></view>
-          </AvatarFallback>
-        </Avatar>
+        <TouchableOpacity>
+          <Link href={`/home/user/${userInfo.mid}`}>
+            <Avatar alt="头像">
+              <AvatarImage source={{ uri: userInfo.avatarURL }} />
+              <AvatarFallback>
+                <view></view>
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        </TouchableOpacity>
       ) : (
         <Dialog open={showLoginSheet} onOpenChange={setShowLoginSheet}>
           <DialogTrigger asChild>

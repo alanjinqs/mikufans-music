@@ -4,7 +4,6 @@ import { Text } from "@/components/ui/text";
 import { BackHandler, View } from "react-native";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import CookieManager from "@react-native-cookies/cookies";
 import { useContext, useEffect, useState } from "react";
 import { HeartPulse } from "@/lib/icons/HeartPulse";
@@ -13,6 +12,7 @@ import { MikufansMusicContext } from "@/app/context";
 import { Bug } from "@/lib/icons/Bug";
 import { BugOff } from "@/lib/icons/BugOff";
 import Toast from "react-native-toast-message";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function TestView() {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
@@ -26,27 +26,25 @@ export default function TestView() {
   const { isDevMode, setIsDevMode } = useContext(MikufansMusicContext);
 
   useEffect(() => {
-    AsyncStorage.getItem("disableHeartbeat").then((heartBeatSetting) => {
-      if (heartBeatSetting) {
-        setIsHeartbeatDisabled(true);
-      }
-    });
+    if (mmkvStorage.getBoolean("disableHeartbeat")) {
+      setIsHeartbeatDisabled(true);
+    }
   }, []);
 
   const toggleHeartbeat = async () => {
     if (isHeartbeatDisabled) {
-      await AsyncStorage.removeItem("disableHeartbeat");
+      mmkvStorage.delete("disableHeartbeat");
     } else {
-      await AsyncStorage.setItem("disableHeartbeat", "true");
+      mmkvStorage.set("disableHeartbeat", true);
     }
     setIsHeartbeatDisabled(!isHeartbeatDisabled);
   };
 
   const toggleDevMode = async () => {
     if (isDevMode) {
-      await AsyncStorage.removeItem("isDevMode");
+      mmkvStorage.delete("isDevMode");
     } else {
-      await AsyncStorage.setItem("isDevMode", "true");
+      mmkvStorage.set("isDevMode", true);
       Toast.show({
         type: "dev",
         text1: "已进入开发模式",
@@ -88,7 +86,7 @@ export default function TestView() {
         <Button
           onPress={() => {
             TrackPlayer.stop();
-            AsyncStorage.clear();
+            mmkvStorage.clearAll();
             CookieManager.clearAll();
             BackHandler.exitApp();
           }}

@@ -12,7 +12,7 @@ import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { Button } from "@/components/ui/button";
 import { Music } from "@/lib/icons/Music";
 import { isMusicType } from "@/utils/bili/biliTypeIdFilters";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function RecommendVideosPage() {
   const { bvid } = useLocalSearchParams();
@@ -21,13 +21,7 @@ export default function RecommendVideosPage() {
   const [isMusicFilterOn, setIsMusicFilterOn] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem("isMusicFilterOn").then((res) => {
-      if (res === "true") {
-        setIsMusicFilterOn(true);
-      } else {
-        setIsMusicFilterOn(false);
-      }
-    });
+    setIsMusicFilterOn(mmkvStorage.getBoolean("isMusicFilterOn") || false);
   }, []);
 
   useEffect(() => {
@@ -66,10 +60,7 @@ export default function RecommendVideosPage() {
           variant={isMusicFilterOn ? "default" : "outline"}
           size={"sm"}
           onPress={() => {
-            AsyncStorage.setItem(
-              "isMusicFilterOn",
-              isMusicFilterOn ? "false" : "true"
-            );
+            mmkvStorage.set("isMusicFilterOn", isMusicFilterOn);
             setIsMusicFilterOn(!isMusicFilterOn);
           }}
         >

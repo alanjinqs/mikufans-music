@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { biliFetch } from "./biliFetch";
+import { mmkvStorage } from "../storage/storage";
 
 export const getUserInfo = async () => {
   const res = await biliFetch("https://api.bilibili.com/x/web-interface/nav");
@@ -20,10 +20,8 @@ export const getUserInfo = async () => {
     sub_url.lastIndexOf(".")
   );
 
-  console.log("SET img_key", img_key);
-  console.log("SET sub_key", sub_key);
-  await AsyncStorage.setItem("img_key", img_key);
-  await AsyncStorage.setItem("sub_key", sub_key);
+  mmkvStorage.set("img-key", img_key);
+  mmkvStorage.set("sub-key", sub_key);
 
   return json;
 };

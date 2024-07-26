@@ -1,9 +1,8 @@
 // https://api.bilibili.com/x/click-interface/web/heartbeat
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { biliFetch, UA } from "./biliFetch";
-import dayjs from "dayjs";
 import setCookie from "set-cookie-parser";
+import { mmkvStorage } from "../storage/storage";
 
 const extractBiliJct = (cookieString: string) => {
   const regex = /bili_jct=([^;]+);/;
@@ -23,10 +22,10 @@ export const sendHeartbeat = async (
   // realTime: number,
   isPlaying: boolean
 ) => {
-  const heartBeatSetting = await AsyncStorage.getItem("disableHeartbeat");
-  if (heartBeatSetting && heartBeatSetting === "true") return;
+  const isHeartbeatDisabled = mmkvStorage.getBoolean("disableHeartbeat");
+  if (isHeartbeatDisabled) return;
 
-  const cookies = await AsyncStorage.getItem("auth-cookies");
+  const cookies = mmkvStorage.getString("auth-cookies");
   if (!cookies) return;
 
   const csrf = extractBiliJct(cookies);

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getUserInfo } from "@/utils/bili/userInfo";
 import AvatarOrLoginBtn from "@/components/user/AvatarOrLoginBtn";
-import MiniPlayer from "@/components/player/MiniPlayer";
+
 import { Dimensions, TouchableOpacity, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
@@ -28,6 +28,7 @@ export default function HomeIndex() {
       setUserInfo({
         avatarURL: data.data.face + "@120w_120h_1c",
         username: data.data.uname,
+        mid: data.data.mid,
       });
     });
   };

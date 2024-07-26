@@ -1,4 +1,5 @@
 type BiliUserInfo = {
-  avatarURL: string
-  username: string
-}
+  avatarURL: string;
+  username: string;
+  mid: string;
+};
