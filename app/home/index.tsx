@@ -124,6 +124,7 @@ export default function HomeView() {
             className="flex flex-row flex-wrap"
             style={{
               gap: 10,
+              minHeight: height - 200,
             }}
           >
             {playlists?.map((playlist) => (

@@ -19,6 +19,7 @@ const capabilities = [
 ];
 
 export const initTrackPlayer = async () => {
+  AsyncStorage.removeItem("isTPQueueUpdating");
   try {
     const state = await TrackPlayer.getPlaybackState();
     console.log("state", state.state);

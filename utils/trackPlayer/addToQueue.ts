@@ -67,7 +67,8 @@ export const replacePlaylistByQueue = async (
     await updateMeta("playlists", JSON.stringify(playlists));
   }
 
-  await addQueueToTrackPlayer();
+  const hasNext = await addQueueToTrackPlayer();
+  await TrackPlayer.play();
 };
 
 export const replaceCurrentPlaying = async (
