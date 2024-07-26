@@ -20,6 +20,8 @@ import {
 import { useRouter } from "expo-router";
 import _ from "lodash";
 import Toast from "react-native-toast-message";
+import { useMMKVString } from "react-native-mmkv";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 type Row = {
   song: typeof schema.song.$inferSelect;
@@ -29,19 +31,14 @@ type Row = {
   quality?: string;
 };
 export default function PlaylistView() {
-  const {
-    data: [queueStr],
-  } = useLiveQuery(
-    db.query.currentQueueMeta.findMany({
-      where: eq(schema.currentQueueMeta.key, "queue"),
-    })
-  );
+  const [queueStr] = useMMKVString("songQueue", mmkvStorage);
+
   const [songs, setSongs] = useState<Row[]>([]);
 
   const loadSongs = async () => {
     let data: Row[] = [];
-    if (queueStr && queueStr.value) {
-      const queueIdList = JSON.parse(queueStr.value);
+    if (queueStr && queueStr.length > 0) {
+      const queueIdList = JSON.parse(queueStr);
       const res = await currentQueueIdsToSongs(queueIdList);
 
       data = res.map((song) => ({
@@ -122,7 +119,7 @@ export default function PlaylistView() {
 
   const emptyList = async () => {
     await db.delete(schema.currentQueue);
-    await db.delete(schema.currentQueueMeta);
+    mmkvStorage.delete("songQueue");
     await TrackPlayer.reset();
     router.replace("/home");
   };

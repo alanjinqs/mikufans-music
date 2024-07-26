@@ -1,16 +1,11 @@
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db, schema, SongDB } from "../db/db";
-import {
-  currentQueue,
-  currentQueueMeta,
-  song,
-  songToPlaylist,
-} from "@/db/schema";
+import { currentQueue, song, songToPlaylist } from "@/db/schema";
 import { bv2Cid } from "../bili/avBvCid";
 import TrackPlayer, { Track } from "react-native-track-player";
 import { bvCid2Track } from "../bili/biliVideo";
-import { getCurrentQueueMeta, updateMeta } from "../db/queue";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
+import { mmkvStorage } from "../storage/storage";
 
 export const addSongToQueue = async (song: SongDB) => {
   console.log("adding to queue", song.title);
@@ -61,7 +56,6 @@ export const replacePlaylistByQueue = async (
     .values(songs.map((s) => ({ songId: s.songId })))
     .returning({ queueId: currentQueue.id });
 
-  const metaObj = await getCurrentQueueMeta();
   // update queue
   let queue = ids.map((i) => i.queueId);
 
@@ -69,20 +63,10 @@ export const replacePlaylistByQueue = async (
     queue = queue.sort(() => Math.random() - 0.5);
   }
 
-  await updateMeta("queue", JSON.stringify(queue));
+  mmkvStorage.set("songQueue", JSON.stringify(queue));
 
   await TrackPlayer.reset();
   await TrackPlayer.setPlayWhenReady(true);
-
-  // update playlists
-  let playlists = [];
-  if (metaObj.playlists) {
-    playlists = JSON.parse(metaObj.playlists);
-  }
-  if (!playlists.includes(playlistId)) {
-    playlists.push(playlistId);
-    await updateMeta("playlists", JSON.stringify(playlists));
-  }
 
   const hasNext = await addQueueToTrackPlayer();
   await TrackPlayer.play();

@@ -11,7 +11,7 @@ export const enterFollowRecommendationMode = async () => {
   // destroy the current queue
   await TrackPlayer.removeUpcomingTracks();
   await db.delete(schema.currentQueue);
-  await db.delete(schema.currentQueueMeta);
+  mmkvStorage.delete("musicQueue");
   mmkvStorage.set("followRecommendationMode", true);
   await continueFollowRecommendationQueue();
   await continueFollowRecommendationQueue();

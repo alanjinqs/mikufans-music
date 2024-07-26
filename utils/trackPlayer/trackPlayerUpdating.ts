@@ -1,7 +1,6 @@
 import TrackPlayer from "react-native-track-player";
-import { getCurrentQueueMeta, updateMeta } from "../db/queue";
 import { db, schema } from "../db/db";
-import { currentQueue, currentQueueMeta } from "@/db/schema";
+import { currentQueue } from "@/db/schema";
 import { eq, inArray } from "drizzle-orm";
 import { bv2Cid } from "../bili/avBvCid";
 import { bvCid2Track } from "../bili/biliVideo";
@@ -20,13 +19,11 @@ export const addQueueToTrackPlayer = async () => {
       currentTPQueue.length === 0 ||
       currentTPQueue.length <= currentTPIndex + 3
     ) {
-      const metaObj = await getCurrentQueueMeta();
-
-      if (metaObj.queue) {
-        const queue = JSON.parse(metaObj.queue);
+      const songQueue = mmkvStorage.getString("songQueue");
+      if (songQueue) {
+        const queue = JSON.parse(songQueue);
         if (queue.length === 0) return false;
-        updateMeta("queue", JSON.stringify(queue.slice(3)));
-
+        mmkvStorage.set("songQueue", JSON.stringify(queue.slice(3)));
         const songs = await db.query.currentQueue.findMany({
           with: {
             song: true,
@@ -66,12 +63,11 @@ export const addQueueToTrackPlayer = async () => {
 };
 
 export const dpQueueSkipTo = async (id: number) => {
-  const metaObj = await getCurrentQueueMeta();
-  const queue = JSON.parse(metaObj.queue);
+  const queue = JSON.parse(mmkvStorage.getString("songQueue") || "[]");
   const index = queue.indexOf(id);
   if (index === -1) return;
   queue.splice(0, index);
-  await updateMeta("queue", JSON.stringify(queue));
+  mmkvStorage.set("songQueue", JSON.stringify(queue));
   await TrackPlayer.reset();
   // await addQueueToTrackPlayer();
   // await TrackPlayer.play();
@@ -79,8 +75,7 @@ export const dpQueueSkipTo = async (id: number) => {
 };
 
 export const shuffleQueue = async () => {
-  const metaObj = await getCurrentQueueMeta();
-  const queue = JSON.parse(metaObj.queue);
+  const queue = JSON.parse(mmkvStorage.getString("songQueue") || "[]");
   const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
   const trackQueue = await TrackPlayer.getQueue();
 
@@ -108,9 +103,10 @@ export const shuffleQueue = async () => {
 
   await TrackPlayer.removeUpcomingTracks();
 
-  await updateMeta(
-    "queue",
+  mmkvStorage.set(
+    "songQueue",
     JSON.stringify(queue.sort(() => Math.random() - 0.5))
   );
+
   await addQueueToTrackPlayer();
 };

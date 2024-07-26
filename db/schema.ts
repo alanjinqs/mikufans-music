@@ -90,8 +90,3 @@ export const currentQueueRelations = relations(currentQueue, ({ one }) => ({
     references: [song.id],
   }),
 }));
-
-export const currentQueueMeta = sqliteTable("currentQueueMeta", {
-  key: text("key").primaryKey(),
-  value: text("value"),
-});
