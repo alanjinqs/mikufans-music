@@ -13,18 +13,35 @@ import { getCurrentQueueMeta, updateMeta } from "../db/queue";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 
 export const addSongToQueue = async (song: SongDB) => {
-  if (!song || !song.cid || !song.bvid) return;
+  console.log("adding to queue", song.title);
+  if (!song || !song.bvid) return;
   const currentIndex = await TrackPlayer.getActiveTrackIndex();
+  let cid = song.cid;
+  if (!cid) {
+    const [c] = await bv2Cid(song.bvid);
+    await db
+      .update(schema.song)
+      .set({ cid: c.cid })
+      .where(eq(schema.song.id, song.id));
+    cid = c.cid;
+  }
+
   const track = await bvCid2Track({
-    cid: song.cid,
+    cid,
     bvid: song.bvid,
     song,
   });
-  if (!currentIndex) {
+  if (currentIndex === undefined) {
     TrackPlayer.add(track);
   } else {
     await TrackPlayer.add(track, currentIndex + 1);
   }
+  console.log(
+    "current queue",
+    (await TrackPlayer.getQueue()).map((song) => {
+      return song.title;
+    })
+  );
 };
 
 export const replacePlaylistByQueue = async (
