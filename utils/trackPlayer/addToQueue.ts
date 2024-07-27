@@ -6,6 +6,8 @@ import TrackPlayer, { Track } from "react-native-track-player";
 import { bvCid2Track } from "../bili/biliVideo";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { mmkvStorage } from "../storage/storage";
+import Toast from "react-native-toast-message";
+import { showDebugMessage } from "../showDebugMessage";
 
 export const addSongToQueue = async (song: SongDB) => {
   console.log("adding to queue", song.title);
@@ -31,12 +33,15 @@ export const addSongToQueue = async (song: SongDB) => {
   } else {
     await TrackPlayer.add(track, currentIndex + 1);
   }
-  console.log(
-    "current queue",
-    (await TrackPlayer.getQueue()).map((song) => {
-      return song.title;
-    })
-  );
+
+  showDebugMessage({
+    message: (await TrackPlayer.getQueue())
+      .map((song) => {
+        return song.title;
+      })
+      .join(", "),
+    title: "Added to queue",
+  });
 };
 
 export const replacePlaylistByQueue = async (
