@@ -1,7 +1,7 @@
 import { loadAndSetCookies } from "@/utils/bili/biliFetch";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getUserInfo } from "@/utils/bili/userInfo";
+import { getUserFavorites, getUserInfo } from "@/utils/bili/userInfo";
 import AvatarOrLoginBtn from "@/components/user/AvatarOrLoginBtn";
 
 import { Dimensions, TouchableOpacity, View } from "react-native";
@@ -17,6 +17,8 @@ import { Text } from "@/components/ui/text";
 import { ChevronLeft } from "@/lib/icons/ChevronLeft";
 import MiniPlayerNew from "@/components/player/MiniPlayerNew";
 import { PortalHost } from "@rn-primitives/portal";
+import PlaybackDevice from "@/components/player/PlaybackDevice";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function HomeIndex() {
   const pathname = usePathname();
@@ -30,6 +32,12 @@ export default function HomeIndex() {
         avatarURL: data.data.face + "@120w_120h_1c",
         username: data.data.uname,
         mid: data.data.mid,
+      });
+      mmkvStorage.set("my-mid", data.data.mid.toString());
+
+      getUserFavorites(parseInt(data.data.mid.toString())).then((res) => {
+        mmkvStorage.set("my-fav-list", JSON.stringify(res));
+        console.log("my fav list", res);
       });
     });
   };
@@ -62,7 +70,13 @@ export default function HomeIndex() {
                 <Text className="text-foreground text-3xl font-bold">Home</Text>
               )}
             </View>
-            <AvatarOrLoginBtn userInfo={userInfo} onSuccess={updateUserInfo} />
+            <View className="flex flex-row items-center gap-2">
+              <PlaybackDevice />
+              <AvatarOrLoginBtn
+                userInfo={userInfo}
+                onSuccess={updateUserInfo}
+              />
+            </View>
           </View>
           <View className="flex-1 px-4">
             <Slot />
@@ -74,7 +88,7 @@ export default function HomeIndex() {
         </View>
       </SafeAreaView>
       {/* <View className="absolute top-0 left-0 h-screen"> */}
-        <PortalHost name="song-options-bottom-portal" />
+      <PortalHost name="song-options-bottom-portal" />
       {/* </View> */}
     </>
   );

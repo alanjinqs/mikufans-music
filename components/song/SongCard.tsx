@@ -4,7 +4,12 @@ import {
 } from "@/utils/trackPlayer/addToQueue";
 import { router, useNavigation } from "expo-router";
 import { memo, useEffect, useState } from "react";
-import { Image, Dimensions, Share } from "react-native";
+import {
+  Image,
+  Dimensions,
+  Share,
+  TouchableOpacity as RNTouchableOpacity,
+} from "react-native";
 import Animated, { withTiming } from "react-native-reanimated";
 import { User } from "@/lib/icons/User";
 
@@ -15,18 +20,13 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
 } from "react-native-gesture-handler";
+
 import {
   addOrRemoveToId0Playlist,
   removeSongFromPlaylist,
 } from "@/utils/db/playlists";
 import { Trash2 } from "@/lib/icons/Trash2";
 import { Download } from "@/lib/icons/Download";
-import { biliCoverImgDownload, biliVideoDownload } from "@/utils/file/download";
-import { getBiliBsetAudioDash } from "@/utils/bili/biliVideo";
-import {
-  addSongDownloadedCoverPath,
-  addSongDownloadedPath,
-} from "@/utils/db/song";
 import clsx from "clsx";
 import { Heart } from "@/lib/icons/Heart";
 import { Ellipsis } from "@/lib/icons/Ellipsis";
@@ -44,6 +44,19 @@ import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import { eq } from "drizzle-orm";
 import { songDownloadAndEncode } from "@/utils/file/songDownloadAndEncode";
+import { Star } from "@/lib/icons/Star";
+import { addOrRemoveToMyFav, videoFavInfo } from "@/utils/bili/biliFavList";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Button } from "../ui/button";
 
 export type SongCardItem = {
   id: number;
@@ -179,7 +192,7 @@ export const SongCardBottomDrawer = ({
         navigationBarColor: isDarkColorScheme ? "#000" : "#fff",
       });
 
-      let targetHeight = 320;
+      let targetHeight = 370;
       if (playlistId) targetHeight += 50;
       if (song.description) targetHeight += 100;
       height.value = withTiming(
@@ -377,6 +390,8 @@ export const SongCardBottomDrawer = ({
                   <Text>UP 主个人空间</Text>
                 </View>
               </TouchableOpacity>
+
+              <AddToBiliFav song={song} />
             </View>
             {song.description && (
               <View className="mt-4 px-6">
@@ -394,5 +409,123 @@ export const SongCardBottomDrawer = ({
         />
       </Portal>
     )
+  );
+};
+
+const AddToBiliFav = ({ song }: { song: SongCardItem }) => {
+  const [myFavs, setMyFavs] = useState<
+    {
+      mid: string;
+      title: string;
+      mediaCount: number;
+      isInFav: boolean;
+      isNowInFav: boolean;
+    }[]
+  >([]);
+
+  const onSave = () => {
+    const addMids = myFavs
+      .filter((item) => item.isNowInFav && !item.isInFav)
+      .map((item) => item.mid);
+    const removeMids = myFavs
+      .filter((item) => !item.isNowInFav && item.isInFav)
+      .map((item) => item.mid);
+
+    if (!song.bvid) return;
+    addOrRemoveToMyFav({
+      bvid: song.bvid,
+      addMids,
+      removeMids,
+    }).then((res) => {
+      Toast.show({
+        type: "info",
+        text1: res?.message || "操作成功",
+      });
+    });
+  };
+
+  const onOpen = () => {
+    const myMid = mmkvStorage.getString("my-mid");
+    if (!song.bvid || !myMid) return;
+    videoFavInfo({
+      userId: myMid,
+      bvid: song.bvid,
+    }).then((res) => {
+      console.log(res);
+      setMyFavs(
+        (res || []).map((item: any) => {
+          return {
+            ...item,
+            isNowInFav: item.isInFav,
+          };
+        })
+      );
+    });
+  };
+
+  return (
+    <Dialog
+      onOpenChange={(isOpen) => {
+        if (isOpen) {
+          onOpen();
+        }
+      }}
+    >
+      <DialogTrigger asChild>
+        <TouchableOpacity>
+          <View className="w-full py-4 px-6 flex flex-row items-center gap-4">
+            <Star className="text-foreground" />
+            <Text>添加到 Bilibili 收藏夹</Text>
+          </View>
+        </TouchableOpacity>
+      </DialogTrigger>
+      <DialogContent className="m-10 w-[20rem]">
+        <DialogHeader>
+          <DialogTitle>Bilibili 收藏夹</DialogTitle>
+        </DialogHeader>
+
+        {myFavs.map((fav) => (
+          <RNTouchableOpacity
+            onPress={() => {
+              setMyFavs((prev) => {
+                return prev.map((item) => {
+                  if (item.mid === fav.mid) {
+                    return {
+                      ...item,
+                      isNowInFav: !item.isNowInFav,
+                    };
+                  }
+                  return item;
+                });
+              });
+            }}
+          >
+            <View
+              key={fav.mid}
+              className="w-full flex flex-row items-center gap-2"
+            >
+              <Star
+                className={clsx(
+                  fav.isNowInFav
+                    ? " fill-yellow-400 color-yellow-400"
+                    : "fill-none color-foreground"
+                )}
+              />
+              <View className="flex flex-col gap-2 flex-1">
+                <Text>{fav.title}</Text>
+                <Text className="text-sm">{fav.mediaCount} 个视频</Text>
+              </View>
+            </View>
+          </RNTouchableOpacity>
+        ))}
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button onPress={onSave}>
+              <Text>保存</Text>
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

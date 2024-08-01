@@ -6,7 +6,7 @@ import { mmkvStorage } from "../storage/storage";
 import Toast from "react-native-toast-message";
 import { AppState } from "react-native";
 
-const extractBiliJct = (cookieString: string) => {
+export const extractBiliJct = (cookieString: string) => {
   const regex = /bili_jct=([^;]+);/;
   const match = cookieString.match(regex);
 
@@ -29,9 +29,7 @@ export const sendHeartbeat = async (
 
   const cookies = mmkvStorage.getString("auth-cookies");
   if (!cookies) return;
-
   const csrf = extractBiliJct(cookies);
-
   if (!csrf) return;
 
   const res = await biliFetch(

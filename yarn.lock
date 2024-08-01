@@ -12529,6 +12529,7 @@ __metadata:
     react-dom: "npm:18.2.0"
     react-native: "npm:0.74.3"
     react-native-awesome-slider: "npm:^2.5.3"
+    react-native-device-info: "npm:^11.1.0"
     react-native-gesture-handler: "npm:~2.16.1"
     react-native-image-colors: "npm:^2.4.0"
     react-native-linear-gradient: "npm:^2.8.3"
@@ -14676,6 +14677,15 @@ __metadata:
     react-native-svg:
       optional: true
   checksum: 10c0/95a1781331a27f68fe6ee181258d8c693f2f5d2f44cd3ec7a99959f82dcb9611eb38cca6c78443abc68bb0bfc8bb1e90ba33ffa5dfc004d56cec142fceb35335
+  languageName: node
+  linkType: hard
+
+"react-native-device-info@npm:^11.1.0":
+  version: 11.1.0
+  resolution: "react-native-device-info@npm:11.1.0"
+  peerDependencies:
+    react-native: "*"
+  checksum: 10c0/424eb512a35264699d0f1c2f9dce2b0ca10247fbe263af37eda5563d9eb5fb333ea513c90aa58444b67d7364ac03d9a0d9cf913a0054e78ec0f2dfff22033ab0
   languageName: node
   linkType: hard
 

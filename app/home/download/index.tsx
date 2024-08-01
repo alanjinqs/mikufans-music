@@ -1,22 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { db, schema, SongDB } from "@/utils/db/db";
-import { desc, eq, isNotNull } from "drizzle-orm";
+import { isNotNull } from "drizzle-orm";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import { ActivityIndicator, View } from "react-native";
 import { Text } from "@/components/ui/text";
-import { Edit3 } from "@/lib/icons/Edit3";
-import { Play } from "@/lib/icons/Play";
-import { Shuffle } from "@/lib/icons/Shuffle";
-import {
-  FlatList,
-  ScrollView,
-  Swipeable,
-  TouchableHighlight,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from "react-native-gesture-handler";
+import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
 
 import {
   SongCard,
@@ -26,7 +15,7 @@ import {
 import { useMMKVObject } from "react-native-mmkv";
 import { mmkvStorage } from "@/utils/storage/storage";
 import { Image } from "react-native";
-import { bvToSongWithoutFetch, cidBvToSong } from "@/utils/db/song";
+import { bvToSongWithoutFetch } from "@/utils/db/song";
 import { RotateCcw } from "@/lib/icons/RotateCcw";
 import { songDownloadAndEncode } from "@/utils/file/songDownloadAndEncode";
 
@@ -48,28 +37,7 @@ export default function DownloadedView() {
       <View className="w-full">
         <Text className="text-foreground text-3xl font-bold">已下载</Text>
       </View>
-      <View className="flex flex-row items-center justify-end gap-3">
-        {/* <Button
-          className="mb-5 mt-2"
-          variant={"outline"}
-          size={"sm"}
-          onPress={() => {
-            replacePlaylistByQueue(playlistId, true);
-          }}
-        >
-          <Shuffle className="text-primary" size={13} />
-        </Button>
-        <Button
-          className="mb-5 mt-2"
-          variant={"outline"}
-          size={"sm"}
-          onPress={() => {
-            replacePlaylistByQueue(playlistId);
-          }}
-        >
-          <Play className="text-primary" size={13} />
-        </Button> */}
-      </View>
+      <View className="flex flex-row items-center justify-end gap-3"></View>
       <View className="flex-1">
         <Text>{}</Text>
         <FlatList

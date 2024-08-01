@@ -5,7 +5,6 @@ import { db, schema } from "@/utils/db/db";
 import { Link, useRouter } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Image } from "react-native";
-import dayjs from "dayjs";
 import { TestTubeDiagonal } from "@/lib/icons/TestTubeDiagonal";
 import { Sun } from "@/lib/icons/Sun";
 import { MoonStar } from "@/lib/icons/MoonStar";
@@ -16,11 +15,8 @@ import { useColorScheme } from "@/lib/useColorScheme";
 import { ScrollView } from "react-native-gesture-handler";
 import { useEffect, useRef, useState } from "react";
 import { ListMusic } from "@/lib/icons/ListMusic";
-import { indexRecommend } from "@/utils/bili/biliRecommend";
-import { SearchResult } from "@/components/song/SearchResultCard";
 import { Heart } from "@/lib/icons/Heart";
 import clsx from "clsx";
-import { getFeed } from "@/utils/bili/biliFeed";
 import { mmkvStorage } from "@/utils/storage/storage";
 import { Download } from "@/lib/icons/Download";
 import { Rss } from "@/lib/icons/Rss";
@@ -95,9 +91,7 @@ export default function HomeView() {
         <ScrollView ref={scrollViewRef}>
           <View className="flex flex-row gap-4 items-center">
             <View className="flex-1">
-              <TouchableOpacity
-              onPress={() => router.push(`/home/download`)}
-              >
+              <TouchableOpacity onPress={() => router.push(`/home/download`)}>
                 <View className="bg-secondary rounded-md overflow-hidden flex flex-row items-center">
                   <View
                     className={clsx(
