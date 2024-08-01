@@ -15,12 +15,6 @@ import Toast from "react-native-toast-message";
 import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function TestView() {
-  const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
-  const { data: songToPlaylists } = useLiveQuery(
-    db.select().from(schema.songToPlaylist)
-  );
-  const { data: song } = useLiveQuery(db.select().from(schema.song));
-
   const [isHeartbeatDisabled, setIsHeartbeatDisabled] = useState(false);
 
   const { isDevMode, setIsDevMode } = useContext(MikufansMusicContext);
@@ -94,12 +88,6 @@ export default function TestView() {
           <Text>Logout</Text>
         </Button>
       </View>
-      <Text className="w-full text-xl font-bold">playlists</Text>
-      <Text className="w-full">{JSON.stringify(playlists)}</Text>
-      <Text className="w-full text-xl font-bold">song</Text>
-      <Text className="w-full">{JSON.stringify(song)}</Text>
-      <Text className="w-full text-xl font-bold">songToPlaylists</Text>
-      <Text className="w-full">{JSON.stringify(songToPlaylists)}</Text>
     </View>
   );
 }
