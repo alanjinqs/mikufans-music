@@ -27,6 +27,7 @@ import {
 import { Heart } from "@/lib/icons/Heart";
 import clsx from "clsx";
 import { getFeed } from "@/utils/bili/biliFeed";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function HomeView() {
   const { width, height } = useWindowDimensions();
@@ -63,6 +64,11 @@ export default function HomeView() {
     }
   }, [playlists]);
 
+  const toggleColorSchemeComponent = () => {
+    toggleColorScheme();
+    mmkvStorage.set("theme", colorScheme === "dark" ? "light" : "dark");
+  };
+
   const scrollViewRef = useRef<ScrollView>(null);
   return (
     <View className="w-full flex h-full">
@@ -83,7 +89,7 @@ export default function HomeView() {
           className="mb-5 mt-2"
           variant={"outline"}
           size={"sm"}
-          onPress={toggleColorScheme}
+          onPress={toggleColorSchemeComponent}
         >
           <View className="flex flex-row items-center gap-2">
             {colorScheme === "dark" ? (
