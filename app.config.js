@@ -1,6 +1,8 @@
-{
+const IS_DEV = process.env.APP_VARIANT === 'development';
+
+export default {
   "expo": {
-    "name": "mikufans-music",
+    "name": IS_DEV ? 'mikufans-music (Dev)' : 'mikufans-music',
     "slug": "mikufans-music",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,7 +16,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "me.alanjin.mikufansmusic",
+      "bundleIdentifier": IS_DEV ? "me.alanjin.mikufansmusic_dev" : "me.alanjin.mikufansmusic",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }
@@ -24,7 +26,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "me.alanjin.mikufansmusic"
+      "package": IS_DEV ? "me.alanjin.mikufansmusic_dev" : "me.alanjin.mikufansmusic"
     },
     "web": {
       "bundler": "metro",

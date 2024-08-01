@@ -5,13 +5,16 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "dev:android": "APP_VARIANT=development expo run:android",
-    "dev:ios": "APP_VARIANT=development expo run:ios",
-    "build:android": "APP_VARIANT=release expo run:android --variant release --device",
+    "dev": "APP_VARIANT=development npx expo start",
+    "dev:android": "APP_VARIANT=development npx expo prebuild -p android; npx expo run:android",
+    "dev:ios": "APP_VARIANT=development npx expo prebuild -p ios; npx expo run:ios",
+    "build:android": "APP_VARIANT=release npx expo prebuild -p android; npx expo run:android --variant release --device",
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "generate-themes": "tamagui generate-themes ./theme-builder.ts ./theme-output.ts"
+    "generate-themes": "tamagui generate-themes ./theme-builder.ts ./theme-output.ts",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "jest": {
     "preset": "jest-expo"

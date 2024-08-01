@@ -27,6 +27,7 @@
         <data android:scheme="myapp"/>
         <data android:scheme="me.alanjin.mikufansmusic"/>
         <data android:scheme="exp+mikufans-music"/>
+        <data android:scheme="me.alanjin.mikufansmusic_dev"/>
       </intent-filter>
     </activity>
     <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false"/>

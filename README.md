@@ -124,8 +124,8 @@ Any contributions you make are **greatly appreciated**.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
-使用 MIT 协议发布。详见 `LICENSE.txt`。
+Distributed under the MIT License. See `LICENSE` for more information.
+使用 MIT 协议发布。详见 `LICENSE`。
 
 The project and its contributor(s) are not responsible for any copyright issues that may arise during the use of this project.
 本项目对于使用过程中产生的版权问题不承担任何责任。音乐创作不易，请支持正版。
