@@ -6,8 +6,8 @@ import TrackPlayer, { Track } from "react-native-track-player";
 import { bvCid2Track } from "../bili/biliVideo";
 import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { mmkvStorage } from "../storage/storage";
-import Toast from "react-native-toast-message";
 import { showDebugMessage } from "../showDebugMessage";
+import { artworkToDarkColor } from "../artworkToColor";
 
 export const addSongToQueue = async (song: SongDB) => {
   console.log("adding to queue", song.title);
@@ -21,6 +21,17 @@ export const addSongToQueue = async (song: SongDB) => {
       .set({ cid: c.cid })
       .where(eq(schema.song.id, song.id));
     cid = c.cid;
+  }
+
+  if (!song.color && song.artwork) {
+    artworkToDarkColor(song.artwork).then(async (color) => {
+      mmkvStorage.set("currentSong", JSON.stringify({ ...song, color }));
+
+      await db
+        .update(schema.song)
+        .set({ color })
+        .where(eq(schema.song.id, song.id));
+    });
   }
 
   const track = await bvCid2Track({
@@ -53,7 +64,7 @@ export const replacePlaylistByQueue = async (
       song: true,
     },
     where: eq(songToPlaylist.playlistId, playlistId),
-    orderBy: asc(songToPlaylist.order),
+    orderBy: (song, { desc }) => [desc(song.order), desc(song.id)],
   });
 
   const ids = await db
@@ -90,6 +101,18 @@ export const replaceCurrentPlaying = async (
       .where(eq(schema.song.id, song.id));
     cid = c.cid;
   }
+
+  if (!song.color && song.artwork) {
+    artworkToDarkColor(song.artwork).then(async (color) => {
+      mmkvStorage.set("currentSong", JSON.stringify({ ...song, color }));
+
+      await db
+        .update(schema.song)
+        .set({ color })
+        .where(eq(schema.song.id, song.id));
+    });
+  }
+
   const track = await bvCid2Track({
     cid,
     bvid: song.bvid,

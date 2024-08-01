@@ -21,7 +21,6 @@ import { Text } from "@/components/ui/text";
 import { Edit3 } from "@/lib/icons/Edit3";
 import { Play } from "@/lib/icons/Play";
 import { Shuffle } from "@/lib/icons/Shuffle";
-import TrackPlayer from "react-native-track-player";
 import {
   FlatList,
   Swipeable,
@@ -30,7 +29,6 @@ import {
 import AddNewSong from "@/components/playlist/addNewSong";
 import {
   addOrRemoveToId0Playlist,
-  editPlaylistName,
   removePlaylist,
   removeSongFromPlaylist,
 } from "@/utils/db/playlists";
@@ -39,10 +37,7 @@ import { Trash2 } from "@/lib/icons/Trash2";
 import { SquareArrowOutUpRight } from "@/lib/icons/SquareArrowOutUpRight";
 import { Download } from "@/lib/icons/Download";
 import { biliCoverImgDownload, biliVideoDownload } from "@/utils/file/download";
-import {
-  getBiliBsetAudioDash,
-  getBiliVideoDashPlaybackInfo,
-} from "@/utils/bili/biliVideo";
+import { getBiliBsetAudioDash } from "@/utils/bili/biliVideo";
 import {
   addSongDownloadedCoverPath,
   addSongDownloadedPath,
@@ -79,7 +74,7 @@ export default function PlaylistView() {
         song: true,
       },
       where: eq(schema.songToPlaylist.playlistId, parseInt(id as string)),
-      orderBy: desc(schema.songToPlaylist.id),
+      orderBy: (song, { desc }) => [desc(song.order), desc(song.id)],
     })
   );
 

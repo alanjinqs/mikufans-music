@@ -5,6 +5,7 @@ import { eq, inArray } from "drizzle-orm";
 import { bv2Cid } from "../bili/avBvCid";
 import { bvCid2Track } from "../bili/biliVideo";
 import { mmkvStorage } from "../storage/storage";
+import { artworkToDarkColor } from "../artworkToColor";
 
 export const addQueueToTrackPlayer = async () => {
   const isUpdating = mmkvStorage.getBoolean("isTPQueueUpdating");
@@ -43,6 +44,15 @@ export const addQueueToTrackPlayer = async () => {
               .set({ cid: c.cid })
               .where(eq(schema.song.id, s.song.id));
             cid = c.cid;
+          }
+
+          if (!s.song.color && s.song.artwork) {
+            artworkToDarkColor(s.song.artwork).then(async (color) => {
+              await db
+                .update(schema.song)
+                .set({ color })
+                .where(eq(schema.song.id, s.song.id));
+            });
           }
 
           const track = await bvCid2Track({

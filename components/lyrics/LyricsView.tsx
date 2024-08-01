@@ -21,11 +21,9 @@ type TranslatedLyricLine = {
 
 export default function LyricsView({
   song,
-  onSongUpdated,
   portalHost,
 }: {
   song: SongDB;
-  onSongUpdated: () => void;
   portalHost?: string;
 }) {
   const [lyrics, setLyrics] = useState<TranslatedLyricLine[]>([]);
@@ -206,7 +204,6 @@ export default function LyricsView({
       <View className="flex flex-row items-center justify-center opacity-30">
         <View className="border-b border-white">
           <SongSearchDialog
-            onSongUpdated={onSongUpdated}
             song={song}
             portalHost={portalHost}
           />

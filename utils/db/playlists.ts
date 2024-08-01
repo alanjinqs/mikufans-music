@@ -1,8 +1,6 @@
 import { playlist, song, songToPlaylist } from "@/db/schema";
 import { db, SongDB } from "./db";
 import { fetchFavListAsSong } from "../bili/biliFavList";
-import dayjs from "dayjs";
-import { artworkToDarkColor } from "../artworkToColor";
 import { and, eq } from "drizzle-orm";
 import { bv2av } from "../bili/avBvCid";
 import { getBiliVideoMeta } from "../bili/biliVideo";
@@ -37,7 +35,6 @@ export const bv2Song = async (bvId: string, cid?: number) => {
 
   const meta = await getBiliVideoMeta(bvId);
   const artwork = meta.data.pic.replace("http://", "https://");
-  const color = await artworkToDarkColor(artwork);
   return {
     id: songId,
     title: meta.data.title,
@@ -48,7 +45,7 @@ export const bv2Song = async (bvId: string, cid?: number) => {
     artistName: meta.data.owner.name,
     artistAvatar: meta.data.owner.face,
     addedAt: new Date(),
-    color,
+    color: null,
   } as SongDB;
 };
 
@@ -112,22 +109,33 @@ export const addSeasonsSeriesToPlaylist = async (
     seriesId
   );
 
-  for (const s of songList) {
-    const color = await artworkToDarkColor(s.artwork || undefined);
-    await db
-      .insert(song)
-      .values({
-        ...s,
-        color,
-      })
-      .onConflictDoNothing();
-    await db.insert(songToPlaylist).values({
-      playlistId,
-      songId: s.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
+  // for (const s of songList) {
+  //   await db
+  //     .insert(song)
+  //     .values({
+  //       ...s,
+  //     })
+  //     .onConflictDoNothing();
+  //   await db.insert(songToPlaylist).values({
+  //     playlistId,
+  //     songId: s.id,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //   });
+  // }
+
+  await db.insert(song).values(songList).onConflictDoNothing();
+  await db
+    .insert(songToPlaylist)
+    .values(
+      songList.map((s) => ({
+        playlistId,
+        songId: s.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+    )
+    .onConflictDoNothing();
 
   if (updatePlaylistCover) {
     await db
@@ -154,24 +162,39 @@ export const addFavoriteToPlaylist = async (
   const playlistCurrentSongIds = playlistCurrentSongs.map((s) => s.songId);
 
   const favCover = favInfo.cover;
-  for (const s of songList) {
-    if (playlistCurrentSongIds.includes(s.id)) continue;
+  // for (const s of songList) {
+  //   if (playlistCurrentSongIds.includes(s.id)) continue;
+  //   await db
+  //     .insert(song)
+  //     .values({
+  //       ...s,
+  //       color,
+  //     })
+  //     .onConflictDoNothing();
+  //   await db.insert(songToPlaylist).values({
+  //     playlistId,
+  //     songId: s.id,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //   });
+  // }
 
-    const color = await artworkToDarkColor(s.artwork || undefined);
-    await db
-      .insert(song)
-      .values({
-        ...s,
-        color,
-      })
-      .onConflictDoNothing();
-    await db.insert(songToPlaylist).values({
-      playlistId,
-      songId: s.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
+  await db.insert(song).values(songList).onConflictDoNothing();
+  await db
+    .insert(songToPlaylist)
+    .values(
+      songList
+        .filter((s) => {
+          return !playlistCurrentSongIds.includes(s.id);
+        })
+        .map((s) => ({
+          playlistId,
+          songId: s.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }))
+    )
+    .onConflictDoNothing();
 
   if (updatePlaylistCover) {
     await db
@@ -190,22 +213,33 @@ export const createNewPlaylistByBiliFav = async (mediaId: number) => {
   const favName = favInfo.title;
   const favCover = favInfo.cover;
   const id = await createNewPlaylist({ name: favName, cover: favCover });
-  for (const s of songList) {
-    const color = await artworkToDarkColor(s.artwork || undefined);
-    await db
-      .insert(song)
-      .values({
-        ...s,
-        color,
-      })
-      .onConflictDoNothing();
-    await db.insert(songToPlaylist).values({
-      playlistId: id,
-      songId: s.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
+  // for (const s of songList) {
+  //   await db
+  //     .insert(song)
+  //     .values({
+  //       ...s,
+  //       color,
+  //     })
+  //     .onConflictDoNothing();
+  //   await db.insert(songToPlaylist).values({
+  //     playlistId: id,
+  //     songId: s.id,
+  //     createdAt: new Date(),
+  //     updatedAt: new Date(),
+  //   });
+  // }
+  await db.insert(song).values(songList).onConflictDoNothing();
+  await db
+    .insert(songToPlaylist)
+    .values(
+      songList.map((s) => ({
+        playlistId: id,
+        songId: s.id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }))
+    )
+    .onConflictDoNothing();
 };
 
 export const removeSongFromPlaylist = async (

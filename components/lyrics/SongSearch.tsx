@@ -23,14 +23,13 @@ import { SongDB } from "@/utils/db/db";
 import { X } from "@/lib/icons/X";
 
 import { TouchableOpacity as RNGHTouchableOpacity } from "react-native-gesture-handler";
+import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function SongSearchDialog({
   song,
-  onSongUpdated,
   portalHost,
 }: {
   song: SongDB;
-  onSongUpdated: () => void;
   portalHost?: string;
 }) {
   const [keyword, setKeyword] = useState("");
@@ -40,7 +39,7 @@ export default function SongSearchDialog({
 
   const midConfirm = () => {
     updateSongQQMid(song.id, selectedMid).then(() => {
-      onSongUpdated();
+      
     });
   };
   return (

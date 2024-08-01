@@ -5,6 +5,7 @@ import { qqMusicMidToLrc } from "../qqmusic/qqMusicSearch";
 import { bv2Song } from "./playlists";
 import { Track } from "react-native-track-player";
 import { bv2av } from "../bili/avBvCid";
+import { mmkvStorage } from "../storage/storage";
 
 export const cidToSong = async (cid: number) => {
   return db.query.song.findFirst({ where: eq(song.cid, cid) });
@@ -24,13 +25,18 @@ export const cidBvToSong = async (cid: number, bvId: string) => {
 };
 
 export const updateSongQQMid = async (songId: number, mid: string) => {
-  await db.update(song).set({ qqMusicMid: mid }).where(eq(song.id, songId));
   const lrc = await qqMusicMidToLrc(mid);
-  await db
+  const resSong = await db
     .update(song)
-    .set({ lyrics: lrc.lyric, translatedLyrics: lrc.transLyric })
-    .where(eq(song.id, songId));
-  return;
+    .set({
+      lyrics: lrc.lyric,
+      translatedLyrics: lrc.transLyric,
+      qqMusicMid: mid,
+    })
+    .where(eq(song.id, songId))
+    .returning();
+
+  mmkvStorage.set("currentSong", JSON.stringify(resSong[0]));
 };
 
 export const updateSongOffset = async (songId: number, offset: number) => {

@@ -32,7 +32,8 @@ import { SkipBack } from "@/lib/icons/SkipBack";
 import { SkipForward } from "@/lib/icons/SkipForward";
 import { Heart } from "@/lib/icons/Heart";
 import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
+import { useMMKVObject, useMMKVString } from "react-native-mmkv";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -44,7 +45,8 @@ const secToStrTime = (sec: number) => {
 };
 
 export default function MiniPlayerNew() {
-  const [currentSong, setCurrentSong] = useState<undefined | Song>();
+  const [currentSong, setCurrentSongString] =
+    useMMKVObject<Song>("currentSong");
 
   const [isPlaying, setIsPlaying] = useState(true);
 
@@ -83,30 +85,6 @@ export default function MiniPlayerNew() {
     }
   }, []);
 
-  useEffect(() => {
-    cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
-      setCurrentSong(song);
-      if (!song) return;
-    });
-
-    db.query.songToPlaylist
-      .findMany({
-        with: {
-          song: true,
-        },
-        where: eq(schema.songToPlaylist.playlistId, 0),
-      })
-      .then((res) => {
-        if (
-          res.find((item) => item.song.bvid === currentTrack?.id.split("$")[1])
-        ) {
-          setIsCurrentSongInId0Playlist(true);
-        } else {
-          setIsCurrentSongInId0Playlist(false);
-        }
-      });
-  }, [currentTrack]);
-
   const [currentProgress, setCurrentProgress] = useState(0);
   const [duration, setDuration] = useState(100000);
 
@@ -121,6 +99,25 @@ export default function MiniPlayerNew() {
   const onShowFullScreenPlayer = () => {
     router.push(`fullScreenPlayer?color=` + (currentSong?.color || "#333"));
   };
+
+  useEffect(() => {
+    if (!currentSong) return;
+    db.select()
+      .from(schema.songToPlaylist)
+      .where(
+        and(
+          eq(schema.songToPlaylist.songId, currentSong.id),
+          eq(schema.songToPlaylist.playlistId, 0)
+        )
+      )
+      .then((res) => {
+        if (res.length > 0) {
+          setIsCurrentSongInId0Playlist(true);
+        } else {
+          setIsCurrentSongInId0Playlist(false);
+        }
+      });
+  }, [currentSong]);
 
   return (
     <View

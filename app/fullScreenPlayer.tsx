@@ -42,7 +42,7 @@ import { ListVideo } from "@/lib/icons/ListVideo";
 import { enterFollowRecommendationMode } from "@/utils/trackPlayer/followRecommendationMode";
 import Toast from "react-native-toast-message";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +57,7 @@ import { bv2av } from "@/utils/bili/avBvCid";
 import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
 import { PortalHost, useModalPortalRoot } from "@rn-primitives/portal";
 import { mmkvStorage } from "@/utils/storage/storage";
+import { useMMKVObject } from "react-native-mmkv";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -72,7 +73,7 @@ export default function FullScreenPlayer() {
 
   const query = useLocalSearchParams();
   const router = useRouter();
-  const [currentSong, setCurrentSong] = useState<undefined | Song>();
+  const [currentSong, setCurrentSong] = useMMKVObject<Song>("currentSong");
   const [currentBvid, setCurrentBvid] = useState("");
   const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
     useState(false);
@@ -113,6 +114,30 @@ export default function FullScreenPlayer() {
   };
 
   useEffect(() => {
+    if (!currentSong) return;
+    db.select()
+      .from(schema.songToPlaylist)
+      .where(
+        and(
+          eq(schema.songToPlaylist.songId, currentSong.id),
+          eq(schema.songToPlaylist.playlistId, 0)
+        )
+      )
+      .then((res) => {
+        if (res.length > 0) {
+          setIsCurrentSongInId0Playlist(true);
+        } else {
+          setIsCurrentSongInId0Playlist(false);
+        }
+      });
+    navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
+
+    if (!currentSong?.lyrics || currentSong.lyrics.length === 0) {
+      setIsShowingLyrics(false);
+    }
+  }, [currentSong]);
+
+  useEffect(() => {
     updateIsPlaying();
   }, [playbackState]);
 
@@ -132,37 +157,8 @@ export default function FullScreenPlayer() {
 
   const navigation = useNavigation();
 
-  const onSongUpdated = () => {
-    cidToSong(currentTrack?.id.split("$")[0]).then((song) => {
-      setCurrentSong(song);
-      navigation.setOptions({ navigationBarColor: song?.color || "#333" });
-
-      if (!song?.lyrics || song.lyrics.length === 0) {
-        setIsShowingLyrics(false);
-      }
-    });
-
-    db.query.songToPlaylist
-      .findMany({
-        with: {
-          song: true,
-        },
-        where: eq(schema.songToPlaylist.playlistId, 0),
-      })
-      .then((res) => {
-        if (
-          res.find((item) => item.song.bvid === currentTrack?.id.split("$")[1])
-        ) {
-          setIsCurrentSongInId0Playlist(true);
-        } else {
-          setIsCurrentSongInId0Playlist(false);
-        }
-      });
-  };
-
   useEffect(() => {
     updateProgress();
-    onSongUpdated();
     setCurrentBvid(currentTrack?.id.split("$")[1] || "");
   }, [currentTrack]);
 
@@ -335,7 +331,6 @@ export default function FullScreenPlayer() {
           <View className="flex-1 w-full">
             <LyricsView
               song={currentSong}
-              onSongUpdated={onSongUpdated}
               portalHost="modal-fullScreenPlayer"
             />
           </View>
@@ -483,7 +478,6 @@ export default function FullScreenPlayer() {
           <View className="flex flex-col gap-2 items-center">
             <SongSearchDialog
               song={currentSong}
-              onSongUpdated={onSongUpdated}
               portalHost="modal-fullScreenPlayer"
             />
           </View>
