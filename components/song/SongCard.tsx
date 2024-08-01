@@ -118,19 +118,19 @@ export const SongCard = memo(
                 </View>
               </View>
             </View>
-            <View className="pr-3">
-              <TouchableOpacity
-                onPress={() => {
-                  setMenuSong(song);
-                }}
-                className="rounded-full p-2"
-              >
+
+            <TouchableOpacity
+              onPress={() => {
+                setMenuSong(song);
+              }}
+            >
+              <View className="p-2 pr-3">
                 <Ellipsis
                   size={20}
                   className=" color-secondary-foreground rotate-90"
                 />
-              </TouchableOpacity>
-            </View>
+              </View>
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </View>
