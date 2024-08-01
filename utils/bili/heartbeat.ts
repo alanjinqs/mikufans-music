@@ -3,6 +3,8 @@
 import { biliFetch, UA } from "./biliFetch";
 import setCookie from "set-cookie-parser";
 import { mmkvStorage } from "../storage/storage";
+import Toast from "react-native-toast-message";
+import { AppState } from "react-native";
 
 const extractBiliJct = (cookieString: string) => {
   const regex = /bili_jct=([^;]+);/;
@@ -58,6 +60,23 @@ export const sendHeartbeat = async (
     false
   );
   res.json().then((data) => {
-    console.log("heartbeat", data);
+    if (
+      AppState.currentState === "active" &&
+      mmkvStorage.getBoolean("isDevMode")
+    ) {
+      Toast.show({
+        type: "dev",
+        text1: "心跳上报结果",
+        text2: JSON.stringify({
+          req: {
+            bvid,
+            played_time: playedTime.toString(),
+            cid: cid.toString(),
+            play_type: playedTime === -1 ? "4" : isPlaying ? "0" : "2",
+          },
+          res: data,
+        }),
+      });
+    }
   });
 };
