@@ -7,6 +7,11 @@ import { Track } from "react-native-track-player";
 import { bv2av } from "../bili/avBvCid";
 import { mmkvStorage } from "../storage/storage";
 
+export const bvToSongWithoutFetch = async (bvId: string) => {
+  const songId = bv2av(bvId as any);
+  return await db.query.song.findFirst({ where: eq(song.id, songId) });
+};
+
 export const cidToSong = async (cid: number) => {
   return db.query.song.findFirst({ where: eq(song.cid, cid) });
 };

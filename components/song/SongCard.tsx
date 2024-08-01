@@ -43,6 +43,7 @@ import Toast from "react-native-toast-message";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import { eq } from "drizzle-orm";
+import { songDownloadAndEncode } from "@/utils/file/songDownloadAndEncode";
 
 export type SongCardItem = {
   id: number;
@@ -184,7 +185,7 @@ export const SongCardBottomDrawer = ({
       height.value = withTiming(
         windowHeight * 0.8 > targetHeight ? targetHeight : windowHeight * 0.8
       );
-      opacity.value = withTiming(0.5);
+      opacity.value = withTiming(isDarkColorScheme ? 0.8 : 0.5);
     } else {
       height.value = 0;
       opacity.value = 0;
@@ -337,34 +338,9 @@ export const SongCardBottomDrawer = ({
                 disabled={song.downloadedMp3Path ? true : false}
                 onPress={() => {
                   if (!song.downloadedMp3Path) {
-                    if (!song.cid || !song.bvid) return;
-                    biliCoverImgDownload({
-                      url: song.artwork + "@500w",
-                      fileName: `${song.bvid}_cover`,
-                    }).then((path) => {
-                      addSongDownloadedCoverPath(path, song.id);
-                    });
-                    getBiliBsetAudioDash(song.cid, song.bvid).then((dash) => {
-                      biliVideoDownload({
-                        url: dash.base_url,
-                        fileName: `${song.bvid}_${song.cid}`,
-                        callback: (res) => {
-                          console.log(res);
-                        },
-                      }).then((path) => {
-                        addSongDownloadedPath(path, song.id, dash.duration);
-                        if (mmkvStorage.getBoolean("isDevMode")) {
-                          Toast.show({
-                            type: "dev",
-                            text1: "下载成功",
-                            text2: JSON.stringify({
-                              path,
-                              id: song.id,
-                              duration: dash.duration,
-                            }),
-                          });
-                        }
-                      });
+                    songDownloadAndEncode({ song }).then(() => {
+                      onGoingToClose();
+                      router.push(`/home/download`);
                     });
                   }
                 }}
