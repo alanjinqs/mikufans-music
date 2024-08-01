@@ -11,7 +11,7 @@ import { continueFollowRecommendationQueue } from "./followRecommendationMode";
 import { mmkvStorage } from "../storage/storage";
 import { db, schema } from "../db/db";
 import { eq } from "lodash";
-import { cidToSong } from "../db/song";
+import { cidBvToSong, cidToSong } from "../db/song";
 
 const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
   const activeTrack = await TrackPlayer.getActiveTrack();
@@ -71,10 +71,12 @@ module.exports = async function () {
 
     if (e.track) {
       const [cid, bvid] = e.track.id.split("$");
-      cidToSong(cid).then(async (song) => {
+      cidBvToSong(cid, bvid).then(async (song) => {
         if (!song) mmkvStorage.set("currentSong", JSON.stringify({}));
         mmkvStorage.set("currentSong", JSON.stringify(song));
       });
+    } else {
+      mmkvStorage.set("currentSong", JSON.stringify({}));
     }
 
     const inFollowRecommendationMode = mmkvStorage.getBoolean(
