@@ -12,10 +12,6 @@ export const bvToSongWithoutFetch = async (bvId: string) => {
   return await db.query.song.findFirst({ where: eq(song.id, songId) });
 };
 
-export const cidToSong = async (cid: number) => {
-  return db.query.song.findFirst({ where: eq(song.cid, cid) });
-};
-
 export const cidBvToSong = async (cid: number, bvId: string) => {
   const res = await db.query.song.findFirst({ where: eq(song.cid, cid) });
   if (res) return res;

@@ -16,7 +16,6 @@ import { X } from "@/lib/icons/X";
 import { Marquee } from "@animatereactnative/marquee";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { db, schema } from "@/utils/db/db";
-import { cidToSong } from "@/utils/db/song";
 import _ from "lodash";
 import Animated, {
   useAnimatedStyle,
@@ -49,8 +48,6 @@ export default function MiniPlayerNew() {
     useMMKVObject<Song>("currentSong");
 
   const [isPlaying, setIsPlaying] = useState(true);
-
-  const currentTrack = useActiveTrack();
 
   const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
     useState(false);
@@ -140,11 +137,11 @@ export default function MiniPlayerNew() {
             backgroundColor: currentSong?.color || "#333",
           }}
         >
-          {currentTrack?.artwork && (
+          {currentSong?.artwork && (
             <Image
               src={
-                currentTrack.artwork +
-                (currentTrack.artwork.includes("file://") ? "" : "@500w")
+                currentSong.artwork +
+                (currentSong.artwork.includes("file://") ? "" : "@500w")
               }
               alt="cover"
               className=" rounded-md"
@@ -155,21 +152,21 @@ export default function MiniPlayerNew() {
             />
           )}
           <View className="text-white pl-3 pr-2 flex-1 flex flex-col justify-center">
-            {currentTrack?.title && currentTrack?.title.length > 20 ? (
+            {currentSong?.title && currentSong?.title.length > 20 ? (
               <Marquee spacing={40} speed={0.5}>
                 <Text className="text-white text-md">
-                  {currentTrack?.title || " - 播放列表为空 - "}
+                  {currentSong?.title || " - 播放列表为空 - "}
                 </Text>
               </Marquee>
             ) : (
               <Text numberOfLines={1} className="text-white text-md">
-                {currentTrack?.title || "- 播放列表为空 -"}
+                {currentSong?.title || "- 播放列表为空 -"}
               </Text>
             )}
 
             <View className="flex flex-row justify-between">
               <Text className="text-white/50 text-sm">
-                {currentTrack?.artist || "暂无歌手信息"}
+                {currentSong?.artistName || "暂无歌手信息"}
               </Text>
               {duration != 100000 && (
                 <Text className="text-white/50 text-sm">
@@ -178,7 +175,7 @@ export default function MiniPlayerNew() {
               )}
             </View>
           </View>
-          {currentTrack && (
+          {currentSong && (
             <View className="flex flex-row gap-2">
               {currentSong && (
                 <TouchableOpacity

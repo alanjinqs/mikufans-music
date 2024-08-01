@@ -9,9 +9,7 @@ import { sendHeartbeat } from "../bili/heartbeat";
 import { bvCid2Track } from "../bili/biliVideo";
 import { continueFollowRecommendationQueue } from "./followRecommendationMode";
 import { mmkvStorage } from "../storage/storage";
-import { db, schema } from "../db/db";
-import { eq } from "lodash";
-import { cidBvToSong, cidToSong } from "../db/song";
+import { cidBvToSong } from "../db/song";
 
 const heartbeat = async (e: PlaybackProgressUpdatedEvent) => {
   const activeTrack = await TrackPlayer.getActiveTrack();

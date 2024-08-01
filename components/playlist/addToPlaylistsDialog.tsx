@@ -20,8 +20,6 @@ import { addSongToPlaylist } from "@/utils/db/playlists";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import { useEffect, useState } from "react";
-import { bv2av, bv2Cid } from "@/utils/bili/avBvCid";
-import { cidToSong } from "@/utils/db/song";
 
 export default function AddToPlaylistsDialog({
   isPLSelectionDialogOpen,

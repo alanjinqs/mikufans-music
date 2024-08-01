@@ -14,7 +14,6 @@ import { Play } from "@/lib/icons/Play";
 import { X } from "@/lib/icons/X";
 import { Pause } from "@/lib/icons/Pause";
 import { db, schema } from "@/utils/db/db";
-import { cidToSong } from "@/utils/db/song";
 import _ from "lodash";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
@@ -53,12 +52,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Menu } from "@/lib/icons/Menu";
 import { Heart } from "@/lib/icons/Heart";
-import clsx from "clsx";
-import { bv2av } from "@/utils/bili/avBvCid";
+import { Square } from "@/lib/icons/Square";
 import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
 import { PortalHost, useModalPortalRoot } from "@rn-primitives/portal";
 import { mmkvStorage } from "@/utils/storage/storage";
 import { useMMKVObject } from "react-native-mmkv";
+import PlaybackDevice from "@/components/player/PlaybackDevice";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -75,23 +74,13 @@ export default function FullScreenPlayer() {
   const query = useLocalSearchParams();
   const router = useRouter();
   const [currentSong] = useMMKVObject<Song>("currentSong");
+
   const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
     useState(false);
-
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  const progress = useProgress();
-
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
 
+  const progress = useProgress();
   const playbackState = usePlaybackState();
-
-  const updateIsPlaying = async () => {
-    setIsPlaying(
-      playbackState.state === State.Playing ||
-        playbackState.state === State.Buffering
-    );
-  };
 
   useEffect(() => {
     navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
@@ -116,14 +105,6 @@ export default function FullScreenPlayer() {
       setIsShowingLyrics(false);
     }
   }, [currentSong]);
-
-  useEffect(() => {
-    updateIsPlaying();
-  }, [playbackState]);
-
-  useEffect(() => {
-    updateIsPlaying();
-  }, []);
 
   const navigation = useNavigation();
   const progressShared = useSharedValue(0);
@@ -185,6 +166,7 @@ export default function FullScreenPlayer() {
             )}
         </View>
         <View className="flex flex-row items-center justify-end gap-4">
+          <PlaybackDevice forceDark />
           {currentSong && (
             <TouchableOpacity
               onPress={() => {
@@ -384,39 +366,41 @@ export default function FullScreenPlayer() {
           }}
         >
           <TouchableOpacity
-            className="bg-white/5 rounded-full p-2"
+            className="p-2"
             onPress={() => {
               TrackPlayer.skipToPrevious();
             }}
           >
             <SkipBack size={25} className="!color-white" />
           </TouchableOpacity>
-          {playbackState.state && playbackState.state === State.Buffering ? (
-            <View className="p-3">
-              <ActivityIndicator size={"large"} className="!color-white" />
-            </View>
-          ) : playbackState.state && playbackState.state === State.Error ? (
+          {playbackState.state && playbackState.state === State.Error ? (
             <View className="p-3">
               <X size={40} className="!color-white" />
             </View>
-          ) : isPlaying ? (
+          ) : playbackState.state && playbackState.state === State.Playing ? (
             <TouchableOpacity
               onPress={() => {
-                setIsPlaying(false);
                 TrackPlayer.pause();
               }}
             >
-              <View className="bg-white/5 rounded-full p-3">
+              <View className="p-3">
                 <Pause size={40} className="!color-white" />
               </View>
             </TouchableOpacity>
+          ) : playbackState.state && playbackState.state === State.Ended ? (
+            <View className="p-3">
+              <X size={40} className="!color-white" />
+            </View>
+          ) : playbackState.state && playbackState.state === State.Buffering ? (
+            <View className="p-3">
+              <ActivityIndicator size={"large"} className="!color-white" />
+            </View>
           ) : (
             <TouchableOpacity
               onPress={() => {
-                setIsPlaying(true);
                 TrackPlayer.play();
               }}
-              className="bg-white/5 rounded-full p-3"
+              className="p-3"
             >
               <Play size={40} className="!color-white" />
             </TouchableOpacity>
@@ -430,7 +414,7 @@ export default function FullScreenPlayer() {
               <RotateCw size={30} className="!color-white" />
             </TouchableOpacity> */}
           <TouchableOpacity
-            className="bg-white/5 rounded-full p-2"
+            className="p-2"
             onPress={() => {
               TrackPlayer.skipToNext();
             }}
@@ -438,6 +422,7 @@ export default function FullScreenPlayer() {
             <SkipForward size={25} className="!color-white" />
           </TouchableOpacity>
         </View>
+
         {currentSong && !currentSong.lyrics && (
           <View className="flex flex-col gap-2 items-center">
             <SongSearchDialog
