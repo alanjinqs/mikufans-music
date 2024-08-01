@@ -6,6 +6,7 @@ import TrackPlayer, {
   Track,
   useActiveTrack,
   usePlaybackState,
+  useProgress,
 } from "react-native-track-player";
 import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
@@ -73,20 +74,17 @@ export default function FullScreenPlayer() {
 
   const query = useLocalSearchParams();
   const router = useRouter();
-  const [currentSong, setCurrentSong] = useMMKVObject<Song>("currentSong");
-  const [currentBvid, setCurrentBvid] = useState("");
+  const [currentSong] = useMMKVObject<Song>("currentSong");
   const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
     useState(false);
 
   const [isPlaying, setIsPlaying] = useState(true);
 
+  const progress = useProgress();
+
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
 
-  // only needed for testing, but no harm in keeping it
-  const [eventsRegistered, setEventsRegistered] = useState(false);
-
   const playbackState = usePlaybackState();
-  const currentTrack = useActiveTrack();
 
   const updateIsPlaying = async () => {
     setIsPlaying(
@@ -95,26 +93,7 @@ export default function FullScreenPlayer() {
     );
   };
 
-  const updateProgress = () => {
-    TrackPlayer.getProgress().then((progress) => {
-      if (progress.position === currentProgress) return;
-      if (isNaN(progress.position) || isNaN(progress.duration)) return;
-      if (
-        progress.position > progress.duration ||
-        progress.duration <= 0 ||
-        progress.position < 0
-      ) {
-        setCurrentProgress(0);
-        setDuration(-1);
-        return;
-      }
-      setCurrentProgress(progress.position);
-      setDuration(progress.duration);
-    });
-  };
-
   useEffect(() => {
-    console.log("setting navigation bar color", currentSong?.color || "#333");
     navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
     if (!currentSong) return;
     db.select()
@@ -143,41 +122,22 @@ export default function FullScreenPlayer() {
   }, [playbackState]);
 
   useEffect(() => {
-    updateProgress();
-    if (!eventsRegistered) {
-      setEventsRegistered(true);
-
-      updateIsPlaying();
-
-      TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
-        setCurrentProgress(e.position);
-        setDuration(e.duration);
-      });
-    }
+    updateIsPlaying();
   }, []);
 
   const navigation = useNavigation();
-
-  useEffect(() => {
-    updateProgress();
-    setCurrentBvid(currentTrack?.id.split("$")[1] || "");
-  }, [currentTrack]);
-
-  const [currentProgress, setCurrentProgress] = useState(0);
-  const [duration, setDuration] = useState(-1);
-
-  const progress = useSharedValue(0);
+  const progressShared = useSharedValue(0);
   const min = useSharedValue(0);
   const max = useSharedValue(100);
 
   useEffect(() => {
-    if (duration <= 0) {
+    if (progress.duration <= 0) {
       max.value = 100;
     } else {
-      max.value = duration;
+      max.value = progress.duration;
     }
-    progress.value = currentProgress;
-  }, [currentProgress, duration]);
+    progressShared.value = progress.position;
+  }, [progress.duration, progress.position]);
 
   const [isShowingLyrics, setIsShowingLyrics] = useState(false);
 
@@ -253,7 +213,7 @@ export default function FullScreenPlayer() {
               className="w-64 native:w-72"
               portalHost={"modal-fullScreenPlayer"}
             >
-              {currentTrack && (
+              {currentSong && (
                 <DropdownMenuItem
                   onPress={() => {
                     setIsPLSelectionDialogOpen(true);
@@ -263,18 +223,18 @@ export default function FullScreenPlayer() {
                   <Text>添加到播放列表</Text>
                 </DropdownMenuItem>
               )}
-              {currentTrack && (
+              {currentSong && (
                 <DropdownMenuItem
                   onPress={() => {
                     router.dismiss();
-                    router.push(`/home/videos/recommend/${currentBvid}`);
+                    router.push(`/home/videos/recommend/${currentSong?.bvid}`);
                   }}
                 >
                   <ListVideo size={28} className="text-primary" />
                   <Text>相关推荐</Text>
                 </DropdownMenuItem>
               )}
-              {currentTrack && (
+              {currentSong && (
                 <DropdownMenuItem
                   onPress={() => {
                     const currentInFollowRecommendationMode =
@@ -301,11 +261,11 @@ export default function FullScreenPlayer() {
                   <Text>推荐跟随模式</Text>
                 </DropdownMenuItem>
               )}
-              {currentTrack && Platform.OS === "android" && (
+              {currentSong && Platform.OS === "android" && (
                 <DropdownMenuItem
                   onPress={() => {
                     TrackPlayer.pause();
-                    Linking.openURL(`bilibili://video/${currentBvid}`);
+                    Linking.openURL(`bilibili://video/${currentSong?.bvid}`);
                   }}
                 >
                   <Tv size={28} className="text-primary" />
@@ -338,11 +298,11 @@ export default function FullScreenPlayer() {
         ) : (
           <View className="flex flex-col gap-8 w-full">
             <View className="flex flex-col items-center justify-center">
-              {currentTrack?.artwork && (
+              {currentSong?.artwork && (
                 <Image
                   src={
-                    currentTrack.artwork +
-                    (currentTrack.artwork.includes("file://") ? "" : "@500w")
+                    currentSong.artwork +
+                    (currentSong.artwork.includes("file://") ? "" : "@500w")
                   }
                   alt="cover"
                   className="rounded-md"
@@ -356,7 +316,7 @@ export default function FullScreenPlayer() {
             </View>
             <View className="w-full text-white flex flex-col justify-center gap-4">
               <Text className="text-white text-xl w-full">
-                {currentTrack?.title || "- 播放列表为空 -"}
+                {currentSong?.title || "- 播放列表为空 -"}
               </Text>
               {currentSong?.artistMid && (
                 <Link href={`/home/user/${currentSong?.artistMid}`}>
@@ -370,7 +330,7 @@ export default function FullScreenPlayer() {
                         />
                       )}
                       <Text className="text-white/90 text-md">
-                        {currentTrack?.artist || "暂无歌手信息"}
+                        {currentSong?.artistName || "暂无歌手信息"}
                       </Text>
                     </View>
                   </View>
@@ -389,7 +349,7 @@ export default function FullScreenPlayer() {
               borderRadius: 100,
               opacity: 0.5,
             }}
-            progress={progress}
+            progress={progressShared}
             minimumValue={min}
             maximumValue={max}
             onValueChange={(e) => {
@@ -409,14 +369,16 @@ export default function FullScreenPlayer() {
           />
           <View>
             <Text className="text-white/50 text-sm">
-              {duration != -1
-                ? `${secToStrTime(currentProgress)} / ${secToStrTime(duration)}`
+              {progress.duration > 0
+                ? `${secToStrTime(progress.position)} / ${secToStrTime(
+                    progress.duration
+                  )}`
                 : ""}
             </Text>
           </View>
         </View>
         <View
-          className="flex flex-row items-center justify-between w-2/3"
+          className="flex flex-row items-center h-16 justify-between w-2/3"
           style={{
             backgroundColor: currentSong?.color || "#333",
           }}
@@ -430,22 +392,23 @@ export default function FullScreenPlayer() {
             <SkipBack size={25} className="!color-white" />
           </TouchableOpacity>
           {playbackState.state && playbackState.state === State.Buffering ? (
-            <View className="bg-white/5 rounded-full p-3">
+            <View className="p-3">
               <ActivityIndicator size={"large"} className="!color-white" />
             </View>
           ) : playbackState.state && playbackState.state === State.Error ? (
-            <View className="bg-white/5 rounded-full p-3">
+            <View className="p-3">
               <X size={40} className="!color-white" />
             </View>
           ) : isPlaying ? (
             <TouchableOpacity
-              className="bg-white/5 rounded-full p-3"
               onPress={() => {
                 setIsPlaying(false);
                 TrackPlayer.pause();
               }}
             >
-              <Pause size={40} className="!color-white" />
+              <View className="bg-white/5 rounded-full p-3">
+                <Pause size={40} className="!color-white" />
+              </View>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -485,11 +448,11 @@ export default function FullScreenPlayer() {
         )}
       </View>
 
-      {currentTrack && (
+      {currentSong && currentSong.bvid && (
         <AddToPlaylistsDialog
           isPLSelectionDialogOpen={isPLSelectionDialogOpen}
           setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-          currentSelectedSongBvid={currentBvid}
+          currentSelectedSongBvid={currentSong.bvid}
           portalHost="modal-fullScreenPlayer"
         />
       )}
