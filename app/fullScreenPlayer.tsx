@@ -114,6 +114,7 @@ export default function FullScreenPlayer() {
   };
 
   useEffect(() => {
+    console.log("setting navigation bar color", currentSong?.color || "#333");
     navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
     if (!currentSong) return;
     db.select()

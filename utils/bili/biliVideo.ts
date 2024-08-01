@@ -57,7 +57,7 @@ export const biliDashVideoInfoToBestAudio = (
 
 export const getBiliVideoMeta = async (bvid: string) => {
   const res = await biliFetch(
-    `https://api.bilibili.com/x/web-interface/view?bvid=${bvid}`
+    `https://api.bilibili.com/x/web-interface/wbi/view?bvid=${bvid}`
   );
   return res.json();
 };

@@ -10,24 +10,20 @@ import { TestTubeDiagonal } from "@/lib/icons/TestTubeDiagonal";
 import { Sun } from "@/lib/icons/Sun";
 import { MoonStar } from "@/lib/icons/MoonStar";
 import { Search } from "@/lib/icons/Search";
-import {
-  TouchableHighlight,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native-gesture-handler";
 import CreateNewPlaylist from "@/components/playlist/createNewPlaylist";
 import { useColorScheme } from "@/lib/useColorScheme";
 import { ScrollView } from "react-native-gesture-handler";
 import { useEffect, useRef, useState } from "react";
 import { ListMusic } from "@/lib/icons/ListMusic";
 import { indexRecommend } from "@/utils/bili/biliRecommend";
-import {
-  SearchResult,
-  SearchResultCardSq,
-} from "@/components/song/SearchResultCard";
+import { SearchResult } from "@/components/song/SearchResultCard";
 import { Heart } from "@/lib/icons/Heart";
 import clsx from "clsx";
 import { getFeed } from "@/utils/bili/biliFeed";
 import { mmkvStorage } from "@/utils/storage/storage";
+import { Download } from "@/lib/icons/Download";
+import { Rss } from "@/lib/icons/Rss";
 
 export default function HomeView() {
   const { width, height } = useWindowDimensions();
@@ -37,24 +33,6 @@ export default function HomeView() {
   const router = useRouter();
 
   const [itemPerRow, setItemPerRow] = useState(2);
-  const [recommendVideos, setRecommendVideos] = useState<SearchResult[]>([]);
-  const [isGettingNewRecommend, setIsGettingNewRecommend] = useState(false);
-  const [offset, setOffset] = useState(0);
-
-  const getNewRecommend = async () => {
-    if (isGettingNewRecommend) return;
-    setIsGettingNewRecommend(true);
-    console.log("get new recommend");
-    const res = await getFeed(offset);
-
-    setRecommendVideos((current) => [...current, ...res.results]);
-    setIsGettingNewRecommend(false);
-    setOffset(res.nextOffset);
-  };
-  useEffect(() => {
-    if (indexRecommend.length > 0) return;
-    getNewRecommend();
-  }, []);
 
   useEffect(() => {
     if (width > 1000) {
@@ -114,23 +92,51 @@ export default function HomeView() {
         <CreateNewPlaylist />
       </View>
       <View className="flex-1">
-        <ScrollView
-          ref={scrollViewRef}
-          // onScrollEndDrag={(e) => {
-          //   if (
-          //     e.nativeEvent.contentOffset.y +
-          //       e.nativeEvent.layoutMeasurement.height >=
-          //     e.nativeEvent.contentSize.height - 20
-          //   ) {
-          //     getNewRecommend();
-          //   }
-          // }}
-        >
+        <ScrollView ref={scrollViewRef}>
+          <View className="flex flex-row gap-4 items-center">
+            <View className="flex-1">
+              <TouchableOpacity
+              onPress={() => router.push(`/home/download`)}
+              >
+                <View className="bg-secondary rounded-md overflow-hidden flex flex-row items-center">
+                  <View
+                    className={clsx(
+                      "bg-sky-200 w-[5rem] h-[5rem]",
+                      "flex items-center justify-center"
+                    )}
+                  >
+                    <Download className="text-black/30" size={30} />
+                  </View>
+
+                  <Text className="text-secondary-foreground font-bold pl-4 text-lg">
+                    已下载
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View className="flex-1">
+              <TouchableOpacity onPress={() => router.push(`/home/feed`)}>
+                <View className="bg-secondary rounded-md overflow-hidden flex flex-row items-center">
+                  <View
+                    className={clsx(
+                      "bg-lime-200 w-[5rem] h-[5rem]",
+                      "flex items-center justify-center"
+                    )}
+                  >
+                    <Rss className="text-black/30" size={30} />
+                  </View>
+
+                  <Text className="text-secondary-foreground font-bold pl-4 text-lg">
+                    我关注的
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </View>
           <View
-            className="flex flex-row flex-wrap"
+            className="flex flex-row flex-wrap mt-4"
             style={{
               gap: 10,
-              minHeight: height - 200,
             }}
           >
             {playlists?.map((playlist) => (
@@ -181,7 +187,7 @@ export default function HomeView() {
               </TouchableOpacity>
             ))}
           </View>
-          <View
+          {/* <View
             className="mt-5 flex flex-row flex-wrap"
             style={{
               gap: 10,
@@ -199,7 +205,7 @@ export default function HomeView() {
             <Button onPress={getNewRecommend} variant="outline" size="sm">
               <Text>加载更多</Text>
             </Button>
-          </View>
+          </View> */}
         </ScrollView>
       </View>
     </View>

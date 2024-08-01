@@ -72,7 +72,7 @@ module.exports = async function () {
     if (e.track) {
       const [cid, bvid] = e.track.id.split("$");
       cidToSong(cid).then(async (song) => {
-        if (!song) return;
+        if (!song) mmkvStorage.set("currentSong", JSON.stringify({}));
         mmkvStorage.set("currentSong", JSON.stringify(song));
       });
     }

@@ -57,6 +57,8 @@ export type SongCardItem = {
   downloadedMp3Duration?: number | null;
   bvid: string | null;
   cid?: number | null;
+  description?: string | null;
+  duration?: number | string | null;
 };
 
 export const SongCard = memo(
@@ -108,6 +110,11 @@ export const SongCard = memo(
                   <Text className="text-secondary-foreground/50 text-xs">
                     {song.artistName}
                   </Text>
+                  {/* {song.duration ? (
+                    <Text className="text-secondary-foreground/50 text-xs">
+                      {song.duration}
+                    </Text>
+                  ) : <></>} */}
                 </View>
               </View>
             </View>
@@ -163,24 +170,34 @@ export const SongCardBottomDrawer = ({
 
   const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
 
+  const [prevColor, setPrevColor] = useState<string | null>(null);
   useEffect(() => {
     setHeart(id0Songs.find((s) => s.songId === song?.id) ? true : false);
     if (song) {
-      height.value = withTiming(
-        windowHeight * 0.8 > 350 ? 350 : windowHeight * 0.8
-      );
-      opacity.value = withTiming(0.5);
-      // console.log(
-      //   "setting navigation bar color",
-      //   isDarkColorScheme ? "#27272a" : "#f4f4f5"
-      // );
-
-      navigation.setOptions({
+      navigation.getParent()?.setOptions({
         navigationBarColor: isDarkColorScheme ? "#000" : "#fff",
       });
+
+      let targetHeight = 320;
+      if (playlistId) targetHeight += 50;
+      if (song.description) targetHeight += 100;
+      height.value = withTiming(
+        windowHeight * 0.8 > targetHeight ? targetHeight : windowHeight * 0.8
+      );
+      opacity.value = withTiming(0.5);
     } else {
       height.value = 0;
       opacity.value = 0;
+
+      const currentSong = mmkvStorage.getString("currentSong");
+      const currentSongObj = currentSong ? JSON.parse(currentSong) : null;
+      let navigationBarColor = "#333";
+      if (currentSongObj && currentSongObj.color) {
+        navigationBarColor = currentSongObj.color;
+      }
+      navigation.getParent()?.setOptions({
+        navigationBarColor,
+      });
     }
   }, [song]);
 
@@ -385,6 +402,12 @@ export const SongCardBottomDrawer = ({
                 </View>
               </TouchableOpacity>
             </View>
+            {song.description && (
+              <View className="mt-4 px-6">
+                <Text className="text font-bold mb-1">视频简介</Text>
+                <Text className="text-sm">{song.description}</Text>
+              </View>
+            )}
           </ScrollView>
         </Animated.View>
 
