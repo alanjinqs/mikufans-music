@@ -30,7 +30,18 @@ export default function DownloadedView() {
     null
   );
 
-  const [isDownloading] = useMMKVObject("isDownloading", mmkvStorage);
+  const [isDownloading] = useMMKVObject("isDownloading", mmkvStorage) as any[];
+  const [downloadingKeys, useDownloadingKeys] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isDownloading) {
+      useDownloadingKeys(
+        Object.keys(isDownloading).filter((key) => isDownloading[key])
+      );
+    } else {
+      useDownloadingKeys([]);
+    }
+  }, []);
 
   return (
     <View className="w-full flex flex-col h-full">
@@ -41,13 +52,13 @@ export default function DownloadedView() {
       <View className="flex-1">
         <Text>{}</Text>
         <FlatList
-          data={[...Object.keys(isDownloading as any), ...songs]}
+          data={[...downloadingKeys, ...songs]}
           renderItem={({ item }) => {
             return typeof item === "string" ? (
               (isDownloading as any)[item] ? (
                 <DownloadingSongCard bvid={item} />
               ) : (
-                <></>
+                <View></View>
               )
             ) : (
               <SongCard
