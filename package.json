@@ -5,8 +5,9 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "dev:android": "APP_VARIANT=development expo run:android",
+    "dev:ios": "APP_VARIANT=development expo run:ios",
+    "build:android": "APP_VARIANT=release expo run:android --variant release --device",
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
