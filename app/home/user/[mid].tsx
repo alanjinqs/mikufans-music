@@ -4,10 +4,7 @@ import { Link, router, useLocalSearchParams } from "expo-router";
 import { View, Image, TouchableOpacity } from "react-native";
 import { Text } from "@/components/ui/text";
 import { FlatList, ScrollView } from "react-native-gesture-handler";
-import {
-  SearchResult,
-  SearchResultCard,
-} from "@/components/song/SearchResultCard";
+import { SearchResult } from "@/components/song/SearchResultCard";
 import { useEffect, useState } from "react";
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import { getUserVideos } from "@/utils/bili/biliUserVides";
@@ -23,14 +20,17 @@ import {
   SeasonSeriesList,
 } from "@/utils/bili/biliSeasonsSeriesList";
 import { mmkvStorage } from "@/utils/storage/storage";
+import {
+  SongCard,
+  SongCardBottomDrawer,
+  SongCardItem,
+} from "@/components/song/SongCard";
 
 export default function UserPage() {
   const { mid } = useLocalSearchParams();
   const [currentSearchPage, setCurrentSearchPage] = useState(1);
   const [searchResult, setSearchResult] = useState<SearchResult[]>([]);
-  const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
-  const [currentSelectedSongBvid, setCurrentSelectedSongBvid] =
-    useState<string>("");
+  const [menuSong, setMenuSong] = useState<SongCardItem | null>(null);
   const [isMusicFilterOn, setIsMusicFilterOn] = useState(false);
 
   const [artistName, setArtistName] = useState("");
@@ -174,10 +174,10 @@ export default function UserPage() {
                 onEndReached={loadNextPage}
                 renderItem={({ item }) => {
                   return (
-                    <SearchResultCard
-                      result={item}
-                      setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-                      setCurrentSelectedSongBvid={setCurrentSelectedSongBvid}
+                    <SongCard
+                      key={item.bvid}
+                      song={{ ...item, id: item.aid }}
+                      setMenuSong={setMenuSong}
                     />
                   );
                 }}
@@ -193,11 +193,7 @@ export default function UserPage() {
           <UserSeasonsSeriesList mid={mid as string} />
         </TabsContent>
       </Tabs>
-      <AddToPlaylistsDialog
-        setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-        isPLSelectionDialogOpen={isPLSelectionDialogOpen}
-        currentSelectedSongBvid={currentSelectedSongBvid}
-      />
+      <SongCardBottomDrawer song={menuSong} onClose={() => setMenuSong(null)} />
     </View>
   );
 }
@@ -234,13 +230,23 @@ const UserFavoriteList = ({ mid }: { mid: string }) => {
                       router.push(`/home/videos/favorite/${item.id}`);
                     }}
                   >
-                    <View className="w-full flex flex-col p-2 bg-secondary rounded-md text-secondary-foreground">
-                      <Text className="text-md" numberOfLines={1}>
-                        {item.title}
-                      </Text>
-                      <Text className="text-secondary-foreground/50 text-xs">
-                        共 {item.mediaCount} 个视频
-                      </Text>
+                    <View className="px-2 flex py-2 flex-row items-center text-secondary-foreground">
+                      <View className="pl-2 pr-2 flex-1 flex flex-col justify-center gap-1">
+                        <Text
+                          className="text-[0.85rem] text-secondary-foreground"
+                          numberOfLines={1}
+                        >
+                          {item.title}
+                        </Text>
+
+                        <View className="flex flex-row w-full items-center justify-between">
+                          <View className="flex flex-row items-center gap-1">
+                            <Text className="text-secondary-foreground/50 text-xs">
+                              共 {item.mediaCount} 个视频
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
                     </View>
                   </TouchableOpacity>
                 );
@@ -292,22 +298,32 @@ const UserSeasonsSeriesList = ({ mid }: { mid: string }) => {
                     );
                   }}
                 >
-                  <View className="w-full flex flex-row items-center p-2 bg-secondary rounded-md text-secondary-foreground mb-2 gap-2">
+                  <View className="flex py-2 flex-row items-center text-secondary-foreground px-2">
                     {item.cover && (
                       <Image
                         src={item.cover + "@200w"}
                         alt="cover"
-                        className="w-16 h-10 rounded-md "
+                        className="h-10 rounded-md"
+                        style={{
+                          aspectRatio: 1.67,
+                        }}
                       />
                     )}
-                    <View className="flex flex-col">
-                      <Text className="text-md" numberOfLines={1}>
+                    <View className="pl-2 pr-2 flex-1 flex flex-col justify-center gap-1">
+                      <Text
+                        className="text-[0.85rem] text-secondary-foreground"
+                        numberOfLines={1}
+                      >
                         {item.name}
                       </Text>
 
-                      <Text className="text-secondary-foreground/50 text-xs">
-                        共 {item.total} 个视频
-                      </Text>
+                      <View className="flex flex-row w-full items-center justify-between">
+                        <View className="flex flex-row items-center gap-1">
+                          <Text className="text-secondary-foreground/50 text-xs">
+                            共 {item.total} 个视频
+                          </Text>
+                        </View>
+                      </View>
                     </View>
                   </View>
                 </TouchableOpacity>

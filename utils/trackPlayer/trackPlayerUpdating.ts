@@ -46,7 +46,7 @@ export const addQueueToTrackPlayer = async () => {
             cid = c.cid;
           }
 
-          if (!s.song.color && s.song.artwork) {
+          if ((!s.song.color || s.song.color === "#333") && s.song.artwork) {
             artworkToDarkColor(s.song.artwork).then(async (color) => {
               await db
                 .update(schema.song)

@@ -8,8 +8,9 @@ import { addQueueToTrackPlayer } from "./trackPlayerUpdating";
 import { mmkvStorage } from "../storage/storage";
 import { showDebugMessage } from "../showDebugMessage";
 import { artworkToDarkColor } from "../artworkToColor";
+import { SongCardItem } from "@/components/song/SongCard";
 
-export const addSongToQueue = async (song: SongDB) => {
+export const addSongToQueue = async (song: SongCardItem) => {
   console.log("adding to queue", song.title);
   if (!song || !song.bvid) return;
   const currentIndex = await TrackPlayer.getActiveTrackIndex();
@@ -23,7 +24,7 @@ export const addSongToQueue = async (song: SongDB) => {
     cid = c.cid;
   }
 
-  if (!song.color && song.artwork) {
+  if ((!song.color || song.color === "#333") && song.artwork) {
     artworkToDarkColor(song.artwork).then(async (color) => {
       mmkvStorage.set("currentSong", JSON.stringify({ ...song, color }));
 
@@ -88,9 +89,7 @@ export const replacePlaylistByQueue = async (
   await TrackPlayer.play();
 };
 
-export const replaceCurrentPlaying = async (
-  song: typeof schema.song.$inferSelect
-) => {
+export const replaceCurrentPlaying = async (song: SongCardItem) => {
   if (!song || !song.bvid) return;
   let cid = song.cid;
   if (!cid) {
@@ -102,7 +101,7 @@ export const replaceCurrentPlaying = async (
     cid = c.cid;
   }
 
-  if (!song.color && song.artwork) {
+  if ((!song.color || song.color === "#333") && song.artwork) {
     artworkToDarkColor(song.artwork).then(async (color) => {
       mmkvStorage.set("currentSong", JSON.stringify({ ...song, color }));
 

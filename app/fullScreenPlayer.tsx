@@ -114,6 +114,7 @@ export default function FullScreenPlayer() {
   };
 
   useEffect(() => {
+    navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
     if (!currentSong) return;
     db.select()
       .from(schema.songToPlaylist)
@@ -130,7 +131,6 @@ export default function FullScreenPlayer() {
           setIsCurrentSongInId0Playlist(false);
         }
       });
-    navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
 
     if (!currentSong?.lyrics || currentSong.lyrics.length === 0) {
       setIsShowingLyrics(false);

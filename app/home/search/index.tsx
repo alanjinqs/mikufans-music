@@ -19,11 +19,15 @@ import {
 import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
 import {
   SearchResult,
-  SearchResultCard,
 } from "@/components/song/SearchResultCard";
 import { Music } from "@/lib/icons/Music";
 import { router } from "expo-router";
 import { mmkvStorage } from "@/utils/storage/storage";
+import {
+  SongCard,
+  SongCardBottomDrawer,
+  SongCardItem,
+} from "@/components/song/SongCard";
 
 export default function SearchPage() {
   const [keywodInput, setKeywordInput] = useState("");
@@ -34,6 +38,8 @@ export default function SearchPage() {
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] =
     useState<string>("");
   const [isMusicFilterOn, setIsMusicFilterOn] = useState(false);
+
+  const [menuSong, setMenuSong] = useState<SongCardItem | null>(null);
 
   const [searchUserResult, setSearchUserResult] = useState<
     {
@@ -191,20 +197,27 @@ export default function SearchPage() {
           }}
           renderItem={({ item }) => {
             return (
-              <SearchResultCard
-                result={item}
-                setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-                setCurrentSelectedSongBvid={setCurrentSelectedSongBvid}
+              <SongCard
+                setMenuSong={setMenuSong}
+                key={item.bvid}
+                song={{
+                  ...item,
+                  id: item.aid,
+                  cid: null,
+                  downloadedCoverPath: null,
+                  downloadedMp3Duration: null,
+                  downloadedMp3Path: null,
+                  color: null,
+                }}
               />
             );
           }}
           keyExtractor={(item) => item.bvid.toString() || ""}
         ></FlatList>
       </View>
-      <AddToPlaylistsDialog
-        setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-        isPLSelectionDialogOpen={isPLSelectionDialogOpen}
-        currentSelectedSongBvid={currentSelectedSongBvid}
+      <SongCardBottomDrawer
+        song={menuSong}
+        onClose={() => setMenuSong(null)}
       />
     </View>
   );

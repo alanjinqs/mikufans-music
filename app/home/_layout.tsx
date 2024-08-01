@@ -16,6 +16,7 @@ import {
 import { Text } from "@/components/ui/text";
 import { ChevronLeft } from "@/lib/icons/ChevronLeft";
 import MiniPlayerNew from "@/components/player/MiniPlayerNew";
+import { PortalHost } from "@rn-primitives/portal";
 
 export default function HomeIndex() {
   const pathname = usePathname();
@@ -66,12 +67,15 @@ export default function HomeIndex() {
           <View className="flex-1 px-4">
             <Slot />
           </View>
-          <View className="px-3 pb-2">
+          <View>
             {/* <MiniPlayer /> */}
             <MiniPlayerNew />
           </View>
         </View>
       </SafeAreaView>
+      {/* <View className="absolute top-0 left-0 h-screen"> */}
+        <PortalHost name="song-options-bottom-portal" />
+      {/* </View> */}
     </>
   );
 }

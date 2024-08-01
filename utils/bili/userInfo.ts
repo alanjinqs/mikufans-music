@@ -49,6 +49,7 @@ export const getUserFavorites = async (mid: number) => {
   if (!json.data || !json.data.list) {
     return [];
   }
+
   const userCreatedFavorites = json.data.list.map((item: any) => ({
     id: item.id,
     ownerMid: item.mid,

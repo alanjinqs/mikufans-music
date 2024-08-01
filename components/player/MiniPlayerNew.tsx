@@ -27,7 +27,7 @@ import {
   TouchableOpacity,
 } from "react-native-gesture-handler";
 import dayjs from "dayjs";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { SkipBack } from "@/lib/icons/SkipBack";
 import { SkipForward } from "@/lib/icons/SkipForward";
 import { Heart } from "@/lib/icons/Heart";
@@ -100,8 +100,15 @@ export default function MiniPlayerNew() {
     router.push(`fullScreenPlayer?color=` + (currentSong?.color || "#333"));
   };
 
+  const navigation = useNavigation();
+
   useEffect(() => {
+    console.log("setting navigation bar color", currentSong?.color || "#333");
+    
+    navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
+
     if (!currentSong) return;
+
     db.select()
       .from(schema.songToPlaylist)
       .where(
@@ -121,7 +128,7 @@ export default function MiniPlayerNew() {
 
   return (
     <View
-      className="rounded-lg"
+      className="rounded-t-lg"
       style={{
         backgroundColor: currentSong?.color || "#333",
       }}

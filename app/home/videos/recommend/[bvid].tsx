@@ -1,7 +1,4 @@
-import {
-  SearchResult,
-  SearchResultCard,
-} from "@/components/song/SearchResultCard";
+import { SearchResult } from "@/components/song/SearchResultCard";
 import { videoRecommend } from "@/utils/bili/biliRecommend";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -13,6 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Music } from "@/lib/icons/Music";
 import { isMusicType } from "@/utils/bili/biliTypeIdFilters";
 import { mmkvStorage } from "@/utils/storage/storage";
+import {
+  SongCard,
+  SongCardBottomDrawer,
+  SongCardItem,
+} from "@/components/song/SongCard";
 
 export default function RecommendVideosPage() {
   const { bvid } = useLocalSearchParams();
@@ -43,8 +45,7 @@ export default function RecommendVideosPage() {
     });
   }, [bvid]);
 
-  const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
-  const [currentSelectedSongBvid, setCurrentSelectedSongBvid] = useState("");
+  const [menuSong, setMenuSong] = useState<SongCardItem | null>(null);
 
   return (
     <View className="w-full flex flex-col h-full">
@@ -83,21 +84,16 @@ export default function RecommendVideosPage() {
           })}
           renderItem={({ item }) => {
             return (
-              <SearchResultCard
-                result={item}
-                setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-                setCurrentSelectedSongBvid={setCurrentSelectedSongBvid}
+              <SongCard
+                song={{ ...item, id: item.aid }}
+                setMenuSong={setMenuSong}
               />
             );
           }}
           keyExtractor={(item) => item.bvid.toString() || ""}
         ></FlatList>
       </View>
-      <AddToPlaylistsDialog
-        setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-        isPLSelectionDialogOpen={isPLSelectionDialogOpen}
-        currentSelectedSongBvid={currentSelectedSongBvid}
-      />
+      <SongCardBottomDrawer song={menuSong} onClose={() => setMenuSong(null)} />
     </View>
   );
 }

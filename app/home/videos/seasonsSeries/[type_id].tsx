@@ -1,7 +1,4 @@
-import {
-  SearchResult,
-  SearchResultCard,
-} from "@/components/song/SearchResultCard";
+import { SearchResult } from "@/components/song/SearchResultCard";
 import { videoRecommend } from "@/utils/bili/biliRecommend";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -20,6 +17,11 @@ import { ListPlus } from "@/lib/icons/ListPlus";
 import Toast from "react-native-toast-message";
 import { addSeasonsSeriesToPlaylist } from "@/utils/db/playlists";
 import SelectPlaylistDialog from "@/components/playlist/selectPlaylistDialog";
+import {
+  SongCard,
+  SongCardBottomDrawer,
+  SongCardItem,
+} from "@/components/song/SongCard";
 
 export default function FavoriteList() {
   const { type_id } = useLocalSearchParams();
@@ -76,7 +78,8 @@ export default function FavoriteList() {
     }
   }, [type_id]);
 
-  const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
+  const [menuSong, setMenuSong] = useState<SongCardItem | null>(null);
+
   const [isPLSelection2DialogOpen, setIsPLSelection2DialogOpen] =
     useState(false);
   const [currentSelectedSongBvid, setCurrentSelectedSongBvid] = useState("");
@@ -114,10 +117,9 @@ export default function FavoriteList() {
           data={recommendVideos}
           renderItem={({ item }) => {
             return (
-              <SearchResultCard
-                result={item}
-                setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-                setCurrentSelectedSongBvid={setCurrentSelectedSongBvid}
+              <SongCard
+                song={{ ...item, id: item.aid }}
+                setMenuSong={setMenuSong}
               />
             );
           }}
@@ -125,11 +127,7 @@ export default function FavoriteList() {
           onEndReached={getNextPage}
         ></FlatList>
       </View>
-      <AddToPlaylistsDialog
-        setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-        isPLSelectionDialogOpen={isPLSelectionDialogOpen}
-        currentSelectedSongBvid={currentSelectedSongBvid}
-      />
+      <SongCardBottomDrawer song={menuSong} onClose={() => setMenuSong(null)} />
 
       <SelectPlaylistDialog
         isPLSelectionDialogOpen={isPLSelection2DialogOpen}

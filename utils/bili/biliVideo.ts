@@ -2,6 +2,7 @@ import { RatingType, Track } from "react-native-track-player";
 import { biliFetch, UA } from "./biliFetch";
 import { Platform } from "react-native";
 import { SongDB } from "../db/db";
+import { SongCardItem } from "@/components/song/SongCard";
 
 export const audioQuality = {
   30216: "64K",
@@ -85,7 +86,7 @@ export const bvCid2Track = async (
   }: {
     cid: number;
     bvid: string;
-    song?: SongDB;
+    song?: SongCardItem;
   },
   backupStream = false
 ) => {

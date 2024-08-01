@@ -14,7 +14,7 @@ import { openDatabaseSync } from "expo-sqlite/next";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import migrations from "@/drizzle/migrations";
 import { Text } from "@/components/ui/text";
-import { PortalHost } from "@rn-primitives/portal";
+import { Portal, PortalHost } from "@rn-primitives/portal";
 import "react-native-reanimated";
 import "react-native-gesture-handler";
 import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
@@ -127,7 +127,6 @@ function RootLayout() {
           <Stack
             screenOptions={{
               headerShown: false,
-              navigationBarColor: isDarkColorScheme ? "#000" : "#fff",
             }}
           >
             <Stack.Screen

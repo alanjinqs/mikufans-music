@@ -1,7 +1,5 @@
-import { song } from "@/db/schema";
 import { schema, SongDB } from "../db/db";
 import { biliFetch } from "./biliFetch";
-import { bv2Cid } from "./avBvCid";
 import { SearchResult } from "@/components/song/SearchResultCard";
 
 // export const fetchFavList = async (mediaId: number) => {

@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { bv2av } from "../bili/avBvCid";
 import { getBiliVideoMeta } from "../bili/biliVideo";
 import { fetchSeasonSeriesToSongs } from "../bili/biliSeasonsSeriesList";
+import { SongCardItem } from "@/components/song/SongCard";
 export const createNewPlaylist = async ({
   name,
   cover,
@@ -108,22 +109,6 @@ export const addSeasonsSeriesToPlaylist = async (
     mid,
     seriesId
   );
-
-  // for (const s of songList) {
-  //   await db
-  //     .insert(song)
-  //     .values({
-  //       ...s,
-  //     })
-  //     .onConflictDoNothing();
-  //   await db.insert(songToPlaylist).values({
-  //     playlistId,
-  //     songId: s.id,
-  //     createdAt: new Date(),
-  //     updatedAt: new Date(),
-  //   });
-  // }
-
   await db.insert(song).values(songList).onConflictDoNothing();
   await db
     .insert(songToPlaylist)
@@ -281,22 +266,18 @@ export const createId0Playlist = async () => {
   return insertingRes[0].id;
 };
 
-export const addOrRemoveToId0Playlist = async (song: SongDB) => {
-  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
+export const addOrRemoveToId0Playlist = async (song: SongCardItem) => {
+  const playlistCurrentSongs = await db.query.songToPlaylist.findFirst({
     where: and(
       eq(songToPlaylist.playlistId, 0),
       eq(songToPlaylist.songId, song.id)
     ),
   });
-  if (playlistCurrentSongs.length > 0) {
+  if (playlistCurrentSongs) {
     removeSongFromPlaylist(song.id, 0);
   } else {
-    await db.insert(songToPlaylist).values({
-      playlistId: 0,
-      songId: song.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    if (!song.bvid) throw new Error("song.bvid is null");
+    await addSongToPlaylist(song.bvid, 0);
   }
 };
 

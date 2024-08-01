@@ -52,13 +52,14 @@ export const getSeasons = async (seriesId: string, pageNum: number) => {
   );
 
   const data = await res.json();
-
+  console.log(data.data.archives);
   return {
     list: data.data.archives.map((item: any) => {
       return {
         id: item.aid,
         aid: item.aid,
-        artistName: "发布于：" + dayjs(item.pubdate).format("YYYY-MM-DD"),
+        artistName:
+          "发布于：" + dayjs.unix(item.pubdate).format("YYYY-MM-DD HH:mm"),
         bvid: item.bvid,
         title: item.title,
         artwork: item.pic.replace("http://", "https://"),
@@ -75,6 +76,7 @@ export const getSeriesMeta = async (seriesId: string) => {
     `https://api.bilibili.com/x/series/series?series_id=${seriesId}`
   );
   const data = await res.json();
+  console.log(data.data.archives);
   return {
     name: data.data.meta.name,
     total: data.data.meta.archives_count,
@@ -92,13 +94,13 @@ export const getSeries = async (
   );
   const data = await res.json();
 
-  console.log(data);
   return {
     list: data.data.archives.map((item: any) => {
       return {
         id: item.aid,
         aid: item.aid,
-        artistName: "发布于：" + dayjs(item.pubdate).format("YYYY-MM-DD"),
+        artistName:
+          "发布于：" + dayjs.unix(item.pubdate).format("YYYY-MM-DD HH:mm"),
         bvid: item.bvid,
         title: item.title,
         artwork: item.pic.replace("http://", "https://"),
