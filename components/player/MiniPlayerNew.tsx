@@ -58,8 +58,12 @@ export default function MiniPlayerNew() {
   const playbackState = usePlaybackState();
 
   const updateIsPlaying = async () => {
-    const state = (await TrackPlayer.getPlaybackState()).state;
-    setIsPlaying(state === State.Playing || state === State.Buffering);
+    try {
+      const state = (await TrackPlayer.getPlaybackState()).state;
+      setIsPlaying(state === State.Playing || state === State.Buffering);
+    } catch {
+      setTimeout(updateIsPlaying, 1000);
+    }
   };
 
   useEffect(() => {
