@@ -181,25 +181,6 @@ export default function HomeView() {
               </TouchableOpacity>
             ))}
           </View>
-          {/* <View
-            className="mt-5 flex flex-row flex-wrap"
-            style={{
-              gap: 10,
-            }}
-          >
-            {recommendVideos.map((video) => (
-              <SearchResultCardSq
-                key={video.bvid + "_" + video.artistMid}
-                width={(width - 18) / itemPerRow - 10}
-                result={video}
-              />
-            ))}
-          </View>
-          <View className="flex flex-row items-center justify-center my-5">
-            <Button onPress={getNewRecommend} variant="outline" size="sm">
-              <Text>加载更多</Text>
-            </Button>
-          </View> */}
         </ScrollView>
       </View>
     </View>
