@@ -1,10 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Linking, Platform, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 import TrackPlayer, {
-  Event,
   State,
-  Track,
-  useActiveTrack,
   usePlaybackState,
   useProgress,
 } from "react-native-track-player";
@@ -33,29 +30,9 @@ import {
 import SongSearchDialog from "@/components/lyrics/SongSearch";
 import LyricsView from "@/components/lyrics/LyricsView";
 import { useKeepAwake } from "expo-keep-awake";
-import { Tv } from "@/lib/icons/Tv";
-import { Dices } from "@/lib/icons/Dices";
 import { CaseSensitive } from "@/lib/icons/CaseSensitive";
-import { ListPlus } from "@/lib/icons/ListPlus";
-import AddToPlaylistsDialog from "@/components/playlist/addToPlaylistsDialog";
-import { ListVideo } from "@/lib/icons/ListVideo";
-import { enterFollowRecommendationMode } from "@/utils/trackPlayer/followRecommendationMode";
-import Toast from "react-native-toast-message";
-import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { and, eq } from "drizzle-orm";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Menu } from "@/lib/icons/Menu";
-import { Heart } from "@/lib/icons/Heart";
-import { Square } from "@/lib/icons/Square";
-import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
 import { PortalHost, useModalPortalRoot } from "@rn-primitives/portal";
-import { mmkvStorage } from "@/utils/storage/storage";
 import { useMMKVObject } from "react-native-mmkv";
 import PlaybackDevice from "@/components/player/PlaybackDevice";
 import { Ellipsis } from "@/lib/icons/Ellipsis";
