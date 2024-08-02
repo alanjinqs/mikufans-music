@@ -50,13 +50,13 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
+import { FileMusic } from "@/lib/icons/FileMusic";
 
 export type SongCardItem = {
   id: number;
@@ -192,7 +192,7 @@ export const SongCardBottomDrawer = ({
         navigationBarColor: isDarkColorScheme ? "#000" : "#fff",
       });
 
-      let targetHeight = 370;
+      let targetHeight = 420;
       if (playlistId) targetHeight += 50;
       if (song.description) targetHeight += 100;
       height.value = withTiming(
@@ -391,6 +391,18 @@ export const SongCardBottomDrawer = ({
                 </View>
               </TouchableOpacity>
 
+              <TouchableOpacity
+                onPress={() => {
+                  if (!song.artistMid) return;
+                  router.push(`/home/videos/recommend/${song.bvid}`);
+                }}
+              >
+                <View className="w-full py-4 px-6 flex flex-row items-center gap-4">
+                  <FileMusic className="text-foreground" />
+                  <Text>相关推荐</Text>
+                </View>
+              </TouchableOpacity>
+
               <AddToBiliFav song={song} />
             </View>
             {song.description && (
@@ -486,6 +498,7 @@ const AddToBiliFav = ({ song }: { song: SongCardItem }) => {
 
         {myFavs.map((fav) => (
           <RNTouchableOpacity
+            key={fav.mid}
             onPress={() => {
               setMyFavs((prev) => {
                 return prev.map((item) => {
