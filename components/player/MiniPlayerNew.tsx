@@ -3,8 +3,6 @@ import { ActivityIndicator, View } from "react-native";
 import TrackPlayer, {
   Event,
   State,
-  Track,
-  useActiveTrack,
   usePlaybackState,
   useProgress,
 } from "react-native-track-player";
@@ -14,7 +12,6 @@ import { Play } from "@/lib/icons/Play";
 import { Pause } from "@/lib/icons/Pause";
 import { X } from "@/lib/icons/X";
 import { Marquee } from "@animatereactnative/marquee";
-import Swipeable from "react-native-gesture-handler/Swipeable";
 import { db, schema } from "@/utils/db/db";
 import _ from "lodash";
 import Animated, {
@@ -33,6 +30,8 @@ import { Heart } from "@/lib/icons/Heart";
 import { addOrRemoveToId0Playlist } from "@/utils/db/playlists";
 import { and, eq } from "drizzle-orm";
 import { useMMKVObject, useMMKVString } from "react-native-mmkv";
+import { SongCardBottomDrawer, SongCardItem } from "../song/SongCard";
+import { Ellipsis } from "@/lib/icons/Ellipsis";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -44,46 +43,24 @@ const secToStrTime = (sec: number) => {
 };
 
 export default function MiniPlayerNew() {
-  const [currentSong, setCurrentSongString] =
-    useMMKVObject<Song>("currentSong");
-
-  const [isPlaying, setIsPlaying] = useState(true);
-
+  const [currentSong] = useMMKVObject<Song>("currentSong");
   const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
     useState(false);
-
-  // only needed for testing, but no harm in keeping it
-  const [eventsRegistered, setEventsRegistered] = useState(false);
   const playbackState = usePlaybackState();
-
-  const updateIsPlaying = async () => {
-    try {
-      const state = (await TrackPlayer.getPlaybackState()).state;
-      setIsPlaying(state === State.Playing || state === State.Buffering);
-    } catch {
-      setTimeout(updateIsPlaying, 1000);
-    }
-  };
-
-  useEffect(() => {
-    if (!eventsRegistered) {
-      updateIsPlaying();
-
-      TrackPlayer.addEventListener(Event.PlaybackState, async (e) => {
-        _.debounce(updateIsPlaying, 100)();
-      });
-
-      TrackPlayer.addEventListener(Event.PlaybackProgressUpdated, async (e) => {
-        setCurrentProgress(e.position);
-        setDuration(e.duration);
-      });
-
-      setEventsRegistered(true);
-    }
-  }, []);
+  const progress = useProgress();
 
   const [currentProgress, setCurrentProgress] = useState(0);
   const [duration, setDuration] = useState(100000);
+
+  useEffect(() => {
+    if (!progress || !progress.position || !progress.duration) {
+      setCurrentProgress(1);
+      setDuration(100000);
+      return;
+    }
+    setCurrentProgress(progress.position);
+    setDuration(progress.duration);
+  }, [progress]);
 
   const progressBarStyle = useAnimatedStyle(() => {
     return {
@@ -101,7 +78,7 @@ export default function MiniPlayerNew() {
 
   useEffect(() => {
     console.log("setting navigation bar color", currentSong?.color || "#333");
-    
+
     navigation.setOptions({ navigationBarColor: currentSong?.color || "#333" });
 
     if (!currentSong) return;
@@ -122,6 +99,10 @@ export default function MiniPlayerNew() {
         }
       });
   }, [currentSong]);
+
+  const [bottonDrawerSong, setBottonDrawerSong] = useState<SongCardItem | null>(
+    null
+  );
 
   return (
     <View
@@ -177,7 +158,7 @@ export default function MiniPlayerNew() {
           </View>
           {currentSong && (
             <View className="flex flex-row gap-2">
-              {currentSong && (
+              {/* {currentSong && (
                 <TouchableOpacity
                   className="bg-white/5 rounded-full p-2"
                   onPress={() => {
@@ -193,47 +174,66 @@ export default function MiniPlayerNew() {
                     }
                   />
                 </TouchableOpacity>
-              )}
-              <TouchableOpacity
+              )} */}
+              {/* <TouchableOpacity
                 className="bg-white/5 rounded-full p-2"
                 onPress={() => {
                   TrackPlayer.skipToPrevious();
                 }}
               >
                 <SkipBack className="!color-white" />
-              </TouchableOpacity>
-              {playbackState.state &&
-              playbackState.state === State.Buffering ? (
-                <ActivityIndicator size={"small"} className="!color-white" />
-              ) : playbackState.state && playbackState.state === State.Error ? (
-                <X className="!color-white" />
-              ) : isPlaying ? (
+              </TouchableOpacity> */}
+              {playbackState.state && playbackState.state === State.Error ? (
+                <View>
+                  <X className="!color-white" />
+                </View>
+              ) : playbackState.state &&
+                playbackState.state === State.Playing ? (
                 <TouchableOpacity
                   onPress={() => {
-                    setIsPlaying(false);
                     TrackPlayer.pause();
                   }}
                 >
-                  <Pause className="!color-white" />
+                  <View>
+                    <Pause className="!color-white" />
+                  </View>
                 </TouchableOpacity>
+              ) : playbackState.state && playbackState.state === State.Ended ? (
+                <View>
+                  <X className="!color-white" />
+                </View>
+              ) : playbackState.state &&
+                playbackState.state === State.Buffering ? (
+                <View>
+                  <ActivityIndicator size={"small"} className="!color-white" />
+                </View>
               ) : (
                 <TouchableOpacity
                   onPress={() => {
-                    setIsPlaying(true);
                     TrackPlayer.play();
                   }}
                 >
                   <Play className="!color-white" />
                 </TouchableOpacity>
               )}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 className="bg-white/5 rounded-full p-2"
                 onPress={() => {
                   TrackPlayer.skipToNext();
                 }}
               >
                 <SkipForward className="!color-white" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
+              {
+                <TouchableOpacity
+                  className="bg-white/5 rounded-full p-2"
+                  onPress={() => {
+                    setBottonDrawerSong(currentSong);
+                  }}
+                >
+                  <Ellipsis className="!color-white rotate-90" />
+                </TouchableOpacity>
+              }
             </View>
           )}
         </View>
@@ -244,6 +244,12 @@ export default function MiniPlayerNew() {
           style={progressBarStyle}
         ></Animated.View>
       </View>
+      <SongCardBottomDrawer
+        song={bottonDrawerSong}
+        onClose={() => {
+          setBottonDrawerSong(null);
+        }}
+      />
     </View>
   );
 }
