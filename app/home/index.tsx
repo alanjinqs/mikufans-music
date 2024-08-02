@@ -20,6 +20,7 @@ import clsx from "clsx";
 import { mmkvStorage } from "@/utils/storage/storage";
 import { Download } from "@/lib/icons/Download";
 import { Rss } from "@/lib/icons/Rss";
+import { Settings2 } from "@/lib/icons/Settings2";
 
 export default function HomeView() {
   const { width, height } = useWindowDimensions();
@@ -73,19 +74,20 @@ export default function HomeView() {
             )}
           </View>
         </Button>
+        <CreateNewPlaylist />
+
         <Button
           className="mb-5 mt-2"
           variant={"outline"}
           size={"sm"}
           onPress={() => {
-            router.push("/home/tests");
+            router.push("/home/setting");
           }}
         >
           <View className="flex flex-row items-center gap-2">
-            <TestTubeDiagonal className="text-primary" size={13} />
+            <Settings2 className="text-primary" size={13} />
           </View>
         </Button>
-        <CreateNewPlaylist />
       </View>
       <View className="flex-1">
         <ScrollView ref={scrollViewRef}>

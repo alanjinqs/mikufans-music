@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import { Text } from "@/components/ui/text";
 import { Button } from "@/components/ui/button";
-import { CircleCheckBig } from "@/lib/icons/CircleCheckBig";
+import { Check } from "@/lib/icons/Check";
 import {
   Dialog,
   DialogClose,
@@ -20,26 +20,41 @@ import { addSongToPlaylist } from "@/utils/db/playlists";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import { useEffect, useState } from "react";
+import { and, eq, inArray } from "drizzle-orm";
+import { Heart } from "@/lib/icons/Heart";
 
 export default function AddToPlaylistsDialog({
   isPLSelectionDialogOpen,
   setIsPLSelectionDialogOpen,
   currentSelectedSongBvid,
+  currentSelectedSongId,
   portalHost,
 }: {
   isPLSelectionDialogOpen: boolean;
   setIsPLSelectionDialogOpen: (open: boolean) => void;
   currentSelectedSongBvid: string;
+  currentSelectedSongId: number;
   portalHost?: string;
 }) {
   const { data: playlists } = useLiveQuery(db.select().from(schema.playlist));
+
   const [currentSelectedPlaylists, setCurrentSelectedPlaylists] = useState<
     number[]
   >([]);
 
-  // useEffect(() => {
-  //   setCurrentSelectedPlaylists([]);
-  // }, [currentSelectedSongBvid]);
+  const [originalSelectedPlaylists, setOriginalSelectedPlaylists] = useState<
+    number[]
+  >([]);
+
+  useEffect(() => {
+    db.select()
+      .from(schema.songToPlaylist)
+      .where(eq(schema.songToPlaylist.songId, currentSelectedSongId))
+      .then((res) => {
+        setCurrentSelectedPlaylists(res.map((item) => item.playlistId));
+        setOriginalSelectedPlaylists(res.map((item) => item.playlistId));
+      });
+  }, [currentSelectedSongId]);
 
   return (
     <Dialog
@@ -67,31 +82,41 @@ export default function AddToPlaylistsDialog({
                   });
                 }}
               >
-                <View
-                  className={clsx(
-                    "flex flex-row p-2 dark rounded-md",
-                    playlist.id === 0
-                      ? "bg-red-50 dark:bg-red-400"
-                      : "bg-secondary"
-                  )}
-                >
-                  {playlist?.cover && (
+                <View className={clsx("flex flex-row p-2")}>
+                  <View className="flex flex-col items-center justify-center w-4 mr-4">
+                    {currentSelectedPlaylists.includes(playlist.id) && (
+                      <Check className="text-green-600" size={20} />
+                    )}
+                  </View>
+                  {playlist?.cover ? (
                     <Image
                       src={playlist?.cover + "@200w"}
                       alt="cover"
-                      className="w-16 h-10 rounded-md"
+                      className="w-16 rounded-md"
+                      style={{ aspectRatio: 1.667 }}
                     />
+                  ) : (
+                    <View
+                      className={clsx(
+                        "w-16 rounded-md flex justify-center items-center",
+                        playlist.id === 0 ? "bg-red-300" : "bg-gray-200 "
+                      )}
+                      style={{ aspectRatio: 1.667 }}
+                    >
+                      {
+                        <Heart
+                          className="text-white fill-white"
+                          size={20}
+                          fill="currentColor"
+                        />
+                      }
+                    </View>
                   )}
 
                   <View className="text-secondary-foreground pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">
                     <Text className="text-secondary-foreground text-md">
                       {playlist?.name}
                     </Text>
-                  </View>
-                  <View className="flex flex-col items-center justify-center">
-                    {currentSelectedPlaylists.includes(playlist.id) && (
-                      <CircleCheckBig className="text-green-600" size={20} />
-                    )}
                   </View>
                 </View>
               </RNTouchableOpacity>
@@ -102,10 +127,29 @@ export default function AddToPlaylistsDialog({
           <DialogClose asChild>
             <Button
               onPress={async () => {
-                for (const playlistId of currentSelectedPlaylists) {
+                setIsPLSelectionDialogOpen(false);
+
+                const toAdd = currentSelectedPlaylists.filter(
+                  (item) => !originalSelectedPlaylists.includes(item)
+                );
+
+                const toRemove = originalSelectedPlaylists.filter(
+                  (item) => !currentSelectedPlaylists.includes(item)
+                );
+
+                for (const playlistId of toAdd) {
                   await addSongToPlaylist(currentSelectedSongBvid, playlistId);
                 }
-                setIsPLSelectionDialogOpen(false);
+                if (toRemove.length > 0) {
+                  db.delete(schema.songToPlaylist)
+                    .where(
+                      and(
+                        eq(schema.songToPlaylist.songId, currentSelectedSongId),
+                        inArray(schema.songToPlaylist.playlistId, toRemove)
+                      )
+                    )
+                    .execute();
+                }
               }}
             >
               <Text>确认</Text>

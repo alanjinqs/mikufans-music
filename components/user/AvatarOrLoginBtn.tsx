@@ -53,6 +53,7 @@ export default function AvatarOrLoginBtn({
       Linking.openURL(data.data.url);
       setLoginUrl(data.data.url);
 
+      mmkvStorage.set("auth-login-url", data.data.url);
       const fetching = setInterval(async () => {
         console.log("fetching");
         const res = await biliFetch(
@@ -90,16 +91,14 @@ export default function AvatarOrLoginBtn({
   return (
     <>
       {userInfo ? (
-        <TouchableOpacity>
-          <Link href={`/home/user/${userInfo.mid}`}>
-            <Avatar alt="头像">
-              <AvatarImage source={{ uri: userInfo.avatarURL }} />
-              <AvatarFallback>
-                <view></view>
-              </AvatarFallback>
-            </Avatar>
-          </Link>
-        </TouchableOpacity>
+        <Link href={`/home/user/${userInfo.mid}`}>
+          <Avatar alt="头像">
+            <AvatarImage source={{ uri: userInfo.avatarURL }} />
+            <AvatarFallback>
+              <view></view>
+            </AvatarFallback>
+          </Avatar>
+        </Link>
       ) : (
         <Dialog open={showLoginSheet} onOpenChange={setShowLoginSheet}>
           <DialogTrigger asChild>

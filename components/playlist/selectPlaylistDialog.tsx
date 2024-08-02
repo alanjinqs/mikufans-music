@@ -20,6 +20,7 @@ import { addSongToPlaylist } from "@/utils/db/playlists";
 import { useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { db, schema } from "@/utils/db/db";
 import { useEffect, useState } from "react";
+import { Heart } from "@/lib/icons/Heart";
 
 export default function SelectPlaylistDialog({
   isPLSelectionDialogOpen,
@@ -59,20 +60,30 @@ export default function SelectPlaylistDialog({
                   setIsPLSelectionDialogOpen(false);
                 }}
               >
-                <View
-                  className={clsx(
-                    "flex flex-row p-2 dark rounded-md",
-                    playlist.id === 0
-                      ? "bg-red-50 dark:bg-red-400"
-                      : "bg-secondary"
-                  )}
-                >
-                  {playlist?.cover && (
+                <View className={clsx("flex flex-row p-2")}>
+                  {playlist?.cover ? (
                     <Image
                       src={playlist?.cover + "@200w"}
                       alt="cover"
-                      className="w-16 h-10 rounded-md"
+                      className="w-16 rounded-md"
+                      style={{ aspectRatio: 1.667 }}
                     />
+                  ) : (
+                    <View
+                      className={clsx(
+                        "w-16 rounded-md flex justify-center items-center",
+                        playlist.id === 0 ? "bg-red-300" : "bg-gray-200 "
+                      )}
+                      style={{ aspectRatio: 1.667 }}
+                    >
+                      {
+                        <Heart
+                          className="text-white fill-white"
+                          size={20}
+                          fill="currentColor"
+                        />
+                      }
+                    </View>
                   )}
 
                   <View className="text-secondary-foreground pl-3 pr-2 flex-1 flex flex-col justify-center gap-1">

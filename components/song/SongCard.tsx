@@ -446,6 +446,7 @@ export const SongCardBottomDrawer = ({
           isPLSelectionDialogOpen={isPLSelectionDialogOpen}
           setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
           currentSelectedSongBvid={song.bvid || ""}
+          currentSelectedSongId={song.id}
         />
       </Portal>
     )
