@@ -34,9 +34,11 @@ export const biliVideoDownload = async ({
   url,
   fileName,
   callback,
+  isFlac,
 }: {
   url: string;
   fileName: string;
+  isFlac?: boolean;
   callback: (downloadProgress: {
     totalBytesWritten: number;
     totalBytesExpectedToWrite: number;
@@ -64,6 +66,7 @@ export const biliVideoDownload = async ({
   }
 
   const resultUri = FileSystem.documentDirectory + "video/" + fileName + ".mp4";
+
   await ffmpegToMp3(uri, resultUri);
 
   return resultUri;

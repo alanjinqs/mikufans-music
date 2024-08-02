@@ -16,7 +16,7 @@ export default {
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": IS_DEV ? "me.alanjin.mikufansmusic_dev" : "me.alanjin.mikufansmusic",
+      "bundleIdentifier": "me.alanjin.mikufansmusic",
       "infoPlist": {
         "UIBackgroundModes": ["audio"]
       }

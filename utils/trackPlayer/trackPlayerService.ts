@@ -96,9 +96,15 @@ module.exports = async function () {
     if (e.state === State.Error) {
       console.log("Error", e.error);
       const activeTrack = await TrackPlayer.getActiveTrack();
+      console.log("activeTrack", activeTrack);
       if (activeTrack) {
         const [cid, bvid] = activeTrack.id.split("$");
         if (!bvid || !cid) return;
+        const lastTrackErrorId = mmkvStorage.getString("last-track-error-cvbv");
+        if (lastTrackErrorId === `${cid}_${bvid}`) {
+          return;
+        }
+
         const track = await bvCid2Track(
           {
             cid,
@@ -107,6 +113,7 @@ module.exports = async function () {
           true
         );
         if (track) {
+          mmkvStorage.set("last-track-error-cvbv", `${cid}_${bvid}`);
           await TrackPlayer.load(track);
           TrackPlayer.play();
         }

@@ -3,6 +3,7 @@ import { biliFetch, UA } from "./biliFetch";
 import { Platform } from "react-native";
 import { SongDB } from "../db/db";
 import { SongCardItem } from "@/components/song/SongCard";
+import { mmkvStorage } from "../storage/storage";
 
 export const audioQuality = {
   30216: "64K",
@@ -111,13 +112,11 @@ export const bvCid2Track = async (
   }
 
   const meta = await getBiliVideoMeta(bvid);
-  console.log("meta", meta);
-
   let artwork = meta.data.pic.replace("http://", "https://");
   if (song && song.downloadedCoverPath) {
     artwork = song.downloadedCoverPath;
   }
-  if (Platform.OS !== "ios" || true) {
+  if (Platform.OS !== "ios") {
     const videoPlaybackInfo = await getBiliVideoDashPlaybackInfo(cid, bvid);
     const bestPlaybackAudio = biliDashVideoInfoToBestAudio(
       videoPlaybackInfo.data,
@@ -139,6 +138,7 @@ export const bvCid2Track = async (
       userAgent: UA,
       headers: {
         Referer: `https://www.bilibili.com/video/${bvid}`,
+        Origin: "https://www.bilibili.com",
       },
       rating: RatingType.Heart,
     };

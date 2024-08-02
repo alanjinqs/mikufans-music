@@ -45,6 +45,7 @@ import { db, schema } from "@/utils/db/db";
 import { eq } from "drizzle-orm";
 import { songDownloadAndEncode } from "@/utils/file/songDownloadAndEncode";
 import { Star } from "@/lib/icons/Star";
+import { List } from "@/lib/icons/List";
 import { addOrRemoveToMyFav, videoFavInfo } from "@/utils/bili/biliFavList";
 import {
   Dialog,
@@ -79,15 +80,21 @@ export const SongCard = memo(
   ({
     song,
     setMenuSong,
+    onPress,
   }: {
     song: SongCardItem;
     setMenuSong: (song: SongCardItem) => void;
+    onPress?: () => void;
   }) => {
     return (
       <View>
         <TouchableOpacity
           onPress={() => {
-            replaceCurrentPlaying(song);
+            if (onPress === undefined) {
+              replaceCurrentPlaying(song);
+            } else {
+              onPress();
+            }
           }}
           onLongPress={() => {
             setMenuSong(song);
@@ -166,7 +173,7 @@ export const SongCardBottomDrawer = ({
   onClose: () => void;
   playlistId?: number;
   customPortalHost?: string;
-  mode?: "fullScreenPlayer" | "currentPlaying" | "default";
+  mode?: "fullScreenPlayer" | "miniPlayer" | "currentPlaying" | "default";
 }) => {
   const { data: id0Songs } = useLiveQuery(
     db
@@ -199,6 +206,8 @@ export const SongCardBottomDrawer = ({
       let targetHeight = 420;
       if (playlistId) targetHeight += 50;
       if (song.description) targetHeight += 100;
+      if (mode === "fullScreenPlayer" || mode === "miniPlayer")
+        targetHeight += 50;
       height.value = withTiming(
         windowHeight * 0.8 > targetHeight ? targetHeight : windowHeight * 0.8
       );
@@ -382,11 +391,25 @@ export const SongCardBottomDrawer = ({
               ) : (
                 <></>
               )}
-
+              {mode === "fullScreenPlayer" ||
+                (mode === "miniPlayer" && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.push(`/home/currentQueue`);
+                      onGoingToClose();
+                    }}
+                  >
+                    <View className="w-full py-4 px-6 flex flex-row items-center gap-4">
+                      <List className="text-foreground" />
+                      <Text>当前播放列表</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
               <TouchableOpacity
                 onPress={() => {
                   if (!song.artistMid) return;
                   router.push(`/home/user/${song.artistMid}`);
+                  onGoingToClose();
                 }}
               >
                 <View className="w-full py-4 px-6 flex flex-row items-center gap-4">
@@ -399,6 +422,7 @@ export const SongCardBottomDrawer = ({
                 onPress={() => {
                   if (!song.artistMid) return;
                   router.push(`/home/videos/recommend/${song.bvid}`);
+                  onGoingToClose();
                 }}
               >
                 <View className="w-full py-4 px-6 flex flex-row items-center gap-4">

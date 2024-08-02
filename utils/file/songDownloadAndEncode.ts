@@ -50,9 +50,12 @@ export const songDownloadAndEncode = async ({
   mmkvStorage.set("isDownloading", JSON.stringify(downloadingTask));
 
   getBiliBsetAudioDash(song.cid, song.bvid).then((dash) => {
+    console.log(dash.id);
+
     biliVideoDownload({
       url: dash.base_url,
       fileName: `${song.bvid}_${song.cid}`,
+      isFlac: dash.id == 30251,
       callback: (res) => {
         console.log(res);
         mmkvStorage.set(

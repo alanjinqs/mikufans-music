@@ -249,6 +249,7 @@ export default function MiniPlayerNew() {
         onClose={() => {
           setBottonDrawerSong(null);
         }}
+        mode="miniPlayer"
       />
     </View>
   );
