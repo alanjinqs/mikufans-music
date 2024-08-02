@@ -9,6 +9,7 @@
     "dev:android": "APP_VARIANT=development npx expo prebuild -p android; npx expo run:android",
     "dev:ios": "APP_VARIANT=development npx expo prebuild -p ios; npx expo run:ios",
     "build:android": "APP_VARIANT=release npx expo prebuild -p android; npx expo run:android --variant release --device",
+    "build:ios": "APP_VARIANT=release npx expo prebuild -p ios; npx expo run:ios --configuration Release --device",
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
