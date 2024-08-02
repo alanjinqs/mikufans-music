@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -12,25 +11,23 @@ import {
 } from "@/components/ui/dialog";
 import { Text } from "@/components/ui/text";
 import { Input } from "@/components/ui/input";
-import { Touchable, View } from "react-native";
-import { ScrollView, TouchableOpacity } from "react-native";
-import TrackPlayer from "react-native-track-player";
+import { View, ScrollView, TouchableOpacity } from "react-native";
 import { qqMusicSearchSong, QQMusicSong } from "@/utils/qqmusic/qqMusicSearch";
-import { PortalHost } from "@rn-primitives/portal";
 import clsx from "clsx";
 import { updateSongQQMid } from "@/utils/db/song";
 import { SongDB } from "@/utils/db/db";
 import { X } from "@/lib/icons/X";
 
 import { TouchableOpacity as RNGHTouchableOpacity } from "react-native-gesture-handler";
-import { mmkvStorage } from "@/utils/storage/storage";
 
 export default function SongSearchDialog({
   song,
   portalHost,
+  children,
 }: {
   song: SongDB;
   portalHost?: string;
+  children?: React.ReactNode;
 }) {
   const [keyword, setKeyword] = useState("");
   const [selectedMid, setSelectedMid] = useState("");
@@ -38,25 +35,23 @@ export default function SongSearchDialog({
   const [qqMusicSongs, setQqMusicSongs] = useState<QQMusicSong[]>([]);
 
   const midConfirm = () => {
-    updateSongQQMid(song.id, selectedMid).then(() => {
-      
-    });
+    updateSongQQMid(song.id, selectedMid).then(() => {});
   };
   return (
     <Dialog
       onOpenChange={(open) => {
         if (open) {
-          TrackPlayer.getActiveTrack().then((track) => {
-            setKeyword(track?.title ?? "");
-            setSelectedMid("");
-          });
+          setKeyword(song.title || "");
+          setSelectedMid("");
         }
       }}
     >
       <DialogTrigger asChild>
-        <RNGHTouchableOpacity>
-          <Text className="text-white">搜索歌词</Text>
-        </RNGHTouchableOpacity>
+        {children || (
+          <RNGHTouchableOpacity>
+            <Text className="text-white">搜索歌词</Text>
+          </RNGHTouchableOpacity>
+        )}
       </DialogTrigger>
       <DialogContent className="w-[300px]" portalHost={portalHost}>
         <DialogHeader>

@@ -159,10 +159,14 @@ export const SongCardBottomDrawer = ({
   song,
   onClose,
   playlistId,
+  customPortalHost,
+  mode,
 }: {
   song: SongCardItem | null;
   onClose: () => void;
   playlistId?: number;
+  customPortalHost?: string;
+  mode?: "fullScreenPlayer" | "currentPlaying" | "default";
 }) => {
   const { data: id0Songs } = useLiveQuery(
     db
@@ -228,7 +232,7 @@ export const SongCardBottomDrawer = ({
     song && (
       <Portal
         name="song-options-bottom-drawer"
-        hostName="song-options-bottom-portal"
+        hostName={customPortalHost || "song-options-bottom-portal"}
       >
         <View className="absolute top-0 z-30 h-screen w-screen">
           <TouchableWithoutFeedback onPress={onGoingToClose}>

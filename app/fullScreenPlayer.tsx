@@ -12,6 +12,7 @@ import { Text } from "@/components/ui/text";
 import { Image } from "react-native";
 import { Play } from "@/lib/icons/Play";
 import { X } from "@/lib/icons/X";
+import { FileSearch2 } from "@/lib/icons/FileSearch2";
 import { Pause } from "@/lib/icons/Pause";
 import { db, schema } from "@/utils/db/db";
 import _ from "lodash";
@@ -21,7 +22,6 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { SkipForward } from "@/lib/icons/SkipForward";
 import { SkipBack } from "@/lib/icons/SkipBack";
 import { ChevronDown } from "@/lib/icons/ChevronDown";
-import { List } from "@/lib/icons/List";
 import { useSharedValue } from "react-native-reanimated";
 import { Slider } from "react-native-awesome-slider";
 import {
@@ -58,6 +58,8 @@ import { PortalHost, useModalPortalRoot } from "@rn-primitives/portal";
 import { mmkvStorage } from "@/utils/storage/storage";
 import { useMMKVObject } from "react-native-mmkv";
 import PlaybackDevice from "@/components/player/PlaybackDevice";
+import { Ellipsis } from "@/lib/icons/Ellipsis";
+import { SongCardBottomDrawer, SongCardItem } from "@/components/song/SongCard";
 
 type Song = typeof schema.song.$inferSelect;
 
@@ -77,7 +79,6 @@ export default function FullScreenPlayer() {
 
   const [isCurrentSongInId0Playlist, setIsCurrentSongInId0Playlist] =
     useState(false);
-  const [isPLSelectionDialogOpen, setIsPLSelectionDialogOpen] = useState(false);
 
   const progress = useProgress();
   const playbackState = usePlaybackState();
@@ -110,6 +111,9 @@ export default function FullScreenPlayer() {
   const progressShared = useSharedValue(0);
   const min = useSharedValue(0);
   const max = useSharedValue(100);
+
+  const [drawerCurrentSong, setDrawerCurrentSong] =
+    useState<SongCardItem | null>(null);
 
   useEffect(() => {
     if (progress.duration <= 0) {
@@ -156,18 +160,21 @@ export default function FullScreenPlayer() {
             </TouchableOpacity>
           </Link>
           {currentSong &&
-            currentSong.lyrics &&
-            currentSong.lyrics.length > 0 && (
+            (currentSong.lyrics && currentSong.lyrics.length > 0 ? (
               <TouchableOpacity
                 onPress={() => setIsShowingLyrics(!isShowingLyrics)}
               >
                 <CaseSensitive size={30} className="text-white" />
               </TouchableOpacity>
-            )}
+            ) : (
+              <SongSearchDialog song={currentSong}>
+                <FileSearch2 size={25} className="text-white" />
+              </SongSearchDialog>
+            ))}
         </View>
         <View className="flex flex-row items-center justify-end gap-4">
           <PlaybackDevice forceDark />
-          {currentSong && (
+          {/* {currentSong && (
             <TouchableOpacity
               onPress={() => {
                 addOrRemoveToId0Playlist(currentSong);
@@ -183,8 +190,8 @@ export default function FullScreenPlayer() {
                 }
               />
             </TouchableOpacity>
-          )}
-          <DropdownMenu>
+          )} */}
+          {/* <DropdownMenu>
             <DropdownMenuTrigger>
               <Menu size={28} className="text-white" />
             </DropdownMenuTrigger>
@@ -255,15 +262,27 @@ export default function FullScreenPlayer() {
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
-          </DropdownMenu>
-          <TouchableOpacity
+          </DropdownMenu> */}
+          {/* <TouchableOpacity
             onPress={() => {
               router.dismiss();
               router.push("/home/currentQueue");
             }}
           >
             <ListVideo size={30} className="text-white" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
+          {currentSong && (
+            <TouchableOpacity
+              onPress={() => {
+                // router.dismiss();
+                // router.push("/home/currentQueue");
+
+                setDrawerCurrentSong(currentSong);
+              }}
+            >
+              <Ellipsis size={28} className="!text-white rotate-90" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       <View className="flex flex-col items-center justify-center flex-1 gap-8 px-10 pb-10 w-full">
@@ -296,7 +315,16 @@ export default function FullScreenPlayer() {
                 />
               )}
             </View>
-            <View className="w-full text-white flex flex-col justify-center gap-4">
+          </View>
+        )}
+        <View className="flex flex-col w-full items-center gap-2">
+          {!(
+            isShowingLyrics &&
+            currentSong &&
+            currentSong.lyrics &&
+            currentSong.lyrics.length > 0
+          ) && (
+            <View className="w-full text-white flex flex-col justify-center gap-4 mb-4">
               <Text className="text-white text-xl w-full">
                 {currentSong?.title || "- 播放列表为空 -"}
               </Text>
@@ -319,9 +347,7 @@ export default function FullScreenPlayer() {
                 </Link>
               )}
             </View>
-          </View>
-        )}
-        <View className="flex flex-col w-full items-center gap-2">
+          )}
           <Slider
             style={{
               width: "100%",
@@ -358,54 +384,50 @@ export default function FullScreenPlayer() {
                 : ""}
             </Text>
           </View>
-        </View>
-        <View
-          className="flex flex-row items-center h-16 justify-between w-2/3"
-          style={{
-            backgroundColor: currentSong?.color || "#333",
-          }}
-        >
-          <TouchableOpacity
-            className="p-2"
-            onPress={() => {
-              TrackPlayer.skipToPrevious();
-            }}
-          >
-            <SkipBack size={25} className="!color-white" />
-          </TouchableOpacity>
-          {playbackState.state && playbackState.state === State.Error ? (
-            <View className="p-3">
-              <X size={40} className="!color-white" />
-            </View>
-          ) : playbackState.state && playbackState.state === State.Playing ? (
+
+          <View className="flex flex-row items-center h-16 justify-between w-2/3">
             <TouchableOpacity
+              className="p-2"
               onPress={() => {
-                TrackPlayer.pause();
+                TrackPlayer.skipToPrevious();
               }}
             >
+              <SkipBack size={25} className="!color-white" />
+            </TouchableOpacity>
+            {playbackState.state && playbackState.state === State.Error ? (
               <View className="p-3">
-                <Pause size={40} className="!color-white" />
+                <X size={40} className="!color-white" />
               </View>
-            </TouchableOpacity>
-          ) : playbackState.state && playbackState.state === State.Ended ? (
-            <View className="p-3">
-              <X size={40} className="!color-white" />
-            </View>
-          ) : playbackState.state && playbackState.state === State.Buffering ? (
-            <View className="p-3">
-              <ActivityIndicator size={"large"} className="!color-white" />
-            </View>
-          ) : (
-            <TouchableOpacity
-              onPress={() => {
-                TrackPlayer.play();
-              }}
-              className="p-3"
-            >
-              <Play size={40} className="!color-white" />
-            </TouchableOpacity>
-          )}
-          {/* <TouchableOpacity
+            ) : playbackState.state && playbackState.state === State.Playing ? (
+              <TouchableOpacity
+                onPress={() => {
+                  TrackPlayer.pause();
+                }}
+              >
+                <View className="p-3">
+                  <Pause size={40} className="!color-white" />
+                </View>
+              </TouchableOpacity>
+            ) : playbackState.state && playbackState.state === State.Ended ? (
+              <View className="p-3">
+                <X size={40} className="!color-white" />
+              </View>
+            ) : playbackState.state &&
+              playbackState.state === State.Buffering ? (
+              <View className="p-3">
+                <ActivityIndicator size={"large"} className="!color-white" />
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={() => {
+                  TrackPlayer.play();
+                }}
+                className="p-3"
+              >
+                <Play size={40} className="!color-white" />
+              </TouchableOpacity>
+            )}
+            {/* <TouchableOpacity
               className="bg-white/5 rounded-full p-2 relative"
               onPress={() => {
                 TrackPlayer.seekBy(5);
@@ -413,34 +435,24 @@ export default function FullScreenPlayer() {
             >
               <RotateCw size={30} className="!color-white" />
             </TouchableOpacity> */}
-          <TouchableOpacity
-            className="p-2"
-            onPress={() => {
-              TrackPlayer.skipToNext();
-            }}
-          >
-            <SkipForward size={25} className="!color-white" />
-          </TouchableOpacity>
-        </View>
-
-        {currentSong && !currentSong.lyrics && (
-          <View className="flex flex-col gap-2 items-center">
-            <SongSearchDialog
-              song={currentSong}
-              portalHost="modal-fullScreenPlayer"
-            />
+            <TouchableOpacity
+              className="p-2"
+              onPress={() => {
+                TrackPlayer.skipToNext();
+              }}
+            >
+              <SkipForward size={25} className="!color-white" />
+            </TouchableOpacity>
           </View>
-        )}
+        </View>
       </View>
 
-      {currentSong && currentSong.bvid && (
-        <AddToPlaylistsDialog
-          isPLSelectionDialogOpen={isPLSelectionDialogOpen}
-          setIsPLSelectionDialogOpen={setIsPLSelectionDialogOpen}
-          currentSelectedSongBvid={currentSong.bvid}
-          portalHost="modal-fullScreenPlayer"
-        />
-      )}
+      <SongCardBottomDrawer
+        song={drawerCurrentSong}
+        onClose={() => setDrawerCurrentSong(null)}
+        customPortalHost="modal-fullScreenPlayer"
+        mode={"fullScreenPlayer"}
+      />
       <PortalHost name="modal-fullScreenPlayer" />
     </View>
   );
