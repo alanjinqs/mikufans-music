@@ -26,7 +26,6 @@ export const addSongToQueue = async (song: SongCardItem) => {
 
   if ((!song.color || song.color === "#333") && song.artwork) {
     artworkToDarkColor(song.artwork).then(async (color) => {
-      mmkvStorage.set("currentSong", JSON.stringify({ ...song, color }));
 
       await db
         .update(schema.song)
