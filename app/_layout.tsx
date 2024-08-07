@@ -19,7 +19,6 @@ import "react-native-reanimated";
 import "react-native-gesture-handler";
 import { addQueueToTrackPlayer } from "@/utils/trackPlayer/trackPlayerUpdating";
 import Toast from "react-native-toast-message";
-import { MikufansMusicContext } from "./context";
 import { createId0Playlist } from "@/utils/db/playlists";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { mmkvStorage } from "@/utils/storage/storage";
@@ -71,20 +70,10 @@ export default function DrizzleLoad() {
 function RootLayout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
   const [isColorSchemeLoaded, setIsColorSchemeLoaded] = React.useState(false);
-  const [isDevMode, setIsDevMode] = React.useState(false);
   const pathname = usePathname();
 
   React.useEffect(() => {
     (async () => {
-      if (mmkvStorage.getBoolean("isDevMode")) {
-        setIsDevMode(true);
-        Toast.show({
-          type: "dev",
-          text1: "开发者模式已开启",
-          text2: "截图时请注意保护 Cookie 及 Token",
-        });
-      }
-
       await initTrackPlayer();
 
       const theme = mmkvStorage.getString("theme");
@@ -114,49 +103,47 @@ function RootLayout() {
   }, []);
 
   return (
-    <MikufansMusicContext.Provider value={{ isDevMode, setIsDevMode }}>
-      <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
-        <GestureHandlerRootView>
-          <StatusBar
-            style={
-              isDarkColorScheme || pathname === "/fullScreenPlayer"
-                ? "light"
-                : "dark"
-            }
-          />
-          <Stack
-            screenOptions={{
+    <ThemeProvider value={isDarkColorScheme ? DARK_THEME : LIGHT_THEME}>
+      <GestureHandlerRootView>
+        <StatusBar
+          style={
+            isDarkColorScheme || pathname === "/fullScreenPlayer"
+              ? "light"
+              : "dark"
+          }
+        />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen
+            name="home"
+            options={{
               headerShown: false,
             }}
-          >
-            <Stack.Screen
-              name="home"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="fullScreenPlayer"
-              options={{
-                presentation: "fullScreenModal",
-                animation: "slide_from_bottom",
-              }}
-            />
-          </Stack>
-        </GestureHandlerRootView>
-        <PortalHost />
-        <Toast
-          config={{
-            dev: ({ text1, text2 }) => (
-              <View className="bg-black !text-white rounded-lg p-4 m-4 border border-white flex flex-col gap-2">
-                <Text className="!text-white">{text1}</Text>
-                <Text className="!text-white text-sm">{text2}</Text>
-                <Text className="!text-white/70 text-xs">{pathname}</Text>
-              </View>
-            ),
-          }}
-        />
-      </ThemeProvider>
-    </MikufansMusicContext.Provider>
+          />
+          <Stack.Screen
+            name="fullScreenPlayer"
+            options={{
+              presentation: "fullScreenModal",
+              animation: "slide_from_bottom",
+            }}
+          />
+        </Stack>
+      </GestureHandlerRootView>
+      <PortalHost />
+      <Toast
+        config={{
+          dev: ({ text1, text2 }) => (
+            <View className="bg-black !text-white rounded-lg p-4 m-4 border border-white flex flex-col gap-2">
+              <Text className="!text-white">{text1}</Text>
+              <Text className="!text-white text-sm">{text2}</Text>
+              <Text className="!text-white/70 text-xs">{pathname}</Text>
+            </View>
+          ),
+        }}
+      />
+    </ThemeProvider>
   );
 }

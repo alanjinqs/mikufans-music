@@ -2,27 +2,22 @@ import TrackPlayer from "react-native-track-player";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { BackHandler, View } from "react-native";
-import { useLiveQuery } from "drizzle-orm/expo-sqlite";
-import { db, schema } from "@/utils/db/db";
 import CookieManager from "@react-native-cookies/cookies";
-import { useContext, useEffect, useState } from "react";
-import { HeartPulse } from "@/lib/icons/HeartPulse";
-import { HeartOff } from "@/lib/icons/HeartOff";
-import { MikufansMusicContext } from "@/app/context";
-import { Bug } from "@/lib/icons/Bug";
-import { BugOff } from "@/lib/icons/BugOff";
+import { useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
 import { mmkvStorage } from "@/utils/storage/storage";
 import { Switch } from "@/components/ui/switch";
 
 export default function TestView() {
   const [isHeartbeatDisabled, setIsHeartbeatDisabled] = useState(false);
-
-  const { isDevMode, setIsDevMode } = useContext(MikufansMusicContext);
+  const [isDevMode, setIsDevMode] = useState(false);
 
   useEffect(() => {
     if (mmkvStorage.getBoolean("disableHeartbeat")) {
       setIsHeartbeatDisabled(true);
+    }
+    if (mmkvStorage.getBoolean("isDevMode")) {
+      setIsDevMode(true);
     }
   }, []);
 
