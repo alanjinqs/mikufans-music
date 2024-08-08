@@ -167,7 +167,7 @@ export default function PlaylistView() {
                   className=""
                   disabled={isSkipping}
                 >
-                  <View className="flex flex-row p-2 bg-secondary rounded-md items-center text-secondary-foreground">
+                  <View className="flex flex-row p-2 items-center text-secondary-foreground">
                     {song.song.artwork && (
                       <Image
                         src={
@@ -183,7 +183,7 @@ export default function PlaylistView() {
                         {song.song.title}
                       </Text>
 
-                      <View className="flex flex-row items-center gap-1">
+                      <View className="flex flex-row items-center gap-2">
                         {song.song.artistAvatar && (
                           <Image
                             src={song.song.artistAvatar + "@128w"}
