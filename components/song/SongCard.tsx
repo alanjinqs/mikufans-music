@@ -391,20 +391,19 @@ export const SongCardBottomDrawer = ({
               ) : (
                 <></>
               )}
-              {mode === "fullScreenPlayer" ||
-                (mode === "miniPlayer" && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      router.push(`/home/currentQueue`);
-                      onGoingToClose();
-                    }}
-                  >
-                    <View className="w-full py-4 px-6 flex flex-row items-center gap-4">
-                      <List className="text-foreground" />
-                      <Text>当前播放列表</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+              {(mode === "fullScreenPlayer" || mode === "miniPlayer") && (
+                <TouchableOpacity
+                  onPress={() => {
+                    router.push(`/home/currentQueue`);
+                    onGoingToClose();
+                  }}
+                >
+                  <View className="w-full py-4 px-6 flex flex-row items-center gap-4">
+                    <List className="text-foreground" />
+                    <Text>当前播放列表</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
                 onPress={() => {
                   if (!song.artistMid) return;
