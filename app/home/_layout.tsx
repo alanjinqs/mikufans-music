@@ -37,7 +37,6 @@ export default function HomeIndex() {
 
       getUserFavorites(parseInt(data.data.mid.toString())).then((res) => {
         mmkvStorage.set("my-fav-list", JSON.stringify(res));
-        console.log("my fav list", res);
       });
     });
   };

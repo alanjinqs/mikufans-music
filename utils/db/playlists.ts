@@ -1,6 +1,6 @@
 import { playlist, song, songToPlaylist } from "@/db/schema";
 import { db, SongDB } from "./db";
-import { fetchFavListAsSong } from "../bili/biliFavList";
+import { addOrRemoveToMyFav, fetchFavListAsSong } from "../bili/biliFavList";
 import { and, eq } from "drizzle-orm";
 import { bv2av } from "../bili/avBvCid";
 import { getBiliVideoMeta } from "../bili/biliVideo";
@@ -289,4 +289,58 @@ export const editPlaylistName = async (playlistId: number, name: string) => {
       updatedAt: new Date(),
     })
     .where(eq(playlist.id, playlistId));
+};
+
+export const syncPlaylistWithBiliFav = async ({
+  playlistId,
+  favId,
+}: {
+  playlistId: number;
+  favId: number;
+}) => {
+  const { favInfo, songList } = await fetchFavListAsSong(favId);
+
+  const playlistCurrentSongs = await db.query.songToPlaylist.findMany({
+    where: eq(songToPlaylist.playlistId, playlistId),
+    with: {
+      song: true,
+    },
+  });
+
+  const toAddToPlaylist = songList.filter(
+    (s) => !playlistCurrentSongs.map((s) => s.songId).includes(s.id)
+  );
+
+  const toAddToBiliFav = playlistCurrentSongs.filter(
+    (s) => !songList.map((s) => s.id).includes(s.songId)
+  );
+
+  if (toAddToPlaylist.length > 0) {
+    await db.insert(song).values(toAddToPlaylist).onConflictDoNothing();
+    await db
+      .insert(songToPlaylist)
+      .values(
+        toAddToPlaylist.map((s) => ({
+          playlistId,
+          songId: s.id,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }))
+      )
+      .onConflictDoNothing();
+  }
+
+  for (const s of toAddToBiliFav) {
+    if (!s.song.bvid) continue;
+    await addOrRemoveToMyFav({
+      addMids: [favId],
+      removeMids: [],
+      bvid: s.song.bvid,
+    });
+  }
+
+  return {
+    toAddToPlaylist,
+    toAddToBiliFav,
+  };
 };

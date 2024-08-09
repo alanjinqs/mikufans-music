@@ -78,6 +78,7 @@ import {
   SongCardBottomDrawer,
   SongCardItem,
 } from "@/components/song/SongCard";
+import SyncWithBiliFav from "@/components/playlist/syncWithBiliFav";
 
 export default function PlaylistView() {
   const { id } = useLocalSearchParams();
@@ -159,6 +160,7 @@ export default function PlaylistView() {
             </DropdownMenuContent>
           </DropdownMenu>
         )}
+        <SyncWithBiliFav playlistId={playlistId} />
         <AddNewSong playlistId={playlistId} />
         <Button
           className="mb-5 mt-2"
